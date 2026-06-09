@@ -47,15 +47,23 @@ io.on('connection', (socket) => {
 
   // Join a specific channel room
   socket.on('join_channel', (channelKey) => {
-    // Leave previous rooms (except their own socket ID room)
+    // Leave previous rooms (except their own socket ID room and admin rooms)
     Array.from(socket.rooms).forEach(room => {
-      if (room !== socket.id) {
+      if (room !== socket.id && !room.includes('@') && !room.startsWith('camp_')) {
         socket.leave(room);
       }
     });
     
     socket.join(channelKey);
     console.log(`User ${socket.id} joined channel ${channelKey}`);
+  });
+
+  socket.on('join_campsite_room', (campsiteId) => {
+    socket.join(`camp_${campsiteId}`);
+  });
+
+  socket.on('join_admin_room', (email) => {
+    socket.join(email);
   });
 
   // Handle incoming messages
@@ -91,6 +99,20 @@ io.on('connection', (socket) => {
   // Catch and Broadcast "Scout stopped typing"
   socket.on("scout-typing-stop", ({ channelId, scoutName }) => {
     socket.broadcast.to(channelId).emit("broadcast-typing-stop", { scoutName });
+  });
+
+  // Handle new scout joining a campsite
+  socket.on("register-new-scout-join", ({ campsiteId, adminEmail, scoutName, scoutAvatar }) => {
+    // 1. Tell everyone currently looking at the campsite to update their member lists
+    io.to(`camp_${campsiteId}`).emit("scout-joined-list", { scoutName, scoutAvatar });
+
+    // 2. Explicitly target the campsite owner/admin socket connection with a banner notification
+    if (adminEmail) {
+      io.to(adminEmail).emit("campsite-admin-notification", {
+        message: `A new Scout has breached the perimeter! Welcome ${scoutName}.`,
+        scoutName
+      });
+    }
   });
 
   socket.on('disconnect', () => {

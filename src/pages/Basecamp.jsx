@@ -32,6 +32,7 @@ import ScoutControlDeck from '../components/ScoutControlDeck';
 import Discover from '../components/Discover';
 import ThemeController from '../components/ThemeController';
 import AnimatedMesh from '../components/AnimatedMesh';
+import MemberDrawer from '../components/MemberDrawer';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -41,9 +42,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [showWelcome, setShowWelcome] = useState(true);
   const [showDiscover, setShowDiscover] = useState(false);
   const [joinNotification, setJoinNotification] = useState(null);
+  const [adminNotification, setAdminNotification] = useState(null);
   const [inputText, setInputText] = useState('');
   const [activeTypers, setActiveTypers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [activeMembersList, setActiveMembersList] = useState([]);
   const typingTimeoutRef = useRef(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCampOpsModalOpen, setIsCampOpsModalOpen] = useState(false);
@@ -133,7 +137,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     setActiveTypers([]); // Reset typers when changing channels
   }, [currentChannelKey]);
 
-  // Listen for real-time messages
+  useEffect(() => {
+    if (activeCampsite) {
+      socket.emit('join_campsite_room', activeCampsite.id);
+      setActiveMembersList(activeCampsite.members || []);
+    }
+  }, [activeCampsite]);
+
+  useEffect(() => {
+    if (currentUser?.email) {
+      socket.emit('join_admin_room', currentUser.email);
+    }
+  }, [currentUser?.email]);
+
+  // Listen for real-time messages and member events
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {
       setMessagesByChannel(prev => {
@@ -165,10 +182,27 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     socket.on("broadcast-typing-start", handleTypingStart);
     socket.on("broadcast-typing-stop", handleTypingStop);
 
+    const handleScoutJoinedList = ({ scoutName, scoutAvatar }) => {
+      setActiveMembersList((prev) => {
+        if (prev.some(m => (m.username === scoutName) || (m === scoutName))) return prev;
+        return [...prev, { username: scoutName, profilePictureUrl: scoutAvatar }];
+      });
+    };
+    
+    const handleAdminNotification = ({ message, scoutName }) => {
+      setAdminNotification(message);
+      setTimeout(() => setAdminNotification(null), 5000);
+    };
+
+    socket.on("scout-joined-list", handleScoutJoinedList);
+    socket.on("campsite-admin-notification", handleAdminNotification);
+
     return () => {
       socket.off('receive_message', handleReceiveMessage);
       socket.off("broadcast-typing-start", handleTypingStart);
       socket.off("broadcast-typing-stop", handleTypingStop);
+      socket.off("scout-joined-list", handleScoutJoinedList);
+      socket.off("campsite-admin-notification", handleAdminNotification);
     };
   }, []);
 
@@ -551,6 +585,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 setActiveChannel('lobby');
                 setShowDiscover(false);
                 
+                // Notify backend socket to broadcast
+                socket.emit("register-new-scout-join", {
+                  campsiteId: camp.id,
+                  adminEmail: camp.adminEmail,
+                  scoutName: currentUser?.username || 'Scout',
+                  scoutAvatar: currentUser?.profilePictureUrl || ''
+                });
+
                 // Show sweet notification
                 setJoinNotification(`🏕️ You've successfully joined ${camp.name}! Welcome to the squad.`);
                 setTimeout(() => {
@@ -686,8 +728,23 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <Hash size={24} className="chat-title-icon" />
             <h2>{activeChannel}</h2>
           </div>
-          <div className="chat-header-actions">
-            <Users size={20} className="header-icon" />
+          <div className="chat-header-actions" style={{ position: 'relative' }}>
+            <button 
+              className={`icon-btn ${isDrawerOpen ? 'active' : ''}`}
+              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+              style={{
+                background: isDrawerOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                color: isDrawerOpen ? 'rgb(var(--brand-primary))' : 'var(--text-secondary)'
+              }}
+            >
+              <Users size={20} className="header-icon" />
+            </button>
+            <MemberDrawer 
+              isOpen={isDrawerOpen} 
+              onClose={() => setIsDrawerOpen(false)} 
+              members={activeMembersList}
+              adminEmail={activeCampsite?.adminEmail}
+            />
           </div>
         </header>
 
@@ -808,6 +865,38 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             }}
           >
             {joinNotification}
+          </motion.div>
+        )}
+        {adminNotification && (
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            style={{
+              position: 'fixed',
+              top: '80px',
+              right: '20px',
+              background: 'var(--bg-secondary)', // Glassmorphic background
+              border: '1px solid #ff9500', // Amber border
+              backdropFilter: 'blur(10px)',
+              padding: '16px 20px',
+              borderRadius: '12px',
+              color: 'var(--text-primary)',
+              fontWeight: '600',
+              zIndex: 9999,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}
+          >
+            <div style={{ padding: '8px', background: 'rgba(255, 149, 0, 0.1)', borderRadius: '8px', color: '#ff9500' }}>
+              🛡️
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#ff9500', letterSpacing: '1px' }}>Perimeter Breached</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{adminNotification}</span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
