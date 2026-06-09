@@ -59,37 +59,24 @@
 .footer-brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.625rem; /* gap-2.5 */
+  gap: 0.875rem; /* slightly larger gap for the actual logo */
   text-decoration: none;
 }
 
-.brand-flame-container {
-  padding: 0.5rem;
-  background-color: rgba(234, 88, 12, 0.1);
-  border: 1px solid rgba(249, 115, 22, 0.2);
-  border-radius: 0.75rem; /* rounded-xl */
+.brand-actual-logo {
+  height: 2.5rem; /* scale up the logo nicely */
+  width: auto;
+  object-fit: contain;
   transition: all 0.3s ease;
-  box-shadow: 0 0 15px rgba(234, 88, 12, 0.1);
+  filter: drop-shadow(0 0 10px rgba(234, 88, 12, 0.2));
 }
 
-.footer-brand-logo:hover .brand-flame-container {
-  border-color: rgba(249, 115, 22, 0.5);
+.footer-brand-logo:hover .brand-actual-logo {
+  filter: drop-shadow(0 0 15px rgba(249, 115, 22, 0.5));
+  transform: scale(1.05);
 }
 
-.brand-flame-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: #f97316; /* orange-500 */
-}
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .5; }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
 
 .brand-name {
   font-size: 1.5rem;

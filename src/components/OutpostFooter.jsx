@@ -81,9 +81,7 @@ export default function OutpostFooter() {
           {/* Brand Presentation Block */}
           <div className="footer-brand-block">
             <a href="/" className="footer-brand-logo group">
-              <div className="brand-flame-container">
-                <img src={logoUrl} alt="Outpost Logo" className="brand-flame-icon animate-pulse" style={{ objectFit: 'contain' }} />
-              </div>
+              <img src={logoUrl} alt="Outpost Logo" className="brand-actual-logo" />
               <span className="brand-name">
                 {data.company.name}
               </span>
