@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Save, Shield, Award, Zap, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Save, Shield, Award, Zap, Plus, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
 import './UserProfileModal.css';
 
 const PRESET_AVATARS = [
@@ -24,6 +24,10 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const fileInputRef = useRef(null);
 
@@ -99,8 +103,8 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
       }
 
       const updatedUser = await res.json();
-      onSave(updatedUser);
-      onClose();
+      const didChangePassword = !!newPassword;
+      onSave(updatedUser, didChangePassword);
       
       // Reset security fields
       setCurrentPassword('');
@@ -143,17 +147,19 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
             <div className="profile-body">
               <div className="profile-preview-section">
                 <div 
-                  className="large-avatar-preview interactive-avatar"
+                  className="interactive-avatar-container"
                   onClick={() => fileInputRef.current.click()}
                 >
-                  {profilePictureUrl ? (
-                    <img src={profilePictureUrl} alt="Avatar" />
-                  ) : (
-                    <div className="avatar-placeholder">
-                      {username ? username.charAt(0).toUpperCase() : '?'}
-                    </div>
-                  )}
-                  <div className="avatar-hover-overlay">Upload custom image</div>
+                  <div className="large-avatar-preview interactive-avatar">
+                    {profilePictureUrl ? (
+                      <img src={profilePictureUrl} alt="Avatar" />
+                    ) : (
+                      <div className="avatar-placeholder">
+                        {username ? username.charAt(0).toUpperCase() : '?'}
+                      </div>
+                    )}
+                    <div className="avatar-hover-overlay">Upload custom image</div>
+                  </div>
                   <div className="avatar-plus-badge"><Plus size={16} /></div>
                   <input 
                     type="file" 
@@ -222,23 +228,41 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3, ease: "easeOut" }}
                       >
-                        <div className="form-group">
+                        <div className="form-group password-group">
                           <label>Current Password</label>
-                          <input 
-                            type="password" 
-                            value={currentPassword}
-                            onChange={e => setCurrentPassword(e.target.value)}
-                            placeholder="••••••••••••••••"
-                          />
+                          <div className="password-input-wrapper">
+                            <input 
+                              type={showCurrentPassword ? "text" : "password"}
+                              value={currentPassword}
+                              onChange={e => setCurrentPassword(e.target.value)}
+                              placeholder="••••••••••••••••"
+                            />
+                            <button 
+                              type="button" 
+                              className="password-toggle-btn" 
+                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            >
+                              {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
                         </div>
-                        <div className="form-group">
+                        <div className="form-group password-group">
                           <label>New Password</label>
-                          <input 
-                            type="password" 
-                            value={newPassword}
-                            onChange={e => setNewPassword(e.target.value)}
-                            placeholder="••••••••••••••••"
-                          />
+                          <div className="password-input-wrapper">
+                            <input 
+                              type={showNewPassword ? "text" : "password"}
+                              value={newPassword}
+                              onChange={e => setNewPassword(e.target.value)}
+                              placeholder="••••••••••••••••"
+                            />
+                            <button 
+                              type="button" 
+                              className="password-toggle-btn" 
+                              onClick={() => setShowNewPassword(!showNewPassword)}
+                            >
+                              {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
                           {newPassword && (
                             <div className="strength-meter-container">
                               <div className="strength-bar-bg">
@@ -256,14 +280,23 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
                             </div>
                           )}
                         </div>
-                        <div className="form-group">
+                        <div className="form-group password-group">
                           <label>Confirm New Password</label>
-                          <input 
-                            type="password" 
-                            value={confirmPassword}
-                            onChange={e => setConfirmPassword(e.target.value)}
-                            placeholder="••••••••••••••••"
-                          />
+                          <div className="password-input-wrapper">
+                            <input 
+                              type={showConfirmPassword ? "text" : "password"}
+                              value={confirmPassword}
+                              onChange={e => setConfirmPassword(e.target.value)}
+                              placeholder="••••••••••••••••"
+                            />
+                            <button 
+                              type="button" 
+                              className="password-toggle-btn" 
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
                           {confirmPassword && newPassword !== confirmPassword && (
                             <span className="error-text">Passwords do not match</span>
                           )}

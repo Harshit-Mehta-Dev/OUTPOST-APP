@@ -75,13 +75,17 @@
   gap: 24px;
 }
 
-.interactive-avatar {
+.interactive-avatar-container {
   position: relative;
   cursor: pointer;
+  display: inline-block;
+}
+
+.interactive-avatar {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.interactive-avatar:hover {
+.interactive-avatar-container:hover .interactive-avatar {
   transform: scale(1.05);
   box-shadow: 0 0 25px rgba(var(--primary-rgb, 88, 101, 242), 0.5);
 }
@@ -131,7 +135,7 @@
   border-radius: 50%;
 }
 
-.interactive-avatar:hover .avatar-hover-overlay {
+.interactive-avatar-container:hover .avatar-hover-overlay {
   opacity: 1;
 }
 
@@ -150,9 +154,10 @@
   border: 3px solid var(--bg-secondary);
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
   transition: transform 0.3s ease;
+  z-index: 5;
 }
 
-.interactive-avatar:hover .avatar-plus-badge {
+.interactive-avatar-container:hover .avatar-plus-badge {
   transform: scale(1.15);
 }
 
@@ -280,6 +285,34 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 40px; /* Space for the icon */
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.password-toggle-btn:hover {
+  color: var(--text-primary);
 }
 
 .strength-meter-container {

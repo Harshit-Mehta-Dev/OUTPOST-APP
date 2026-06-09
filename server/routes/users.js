@@ -4,7 +4,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
 // POST /api/users/sync
-// Find user by email. If they don't exist, create them.
+// Find user by email. If they don't exist, create them. (For Google Auth)
 router.post('/sync', async (req, res) => {
   try {
     const { email, username } = req.body;
@@ -16,12 +16,70 @@ router.post('/sync', async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      // Create new user
       user = new User({ email, username });
       await user.save();
     }
 
     res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/users/register
+// Register with email, username, and password
+router.post('/register', async (req, res) => {
+  try {
+    const { email, username, password } = req.body;
+    if (!email || !username || !password) {
+      return res.status(400).json({ error: 'Please provide all fields' });
+    }
+
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    user = new User({ email, username, password: hashedPassword });
+    await user.save();
+    
+    const userToReturn = user.toObject();
+    delete userToReturn.password;
+    res.json(userToReturn);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/users/login
+// Login with email and password
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Please provide email and password' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'Invalid credentials' });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({ error: 'This account uses Google Sign-In. Please sign in with Google or reset your password.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    const userToReturn = user.toObject();
+    delete userToReturn.password;
+    res.json(userToReturn);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

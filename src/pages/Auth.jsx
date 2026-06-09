@@ -95,23 +95,31 @@ const Auth = () => {
     const userEmail = email.toLowerCase().trim();
     const userUsername = isLogin ? email.split('@')[0] : username;
 
-    // Sync with backend
+    const endpoint = isLogin ? '/api/users/login' : '/api/users/register';
+    const payload = isLogin ? { email: userEmail, password } : { email: userEmail, username: userUsername, password };
+
+    // Communicate with backend
     setIsLoading(true);
-    fetch('https://outpost-app.onrender.com/api/users/sync', {
+    fetch(`https://outpost-app.onrender.com${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: userEmail, username: userUsername })
+      body: JSON.stringify(payload)
     })
-    .then(res => res.json())
+    .then(async res => {
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Authentication failed');
+      }
+      return res.json();
+    })
     .then(syncedUser => {
       localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
       setTimeout(() => { navigate('/app'); }, 4000);
     })
     .catch(err => {
-      console.error("Failed to sync with backend", err);
-      // Fallback
-      localStorage.setItem('outpost_user', JSON.stringify({ email: userEmail, username: userUsername }));
-      setTimeout(() => { navigate('/app'); }, 4000);
+      console.error("Authentication error:", err);
+      setError(err.message || "Failed to authenticate.");
+      setIsLoading(false);
     });
   };
 

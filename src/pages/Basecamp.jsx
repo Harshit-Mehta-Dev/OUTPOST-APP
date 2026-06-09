@@ -744,9 +744,16 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
           user={currentUser}
-          onSave={(updatedUser) => {
-            setCurrentUser(updatedUser);
-            localStorage.setItem('outpost_user', JSON.stringify(updatedUser));
+          onSave={(updatedUser, didChangePassword) => {
+            if (didChangePassword) {
+              // Log the user out immediately
+              localStorage.removeItem('outpost_user');
+              navigate('/');
+            } else {
+              setCurrentUser(updatedUser);
+              localStorage.setItem('outpost_user', JSON.stringify(updatedUser));
+              setIsProfileModalOpen(false);
+            }
           }}
         />
         {isCreateChannelModalOpen && (
