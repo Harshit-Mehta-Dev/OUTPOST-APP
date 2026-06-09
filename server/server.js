@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
@@ -16,9 +18,61 @@ const io = new Server(server, {
   }
 });
 
-// Middleware
+// Security Middleware
+// 1. Helmet to secure HTTP headers
+app.use(helmet());
+
+// 2. Trust Proxy (Required if hosting on Render, Heroku, or behind NGINX/K8s)
+app.set('trust proxy', 1);
+
+// 3. CORS and Body Parsing
 app.use(cors());
 app.use(express.json());
+
+// 4. Rate Limiters
+
+// Layer 1: Global DDoS Protection (100 requests per 15 minutes)
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100, 
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Layer 2: Anti-Brute Force for Auth (5 requests per minute)
+const authLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, 
+  max: 5, 
+  message: 'Too many login attempts from this IP, please try again after a minute'
+});
+
+// Layer 3: Database Strain Prevention for Searching/Fetching (30 requests per minute)
+const dataLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, 
+  max: 30, 
+  message: 'Too many data requests from this IP, please try again after a minute'
+});
+
+// Layer 4: Anti-Spam for Forms/Joining (10 requests per minute)
+const actionLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, 
+  max: 10, 
+  message: 'Too many actions from this IP, please try again after a minute'
+});
+
+// Apply Global Limiter to all API routes
+app.use('/api/', globalLimiter);
+
+// Apply specific limiters
+app.use('/api/users/login', authLimiter);
+app.use('/api/users/register', authLimiter);
+
+app.use('/api/campsites/join', actionLimiter);
+app.use('/api/campsites/create', actionLimiter);
+
+app.use('/api/campsites', dataLimiter);
+app.use('/api/messages', dataLimiter);
 
 // Routes
 const campsiteRoutes = require('./routes/campsites');
