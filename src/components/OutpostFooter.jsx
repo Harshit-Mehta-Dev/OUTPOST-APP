@@ -7,6 +7,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import './OutpostFooter.css';
+import logoUrl from '../assets/logo.png';
 
 const LinkedinIcon = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -81,7 +82,7 @@ export default function OutpostFooter() {
           <div className="footer-brand-block">
             <a href="/" className="footer-brand-logo group">
               <div className="brand-flame-container">
-                <Flame className="brand-flame-icon animate-pulse" />
+                <img src={logoUrl} alt="Outpost Logo" className="brand-flame-icon animate-pulse" style={{ objectFit: 'contain' }} />
               </div>
               <span className="brand-name">
                 {data.company.name}
