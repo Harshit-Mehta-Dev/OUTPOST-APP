@@ -24,6 +24,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  max-height: 90vh;
 }
 
 .profile-close-btn {
@@ -64,6 +65,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  overflow-y: auto;
 }
 
 /* Avatar Station */

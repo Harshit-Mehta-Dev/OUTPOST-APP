@@ -37,9 +37,11 @@ router.put('/profile', async (req, res) => {
       return res.status(400).json({ error: 'Email is required to update profile' });
     }
 
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      // User doesn't exist in DB yet (legacy login), create them
+      user = new User({ email, username });
+      await user.save();
     }
 
     const updates = { username, profilePictureUrl };
