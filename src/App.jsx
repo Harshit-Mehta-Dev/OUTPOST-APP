@@ -40,7 +40,11 @@ function App() {
         "slate-khaki": { primary: "115, 115, 95", isGradient: true, start: "#475569", end: "#8a8a73" },
         "rose-gold": { primary: "225, 29, 72", isGradient: true, start: "#e11d48", end: "#fb923c" },
         "cyber-pulse": { primary: "234, 88, 12", isGradient: true, start: "#ea580c", end: "#701a75" },
-        "deep-blue-blend": { primary: "29, 78, 216", isGradient: true, start: "#0369a1", end: "#1d4ed8" }
+        "deep-blue-blend": { primary: "29, 78, 216", isGradient: true, start: "#0369a1", end: "#1d4ed8" },
+        "light-warm-red": { primary: "153, 0, 17", isGradient: true, start: "#FCF6F5", end: "#990011" },
+        "golden-bright-red": { primary: "199, 45, 27", isGradient: true, start: "#FDD20E", end: "#C72D1B" },
+        "muted-royal-blue": { primary: "0, 83, 156", isGradient: true, start: "#FFD662", end: "#00539C" },
+        "khaki-slate-gray": { primary: "10, 74, 60", isGradient: true, start: "#F2B759", end: "#0A4A3C" }
       };
 
       const theme = themeColors[activeThemeId];

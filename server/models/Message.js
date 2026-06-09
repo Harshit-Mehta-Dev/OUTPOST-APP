@@ -8,7 +8,11 @@ const messageSchema = new mongoose.Schema({
     level: { type: Number, default: 1 }
   },
   time: { type: String, required: true },
-  text: { type: String, required: true },
+  type: { type: String, default: "text" },
+  text: { type: String },
+  mediaType: { type: String },
+  body: { type: String },
+  pollData: { type: mongoose.Schema.Types.Mixed },
   createdAt: { type: Date, default: Date.now }
 });
 

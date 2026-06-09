@@ -128,7 +128,11 @@ io.on('connection', (socket) => {
         channelKey: data.channelKey,
         user: data.user,
         time: data.time,
-        text: data.text
+        type: data.type,
+        text: data.text,
+        mediaType: data.mediaType,
+        body: data.body,
+        pollData: data.pollData
       });
       await newMessage.save();
 
@@ -137,7 +141,11 @@ io.on('connection', (socket) => {
         id: newMessage._id,
         user: newMessage.user,
         time: newMessage.time,
+        type: newMessage.type,
         text: newMessage.text,
+        mediaType: newMessage.mediaType,
+        body: newMessage.body,
+        pollData: newMessage.pollData,
         channelKey: newMessage.channelKey
       });
     } catch (err) {
@@ -148,6 +156,28 @@ io.on('connection', (socket) => {
   // Catch and Broadcast "Scout is typing"
   socket.on("scout-typing-start", ({ channelId, scoutName }) => {
     socket.broadcast.to(channelId).emit("broadcast-typing-start", { scoutName });
+  });
+
+  socket.on("submit-scout-vote", async ({ messageId, channelKey, optionIndex, scoutId }) => {
+    try {
+      const message = await Message.findById(messageId);
+      if (message && message.type === 'poll') {
+        const newPollData = { ...message.pollData };
+        if (!newPollData.votesArray.includes(scoutId)) {
+          newPollData.votesArray.push(scoutId);
+          if(!newPollData.votesMap[optionIndex]) newPollData.votesMap[optionIndex] = [];
+          newPollData.votesMap[optionIndex].push(scoutId);
+          
+          message.pollData = newPollData;
+          message.markModified('pollData');
+          await message.save();
+          
+          io.to(channelKey).emit("broadcast-updated-vote", { messageId, optionIndex, scoutId, channelKey });
+        }
+      }
+    } catch(err) {
+      console.error("Error voting:", err);
+    }
   });
 
   // Catch and Broadcast "Scout stopped typing"

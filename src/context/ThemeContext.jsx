@@ -17,6 +17,10 @@ export const AVAILABLE_THEMES = [
   { id: "sunset-purple", name: "Sunset Purple", isGradient: true, primaryRGB: "168, 85, 247", gradStart: "#9333ea", gradEnd: "#db2777", previewStyle: { background: "linear-gradient(to right, #9333ea, #db2777)" } },
   { id: "toxic-green", name: "Toxic Green", isGradient: true, primaryRGB: "22, 163, 74", gradStart: "#15803d", gradEnd: "#84cc16", previewStyle: { background: "linear-gradient(to right, #15803d, #84cc16)" } },
   { id: "royal-gold", name: "Royal Gold", isGradient: true, primaryRGB: "202, 138, 4", gradStart: "#b45309", gradEnd: "#eab308", previewStyle: { background: "linear-gradient(to right, #b45309, #eab308)" } },
+  { id: "light-warm-red", name: "Warm Red Blend", isGradient: true, primaryRGB: "153, 0, 17", gradStart: "#FCF6F5", gradEnd: "#990011", previewStyle: { background: "linear-gradient(to right, #FCF6F5, #990011)" } },
+  { id: "golden-bright-red", name: "Golden Red Blend", isGradient: true, primaryRGB: "199, 45, 27", gradStart: "#FDD20E", gradEnd: "#C72D1B", previewStyle: { background: "linear-gradient(to right, #FDD20E, #C72D1B)" } },
+  { id: "muted-royal-blue", name: "Royal Beige Blend", isGradient: true, primaryRGB: "0, 83, 156", gradStart: "#FFD662", gradEnd: "#00539C", previewStyle: { background: "linear-gradient(to right, #FFD662, #00539C)" } },
+  { id: "khaki-slate-gray", name: "Khaki Slate Blend", isGradient: true, primaryRGB: "10, 74, 60", gradStart: "#F2B759", gradEnd: "#0A4A3C", previewStyle: { background: "linear-gradient(to right, #F2B759, #0A4A3C)" } },
 ];
 
 const ThemeContext = createContext();

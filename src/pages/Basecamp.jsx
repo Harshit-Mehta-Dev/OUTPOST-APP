@@ -33,6 +33,7 @@ import Discover from '../components/Discover';
 import ThemeController from '../components/ThemeController';
 import AnimatedMesh from '../components/AnimatedMesh';
 import MemberDrawer from '../components/MemberDrawer';
+import AttachmentPopover from '../components/chat/AttachmentPopover';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -57,6 +58,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [channelToDelete, setChannelToDelete] = useState(null);
+  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   // User identity
@@ -201,8 +203,28 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       setTimeout(() => setAdminNotification(null), 5000);
     };
 
+    const handleUpdatedVote = ({ messageId, optionIndex, scoutId, channelKey }) => {
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[channelKey] || [];
+        const updated = currentMessages.map(msg => {
+          if ((msg._id || msg.id) === messageId && msg.type === 'poll') {
+            const newPollData = { ...msg.pollData };
+            if (!newPollData.votesArray.includes(scoutId)) {
+              newPollData.votesArray.push(scoutId);
+              if(!newPollData.votesMap[optionIndex]) newPollData.votesMap[optionIndex] = [];
+              newPollData.votesMap[optionIndex].push(scoutId);
+            }
+            return { ...msg, pollData: newPollData };
+          }
+          return msg;
+        });
+        return { ...prev, [channelKey]: updated };
+      });
+    };
+
     socket.on("scout-joined-list", handleScoutJoinedList);
     socket.on("campsite-admin-notification", handleAdminNotification);
+    socket.on("broadcast-updated-vote", handleUpdatedVote);
 
     return () => {
       socket.off('receive_message', handleReceiveMessage);
@@ -210,6 +232,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("broadcast-typing-stop", handleTypingStop);
       socket.off("scout-joined-list", handleScoutJoinedList);
       socket.off("campsite-admin-notification", handleAdminNotification);
+      socket.off("broadcast-updated-vote", handleUpdatedVote);
     };
   }, []);
 
@@ -256,6 +279,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           level: currentUser?.level || 1
         },
         time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'text',
         text: inputText.trim()
       };
       
@@ -272,6 +296,51 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
       setInputText('');
     }
+  };
+
+  const handleSendMediaMessage = (base64Data, fileType) => {
+    const messageData = {
+      channelKey: currentChannelKey,
+      user: {
+        username: currentUser?.username || 'Scout',
+        profilePictureUrl: currentUser?.profilePictureUrl || '',
+        level: currentUser?.level || 1
+      },
+      time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      type: "media",
+      mediaType: fileType,
+      body: base64Data
+    };
+    socket.emit('send_message', messageData);
+  };
+
+  const handleSendPollMessage = (question, options) => {
+    const messageData = {
+      channelKey: currentChannelKey,
+      user: {
+        username: currentUser?.username || 'Scout',
+        profilePictureUrl: currentUser?.profilePictureUrl || '',
+        level: currentUser?.level || 1
+      },
+      time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      type: "poll",
+      pollData: {
+        question,
+        options,
+        votesArray: [],
+        votesMap: options.reduce((acc, _, i) => ({ ...acc, [i]: [] }), {})
+      }
+    };
+    socket.emit('send_message', messageData);
+  };
+
+  const handleVoteSubmission = (messageId, optionIndex) => {
+    socket.emit("submit-scout-vote", { 
+      messageId, 
+      channelKey: currentChannelKey, 
+      optionIndex, 
+      scoutId: currentUser?.username || 'Scout' 
+    });
   };
 
   const handleInputChange = (e) => {
@@ -808,7 +877,52 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
                           <span className="message-time">{msg.time}</span>
                         </div>
-                        <div className="message-text">{msg.text}</div>
+                        <div className="message-text">
+                          {(!msg.type || msg.type === "text") && msg.text}
+                          
+                          {msg.type === "media" && msg.mediaType === "image" && (
+                            <motion.img
+                              whileHover={{ scale: 1.01 }}
+                              src={msg.body}
+                              alt="Shared asset"
+                              className="mt-2 rounded-xl border border-zinc-900 shadow-xl"
+                              style={{ maxWidth: '100%', maxHeight: '250px', cursor: 'zoom-in' }}
+                            />
+                          )}
+
+                          {msg.type === "media" && msg.mediaType === "video" && (
+                            <video src={msg.body} controls className="mt-2 rounded-xl border border-zinc-900 shadow-xl" style={{ maxWidth: '100%', maxHeight: '300px' }} />
+                          )}
+
+                          {msg.type === "poll" && (
+                            <div className="mt-3 bg-zinc-900/40 border border-zinc-900 p-4 rounded-xl backdrop-blur-sm font-sans" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', padding: '16px', borderRadius: '12px', marginTop: '12px', width: '100%', maxWidth: '350px' }}>
+                              <p className="font-bold font-mono tracking-wide text-xs uppercase mb-3" style={{ color: 'var(--brand-primary)', marginBottom: '12px', fontWeight: 'bold' }}>📊 {msg.pollData.question}</p>
+                              <div className="space-y-2.5" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {msg.pollData.options.map((option, idx) => {
+                                  const totalVotes = msg.pollData.votesArray?.length || 0;
+                                  const optionVotes = msg.pollData.votesMap?.[idx]?.length || 0;
+                                  const percentage = totalVotes > 0 ? Math.round((optionVotes / totalVotes) * 100) : 0;
+                                  
+                                  return (
+                                    <button
+                                      key={idx}
+                                      onClick={() => handleVoteSubmission(msg._id || msg.id, idx)}
+                                      style={{ position: 'relative', overflow: 'hidden', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', color: '#fff', cursor: 'pointer', outline: 'none' }}
+                                    >
+                                      <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${percentage}%` }}
+                                        style={{ position: 'absolute', top: 0, left: 0, bottom: 0, background: 'var(--brand-primary)', opacity: 0.2, pointerEvents: 'none' }}
+                                      />
+                                      <span style={{ position: 'relative', zIndex: 10, fontSize: '0.85rem' }}>{option}</span>
+                                      <span style={{ position: 'relative', zIndex: 10, fontSize: '0.75rem', opacity: 0.7 }}>{percentage}% ({optionVotes})</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                 </div>
               </div>
             ))
@@ -841,8 +955,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </AnimatePresence>
 
         <div className="chat-input-wrapper">
-          <div className="chat-input-container">
-            <button className="chat-attach-btn">
+          <div className="chat-input-container" style={{ position: 'relative', overflow: 'visible' }}>
+            <AttachmentPopover 
+              isOpen={isAttachmentOpen}
+              onClose={() => setIsAttachmentOpen(false)}
+              onSendMedia={handleSendMediaMessage}
+              onSendPoll={handleSendPollMessage}
+            />
+            <button 
+              className="chat-attach-btn" 
+              onClick={() => setIsAttachmentOpen(!isAttachmentOpen)}
+              style={isAttachmentOpen ? { background: 'var(--brand-primary)', color: '#fff', transform: 'rotate(45deg)', transition: 'all 0.2s' } : { transition: 'all 0.2s' }}
+            >
               <Plus size={20} />
             </button>
             <input 
