@@ -160,30 +160,32 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
                     </>
                   )}
 
-                  <div style={{ marginTop: isAdmin ? '20px' : '0', paddingTop: isAdmin ? '15px' : '0', borderTop: isAdmin ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', fontWeight: '500' }}>{isAdmin ? 'Or, send a server invite link to a friend' : 'Send a server invite link to a friend'}</p>
-                    <div style={{ display: 'flex', background: 'rgba(0, 0, 0, 0.4)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.1)', overflow: 'hidden' }}>
-                      <input 
-                        type="text" 
-                        readOnly 
-                        value={`${window.location.origin}/invite/${campsite.id || '1'}`} 
-                        style={{ border: 'none', background: 'transparent', flex: 1, padding: '10px 12px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }}
-                      />
-                      <button 
-                        style={{ background: 'var(--primary-color)', color: 'white', border: 'none', padding: '0 20px', fontWeight: 'bold', cursor: 'pointer', transition: 'opacity 0.2s' }}
-                        onMouseOver={(e) => e.target.style.opacity = '0.9'}
-                        onMouseOut={(e) => e.target.style.opacity = '1'}
-                        onClick={(e) => {
-                          navigator.clipboard.writeText(`${window.location.origin}/invite/${campsite.id || '1'}`);
-                          const originalText = e.target.innerText;
-                          e.target.innerText = 'Copied!';
-                          setTimeout(() => e.target.innerText = originalText, 2000);
-                        }}
-                      >
-                        Copy
-                      </button>
+                  {!campsite.isPublic && (
+                    <div style={{ marginTop: isAdmin ? '20px' : '0', paddingTop: isAdmin ? '15px' : '0', borderTop: isAdmin ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', fontWeight: '500' }}>{isAdmin ? 'Or, send a server invite link to a friend' : 'Send a server invite link to a friend'}</p>
+                      <div style={{ display: 'flex', background: 'rgba(0, 0, 0, 0.4)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.1)', overflow: 'hidden' }}>
+                        <input 
+                          type="text" 
+                          readOnly 
+                          value={`${window.location.origin}/invite/${campsite.id || '1'}`} 
+                          style={{ border: 'none', background: 'transparent', flex: 1, padding: '10px 12px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }}
+                        />
+                        <button 
+                          style={{ background: 'var(--primary-color)', color: 'white', border: 'none', padding: '0 20px', fontWeight: 'bold', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                          onMouseOver={(e) => e.target.style.opacity = '0.9'}
+                          onMouseOut={(e) => e.target.style.opacity = '1'}
+                          onClick={(e) => {
+                            navigator.clipboard.writeText(`${window.location.origin}/invite/${campsite.id || '1'}`);
+                            const originalText = e.target.innerText;
+                            e.target.innerText = 'Copied!';
+                            setTimeout(() => e.target.innerText = originalText, 2000);
+                          }}
+                        >
+                          Copy
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 
                 {isAdmin && (

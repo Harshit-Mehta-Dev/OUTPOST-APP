@@ -242,54 +242,73 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       ];
     }
 
-    // Save to global public campsites if public
-    if (data.isPublic) {
-      let category = "Casual";
-      let icon = "🏕️";
-      if (data.template === 'gaming') { category = "Gaming"; icon = "🎮"; }
-      if (data.template === 'dev') { category = "Tech & Dev"; icon = "💻"; }
+    // Save to global campsites API
+    let category = "Casual";
+    let icon = "🏕️";
+    if (data.template === 'gaming') { category = "Gaming"; icon = "🎮"; }
+    if (data.template === 'dev') { category = "Tech & Dev"; icon = "💻"; }
 
-      const publicCampData = {
-        id: newCampId,
-        name: data.name,
-        description: `A brand new ${category} Outpost created by ${currentUser?.username || 'a Scout'}.`,
-        category: category,
-        icon: icon,
-        totalScouts: 0,
-        activeScouts: 0,
-        color: data.template === 'gaming' ? '#ff3b30' : data.template === 'dev' ? '#4facfe' : '#ffcc00',
-        adminEmail: currentUser?.email,
-        isPublic: true,
-        template: data.template,
-        imageUrl: data.imageUrl,
-        members: [], // User is NOT automatically joined
-        expeditions: newExpeditions
-      };
+    const newCampData = {
+      id: newCampId,
+      name: data.name,
+      description: `A brand new ${category} Outpost created by ${currentUser?.username || 'a Scout'}.`,
+      category: category,
+      icon: icon,
+      totalScouts: 1,
+      activeScouts: 1,
+      color: data.template === 'gaming' ? '#ff3b30' : data.template === 'dev' ? '#4facfe' : '#ffcc00',
+      adminEmail: currentUser?.email,
+      isPublic: data.isPublic,
+      template: data.template,
+      imageUrl: data.imageUrl,
+      members: [currentUser?.username || 'Scout'], // Creator is automatically a member
+      expeditions: newExpeditions
+    };
 
-      fetch('https://outpost-app.onrender.com/api/campsites', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(publicCampData)
-      })
-      .then(res => res.json())
-      .then(savedData => {
-        console.log("Campsite successfully built in Discover panel:", savedData);
-        setDiscoverRefreshTrigger(prev => prev + 1); // Trigger Discover refetch
-        
-        // Show sweet notification AFTER successful creation
-        setJoinNotification(`🏕️ You've successfully built ${data.name}! Head over to Discover to venture inside.`);
-        setTimeout(() => {
-          setJoinNotification(null);
-        }, 4000);
-      })
-      .catch(err => {
-        console.error("Error creating campsite in API:", err);
-        setJoinNotification(`⚠️ Failed to connect to server. Is your backend running?`);
-        setTimeout(() => setJoinNotification(null), 4000);
+    fetch('https://outpost-app.onrender.com/api/campsites', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newCampData)
+    })
+    .then(res => res.json())
+    .then(savedData => {
+      console.log("Campsite successfully built:", savedData);
+      
+      // Instantly add to local sidebar and make it active
+      setCampsites(prev => {
+        const disabledPrev = prev.map(c => ({...c, active: false}));
+        return [...disabledPrev, { ...savedData, active: true }];
       });
-    }
+      
+      // Auto-switch to its first text channel
+      const firstTextChannel = savedData.expeditions?.find(e => e.type === 'text');
+      if (firstTextChannel) setActiveChannel(firstTextChannel.id);
+      
+      if (data.isPublic) {
+        setDiscoverRefreshTrigger(prev => prev + 1); // Trigger Discover refetch
+        setJoinNotification(`🏕️ You've successfully built the Public Basecamp ${data.name}!`);
+      } else {
+        setJoinNotification(`🔒 Hidden Outpost ${data.name} Established! Use Camp Operations to invite scouts.`);
+      }
+      setTimeout(() => {
+        setJoinNotification(null);
+      }, 4000);
+    })
+    .catch(err => {
+      console.error("Error creating campsite in API:", err);
+      // Fallback: still add it locally if backend fails
+      setCampsites(prev => {
+        const disabledPrev = prev.map(c => ({...c, active: false}));
+        return [...disabledPrev, { ...newCampData, active: true }];
+      });
+      const firstTextChannel = newCampData.expeditions?.find(e => e.type === 'text');
+      if (firstTextChannel) setActiveChannel(firstTextChannel.id);
+      
+      setJoinNotification(`⚠️ Established locally, but failed to sync to server.`);
+      setTimeout(() => setJoinNotification(null), 4000);
+    });
     
     setIsCreateModalOpen(false);
   };
