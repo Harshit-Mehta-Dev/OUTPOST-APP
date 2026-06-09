@@ -7,7 +7,18 @@
     <title>OUTPOST</title>
     <script>
       try {
-        const themeId = localStorage.getItem("outpost-theme-id");
+        let themeId = null;
+        const userStr = localStorage.getItem("outpost_user");
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            if (user && user.username) {
+              themeId = localStorage.getItem("outpost-theme-id-" + user.username);
+            }
+          } catch(e) {}
+        }
+        if (!themeId) themeId = localStorage.getItem("outpost-theme-id");
+        
         if (themeId) {
           const themeColors = {
             "orange-solid": { primary: "234, 88, 12", isGradient: false },

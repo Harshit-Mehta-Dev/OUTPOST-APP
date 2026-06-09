@@ -42,6 +42,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [showDiscover, setShowDiscover] = useState(false);
   const [joinNotification, setJoinNotification] = useState(null);
   const [inputText, setInputText] = useState('');
+  const [activeTypers, setActiveTypers] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCampOpsModalOpen, setIsCampOpsModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -127,6 +130,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
     // Join the socket room
     socket.emit('join_channel', currentChannelKey);
+    setActiveTypers([]); // Reset typers when changing channels
   }, [currentChannelKey]);
 
   // Listen for real-time messages
@@ -146,7 +150,26 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     };
 
     socket.on('receive_message', handleReceiveMessage);
-    return () => socket.off('receive_message', handleReceiveMessage);
+    
+    const handleTypingStart = ({ scoutName }) => {
+      setActiveTypers((prev) => {
+        if (prev.includes(scoutName)) return prev;
+        return [...prev, scoutName];
+      });
+    };
+
+    const handleTypingStop = ({ scoutName }) => {
+      setActiveTypers((prev) => prev.filter((name) => name !== scoutName));
+    };
+
+    socket.on("broadcast-typing-start", handleTypingStart);
+    socket.on("broadcast-typing-stop", handleTypingStop);
+
+    return () => {
+      socket.off('receive_message', handleReceiveMessage);
+      socket.off("broadcast-typing-start", handleTypingStart);
+      socket.off("broadcast-typing-stop", handleTypingStop);
+    };
   }, []);
 
   useEffect(() => {
@@ -198,8 +221,40 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       // Emit to server
       socket.emit('send_message', messageData);
       
+      // Stop typing
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      setIsTyping(false);
+      socket.emit("scout-typing-stop", { 
+        channelId: currentChannelKey, 
+        scoutName: currentUser?.username || 'Scout' 
+      });
+
       setInputText('');
     }
+  };
+
+  const handleInputChange = (e) => {
+    setInputText(e.target.value);
+
+    if (!isTyping) {
+      setIsTyping(true);
+      socket.emit("scout-typing-start", { 
+        channelId: currentChannelKey, 
+        scoutName: currentUser?.username || 'Scout' 
+      });
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      socket.emit("scout-typing-stop", { 
+        channelId: currentChannelKey, 
+        scoutName: currentUser?.username || 'Scout' 
+      });
+    }, 1500);
   };
 
   const handleCampsiteClick = (id) => {
@@ -680,22 +735,25 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </div>
 
         <AnimatePresence>
-          {inputText.length > 0 && (
+          {activeTypers.length > 0 && (
             <motion.div 
               className="typing-indicator"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              exit={{ opacity: 0, y: 5 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px', marginBottom: '10px', color: 'var(--brand-primary)', fontStyle: 'italic', fontSize: '0.85rem' }}
             >
-              <Bot size={16} className="typing-icon" />
-              <span><strong>Someone</strong> is typing</span>
-              <motion.span
-                animate={{ opacity: [0, 1, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="typing-dots"
-              >
-                ...
-              </motion.span>
+              <Bot size={16} />
+              <div className="flex gap-1 items-center justify-center" style={{ display: 'flex', gap: '4px', marginRight: '4px' }}>
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+              </div>
+              <span style={{ color: 'var(--text-secondary)' }}>
+                {activeTypers.length === 1 ? `${activeTypers[0]} is typing...` :
+                 activeTypers.length === 2 ? `${activeTypers[0]} and ${activeTypers[1]} are typing...` :
+                 "Several Scouts are typing..."}
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -710,7 +768,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               placeholder={`Message #${activeChannel}`} 
               className="chat-input"
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={handleInputChange}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSendMessage();
               }}

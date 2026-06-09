@@ -122,6 +122,7 @@
   border-radius: 16px;
   background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
   color: white;
+  transition: background 0.6s ease-in-out, border-color 0.6s ease-in-out, color 0.6s ease-in-out;
 }
 
 .campsite-item.active::before {
@@ -209,6 +210,7 @@
   border-left: 2px solid rgb(var(--brand-primary));
   color: rgb(var(--brand-primary));
   font-weight: 600;
+  transition: background 0.6s ease-in-out, border-color 0.6s ease-in-out, color 0.6s ease-in-out;
 }
 
 .delete-channel-btn {
@@ -448,6 +450,7 @@
   font-weight: bold;
   color: white;
   flex-shrink: 0;
+  transition: background 0.6s ease-in-out;
 }
 
 .message-content {
@@ -555,7 +558,7 @@
   align-items: center;
   justify-content: center;
   padding: 8px;
-  transition: transform 0.2s;
+  transition: transform 0.2s, color 0.6s ease-in-out;
 }
 
 .chat-send-btn:hover {
@@ -663,10 +666,32 @@
   height: 24px;
   width: auto;
   filter: drop-shadow(0 0 8px rgba(var(--brand-primary), 0.4));
+  transition: filter 0.6s ease-in-out;
 }
 
 .expedition-header-logo span {
   font-weight: 800;
+  letter-spacing: 2px;
+}
+
+@keyframes typingBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.typing-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: rgb(var(--brand-primary));
+  animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+.typing-dot:nth-child(3) { animation-delay: 0s; }
+
+.expedition-header-logo span {
   font-size: 1.2rem;
   letter-spacing: 1px;
   color: var(--text-primary);

@@ -83,6 +83,16 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Catch and Broadcast "Scout is typing"
+  socket.on("scout-typing-start", ({ channelId, scoutName }) => {
+    socket.broadcast.to(channelId).emit("broadcast-typing-start", { scoutName });
+  });
+
+  // Catch and Broadcast "Scout stopped typing"
+  socket.on("scout-typing-stop", ({ channelId, scoutName }) => {
+    socket.broadcast.to(channelId).emit("broadcast-typing-stop", { scoutName });
+  });
+
   socket.on('disconnect', () => {
     console.log(`🛑 Client disconnected: ${socket.id}`);
   });

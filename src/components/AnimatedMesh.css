@@ -15,6 +15,7 @@
   filter: blur(80px);
   opacity: 0.4;
   mix-blend-mode: screen;
+  transition: background 1s ease-in-out;
 }
 
 .orb-1 {
