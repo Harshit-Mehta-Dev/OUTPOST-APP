@@ -38,18 +38,6 @@ function App() {
           <Route path="/invite/:id" element={<Invite />} />
         </Routes>
       </main>
-      
-      {!hideHeaderFooter && (
-      <footer style={{
-        textAlign: 'center',
-        padding: '40px',
-        color: 'var(--text-secondary)',
-        borderTop: '1px solid var(--border-glass)',
-        marginTop: '60px'
-      }}>
-        <p>&copy; {new Date().getFullYear()} OUTPOST. All rights reserved.</p>
-      </footer>
-      )}
     </>
   );
 }

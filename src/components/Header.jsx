@@ -28,17 +28,18 @@ const Header = ({ isDarkMode, toggleTheme }) => {
     const targetId = path.split('#')[1];
     
     if (location.pathname !== '/') {
-      navigate('/');
+      navigate(path);
+    } else {
+      navigate(path);
+    }
+
+    if (targetId !== 'legal') {
       setTimeout(() => {
         const element = document.getElementById(targetId);
         if (element) {
-          // Adjust scroll position if there is a sticky header
           element.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
-    } else {
-      const element = document.getElementById(targetId);
-      if (element) element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -79,6 +80,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           <a href="/#features" onClick={(e) => handleNavClick(e, '/#features')}>Features</a>
           <a href="/#community" onClick={(e) => handleNavClick(e, '/#community')}>Community</a>
           <a href="/#about" onClick={(e) => handleNavClick(e, '/#about')}>About</a>
+          <a href="/#legal" onClick={(e) => handleNavClick(e, '/#legal')}>Legal</a>
           <div className="nav-actions-mobile">
             <button className="theme-toggle" onClick={toggleTheme}>
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
