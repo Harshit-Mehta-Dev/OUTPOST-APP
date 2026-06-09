@@ -120,7 +120,7 @@
 
 .campsite-item:hover, .campsite-item.active {
   border-radius: 16px;
-  background: var(--accent-primary);
+  background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
   color: white;
 }
 
@@ -205,8 +205,10 @@
 }
 
 .expedition-item.active {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-primary);
+  background: rgba(var(--brand-primary), 0.15);
+  border-left: 2px solid rgb(var(--brand-primary));
+  color: rgb(var(--brand-primary));
+  font-weight: 600;
 }
 
 .delete-channel-btn {
@@ -439,7 +441,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(193, 95, 60, 0.8);
+  background: rgba(var(--brand-primary), 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -547,7 +549,7 @@
 .chat-send-btn {
   background: transparent;
   border: none;
-  color: var(--accent-primary);
+  color: rgb(var(--brand-primary));
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -660,7 +662,7 @@
 .expedition-header-logo img {
   height: 24px;
   width: auto;
-  filter: drop-shadow(0 0 8px rgba(193, 95, 60, 0.4));
+  filter: drop-shadow(0 0 8px rgba(var(--brand-primary), 0.4));
 }
 
 .expedition-header-logo span {

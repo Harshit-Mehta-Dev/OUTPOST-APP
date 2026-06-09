@@ -31,6 +31,7 @@ import UserProfileModal from '../components/UserProfileModal';
 import ScoutControlDeck from '../components/ScoutControlDeck';
 import Discover from '../components/Discover';
 import ThemeController from '../components/ThemeController';
+import AnimatedMesh from '../components/AnimatedMesh';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -396,6 +397,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   return (
     <div className="outpost-app-wrapper">
+      <AnimatedMesh />
       <div 
         className="basecamp-layout" 
         style={{ gridTemplateColumns: showDiscover ? '72px 1fr' : (isSidebarOpen ? '72px 280px 1fr' : '72px 1fr') }}
