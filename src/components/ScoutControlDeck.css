@@ -1,0 +1,234 @@
+.scout-control-deck-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Bottom Interface Deck Icons */
+.scout-deck-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(9, 9, 11, 0.4);
+  border: 1px solid rgba(39, 39, 42, 0.8);
+  border-radius: 12px;
+  padding: 6px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.deck-btn {
+  padding: 8px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deck-btn:hover {
+  background: rgba(39, 39, 42, 0.8);
+  color: var(--text-primary);
+}
+
+.deck-btn:active {
+  transform: scale(0.95);
+}
+
+.deck-btn.muted-state {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.deck-btn.theme-toggle:hover {
+  color: #fbbf24; /* yellow-400 equivalent for sun */
+}
+
+.deck-btn.exit-btn:hover {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Slashed Icon Effect */
+.slashed-icon {
+  position: relative;
+  display: inline-flex;
+}
+
+.slash-line {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 2px;
+  height: 22px;
+  background-color: var(--danger);
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+  box-shadow: -1px 0px 0px rgba(0,0,0,0.5), 1px 0px 0px rgba(0,0,0,0.5); /* contrast edge */
+}
+
+/* Advanced Floating Tactical Pop-up */
+.advanced-tactical-popup {
+  position: absolute;
+  bottom: 56px; /* slightly above the deck */
+  left: 0;
+  width: 260px;
+  background: rgba(24, 24, 27, 0.95);
+  border: 1px solid rgba(39, 39, 42, 1);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  color: #d4d4d8; /* zinc-300 */
+  font-size: 0.75rem; /* xs */
+  box-sizing: border-box;
+}
+
+.tactical-popup-header {
+  font-weight: 700;
+  color: #f4f4f5; /* zinc-100 */
+  margin: 0 0 12px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(39, 39, 42, 1);
+}
+
+.tactical-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.inline-icon {
+  opacity: 0.7;
+}
+
+.tactical-range {
+  width: 100%;
+  height: 4px;
+  background: #27272a;
+  border-radius: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+}
+.tactical-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f97316; /* orange-500 */
+  cursor: pointer;
+}
+.tactical-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f97316;
+  cursor: pointer;
+  border: none;
+}
+.mb-4 { margin-bottom: 16px; }
+
+.hardware-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+}
+
+.selector-label {
+  color: #a1a1aa; /* zinc-400 */
+  margin-right: 8px;
+}
+
+.tactical-select {
+  background: transparent;
+  border: none;
+  color: #d4d4d8;
+  font-size: 0.75rem;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  text-align: right;
+  /* hide default arrow to look cleaner */
+}
+.tactical-select option {
+  background: #18181b;
+}
+
+.tactical-divider {
+  border: none;
+  border-top: 1px solid rgba(39, 39, 42, 1);
+  margin: 12px 0;
+}
+
+.btn-decommission {
+  width: 100%;
+  padding: 8px 0;
+  background: #27272a;
+  color: #a1a1aa;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.btn-decommission:hover {
+  background: rgba(69, 10, 10, 0.3); /* red-950/30 */
+  color: #f87171; /* red-400 */
+  border-color: rgba(127, 29, 29, 0.5); /* red-900/50 */
+}
+
+.logout-confirm-gate {
+  background: rgba(69, 10, 10, 0.2);
+  border: 1px solid rgba(127, 29, 29, 0.5);
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.logout-warning {
+  color: #f87171;
+  margin: 0 0 8px 0;
+}
+
+.logout-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-stay {
+  padding: 4px 12px;
+  background: #27272a;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+}
+.btn-stay:hover { background: #3f3f46; }
+
+.btn-leave {
+  padding: 4px 12px;
+  background: #dc2626; /* red-600 */
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn-leave:hover { background: #b91c1c; }

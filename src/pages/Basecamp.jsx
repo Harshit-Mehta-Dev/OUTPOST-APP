@@ -20,13 +20,17 @@ import {
   Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import logoUrl from '../assets/logo.png';
 import './Basecamp.css';
 import CreateCampsiteModal from '../components/CreateCampsiteModal';
 import CreateChannelModal from '../components/CreateChannelModal';
 import CampOperationsModal from '../components/CampOperationsModal';
 import UserProfileModal from '../components/UserProfileModal';
+import ScoutControlDeck from '../components/ScoutControlDeck';
 import Discover from '../components/Discover';
+
+const socket = io('https://outpost-app.onrender.com');
 
 const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const navigate = useNavigate();
@@ -97,32 +101,49 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     }
   }, [campsites]);
 
-  const loadInitialMessages = () => {
-    const saved = localStorage.getItem('outpost_messages');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved messages', e);
-      }
-    }
-    return {};
-  };
-
-  const [messagesByChannel, setMessagesByChannel] = useState(loadInitialMessages);
+  const [messagesByChannel, setMessagesByChannel] = useState({});
   const [discoverRefreshTrigger, setDiscoverRefreshTrigger] = useState(0);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('outpost_messages', JSON.stringify(messagesByChannel));
-    } catch (e) {
-      console.error('Failed to save messages to localStorage', e);
-    }
-  }, [messagesByChannel]);
   const activeCampsite = campsites && campsites.length > 0 ? (campsites.find(c => c.active) || campsites[0]) : null;
   const expeditions = activeCampsite?.expeditions || [];
   const currentChannelKey = activeCampsite ? `${activeCampsite.id}_${activeChannel}` : 'fallback';
   const messages = messagesByChannel[currentChannelKey] || [];
+
+  // Fetch messages from MongoDB when joining a new channel
+  useEffect(() => {
+    fetch(`https://outpost-app.onrender.com/api/messages/${currentChannelKey}`)
+      .then(res => res.json())
+      .then(data => {
+        setMessagesByChannel(prev => ({
+          ...prev,
+          [currentChannelKey]: data
+        }));
+      })
+      .catch(err => console.error("Failed to fetch messages:", err));
+
+    // Join the socket room
+    socket.emit('join_channel', currentChannelKey);
+  }, [currentChannelKey]);
+
+  // Listen for real-time messages
+  useEffect(() => {
+    const handleReceiveMessage = (newMessage) => {
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[newMessage.channelKey] || [];
+        // Prevent duplicate messages if already in state
+        if (currentMessages.find(m => m._id === newMessage.id || m.id === newMessage.id)) {
+          return prev;
+        }
+        return {
+          ...prev,
+          [newMessage.channelKey]: [...currentMessages, newMessage]
+        };
+      });
+    };
+
+    socket.on('receive_message', handleReceiveMessage);
+    return () => socket.off('receive_message', handleReceiveMessage);
+  }, []);
 
   useEffect(() => {
     if (!currentUser || !currentUser.username || !currentUser.email) return;
@@ -159,16 +180,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleSendMessage = () => {
     if (inputText.trim()) {
-      const newMessage = {
-        id: Date.now(),
-        user: 'YourUser',
+      const messageData = {
+        channelKey: currentChannelKey,
+        user: {
+          username: currentUser?.username || 'Scout',
+          profilePictureUrl: currentUser?.profilePictureUrl || '',
+          level: currentUser?.level || 1
+        },
         time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         text: inputText.trim()
       };
-      setMessagesByChannel(prev => ({
-        ...prev,
-        [currentChannelKey]: [...(prev[currentChannelKey] || []), newMessage]
-      }));
+      
+      // Emit to server
+      socket.emit('send_message', messageData);
+      
       setInputText('');
     }
   };
@@ -359,6 +384,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     ? isGlobalAdmin 
     : (activeCampsite?.adminEmail?.toLowerCase()?.trim() === normalizedUserEmail || isGlobalAdmin);
 
+  const handleLogout = () => {
+    localStorage.removeItem('outpost_user'); 
+    localStorage.removeItem('outpost_campsites');
+    localStorage.removeItem('outpost_messages');
+    navigate('/auth'); 
+  };
+
   return (
     <div className="outpost-app-wrapper">
       <div 
@@ -511,8 +543,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </div>
 
         {/* User Controls */}
-        <div className="user-profile" onClick={() => setIsProfileModalOpen(true)} style={{ cursor: 'pointer' }}>
-          <div className="user-info">
+        <div className="user-profile">
+          <div className="user-info" onClick={() => setIsProfileModalOpen(true)} style={{ cursor: 'pointer' }}>
             <div className="user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
               {currentUser?.profilePictureUrl ? (
                 <img src={currentUser.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -524,21 +556,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <span>Level {currentUser?.level || 1}</span>
             </div>
           </div>
-          <div className="user-actions">
-            <button className="icon-btn"><Mic size={18} /></button>
-            <button className="icon-btn"><Headphones size={18} /></button>
-            <button className="icon-btn" onClick={toggleTheme}>
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            <button className="icon-btn text-danger" onClick={() => { 
-              localStorage.removeItem('outpost_user'); 
-              localStorage.removeItem('outpost_campsites');
-              localStorage.removeItem('outpost_messages');
-              navigate('/auth'); 
-            }} title="Log Out">
-              <LogOut size={18} />
-            </button>
-          </div>
+          <ScoutControlDeck 
+            isDarkMode={isDarkMode} 
+            toggleTheme={toggleTheme} 
+            onLogout={handleLogout} 
+          />
         </div>
       </aside>
         )}
@@ -599,17 +621,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </div>
           </div>
 
-          {messages.map(msg => (
-            <div key={msg.id} className="message-item">
-              <div className="message-avatar">
-                {msg.user.charAt(0)}
-              </div>
-              <div className="message-content">
-                <div className="message-meta">
-                  <span className="message-author">{msg.user}</span>
-                  <span className="message-time">{msg.time}</span>
-                </div>
-                <div className="message-text">{msg.text}</div>
+          {messages.map((msg, index) => (
+                  <div className="message-item" key={msg._id || msg.id || index}>
+                    <div className="message-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
+                      {msg.user?.profilePictureUrl ? (
+                        <img src={msg.user.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        (msg.user?.username || 'S')[0].toUpperCase()
+                      )}
+                    </div>
+                    <div className="message-content">
+                      <div className="message-meta">
+                        <span className="message-author">{msg.user?.username || msg.user || 'Unknown Scout'}</span>
+                        {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
+                        <span className="message-time">{msg.time}</span>
+                      </div>
+                      <div className="message-text">{msg.text}</div>
               </div>
             </div>
           ))}
