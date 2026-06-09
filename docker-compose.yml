@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # The Node.js API and WebSocket Server
+  backend:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "10000:10000"
+    environment:
+      - PORT=10000
+      # Provide a placeholder or map your local .env
+      # - MONGODB_URI=your_mongodb_uri
+      - NODE_ENV=development
+    networks:
+      - outpost-network
+
+  # The Vite React Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - outpost-network
+
+networks:
+  outpost-network:
+    driver: bridge

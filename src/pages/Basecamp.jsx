@@ -46,6 +46,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [inputText, setInputText] = useState('');
   const [activeTypers, setActiveTypers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [isFetchingMessages, setIsFetchingMessages] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeMembersList, setActiveMembersList] = useState([]);
   const typingTimeoutRef = useRef(null);
@@ -122,6 +123,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   // Fetch messages from MongoDB when joining a new channel
   useEffect(() => {
+    setIsFetchingMessages(true);
     fetch(`https://outpost-app.onrender.com/api/messages/${currentChannelKey}`)
       .then(res => res.json())
       .then(data => {
@@ -129,8 +131,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           ...prev,
           [currentChannelKey]: data
         }));
+        // Artificially delay hiding the skeleton for 800ms to improve perceived UX
+        setTimeout(() => setIsFetchingMessages(false), 800);
       })
-      .catch(err => console.error("Failed to fetch messages:", err));
+      .catch(err => {
+        console.error("Failed to fetch messages:", err);
+        setIsFetchingMessages(false);
+      });
 
     // Join the socket room
     socket.emit('join_channel', currentChannelKey);
@@ -769,25 +776,43 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </div>
           </div>
 
-          {messages.map((msg, index) => (
-                  <div className="message-item" key={msg._id || msg.id || index}>
-                    <div className="message-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
-                      {msg.user?.profilePictureUrl ? (
-                        <img src={msg.user.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        (msg.user?.username || 'S')[0].toUpperCase()
-                      )}
+          {isFetchingMessages ? (
+            <div className="chat-messages-skeleton">
+              {[...Array(5)].map((_, i) => (
+                <div className="message-skeleton" key={`skel-${i}`}>
+                  <div className="skeleton-avatar"></div>
+                  <div className="skeleton-content">
+                    <div className="skeleton-meta">
+                      <div className="skeleton-name"></div>
+                      <div className="skeleton-time"></div>
                     </div>
-                    <div className="message-content">
-                      <div className="message-meta">
-                        <span className="message-author">{msg.user?.username || msg.user || 'Unknown Scout'}</span>
-                        {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
-                        <span className="message-time">{msg.time}</span>
-                      </div>
-                      <div className="message-text">{msg.text}</div>
-              </div>
+                    <div className="skeleton-text" style={{ width: `${Math.random() * 40 + 40}%` }}></div>
+                    {i % 2 === 0 && <div className="skeleton-text" style={{ width: `${Math.random() * 30 + 30}%` }}></div>}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            messages.map((msg, index) => (
+                    <div className="message-item" key={msg._id || msg.id || index}>
+                      <div className="message-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
+                        {msg.user?.profilePictureUrl ? (
+                          <img src={msg.user.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          (msg.user?.username || 'S')[0].toUpperCase()
+                        )}
+                      </div>
+                      <div className="message-content">
+                        <div className="message-meta">
+                          <span className="message-author">{msg.user?.username || msg.user || 'Unknown Scout'}</span>
+                          {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
+                          <span className="message-time">{msg.time}</span>
+                        </div>
+                        <div className="message-text">{msg.text}</div>
+                </div>
+              </div>
+            ))
+          )}
           <div ref={messagesEndRef} />
         </div>
 

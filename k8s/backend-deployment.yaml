@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: outpost-backend
+  labels:
+    app: outpost-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: outpost-backend
+  template:
+    metadata:
+      labels:
+        app: outpost-backend
+    spec:
+      containers:
+      - name: backend
+        # Replace with your actual registry image, e.g., yourdockerhub/outpost-backend:latest
+        image: outpost-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 10000
+        env:
+        - name: PORT
+          value: "10000"
+        - name: NODE_ENV
+          value: "production"
+        # Mount your MongoDB URI safely using K8s Secrets
+        # - name: MONGODB_URI
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: outpost-secrets
+        #       key: mongodb-uri
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+          requests:
+            memory: "256Mi"
+            cpu: "500m"

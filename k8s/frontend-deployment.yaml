@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: outpost-frontend
+  labels:
+    app: outpost-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: outpost-frontend
+  template:
+    metadata:
+      labels:
+        app: outpost-frontend
+    spec:
+      containers:
+      - name: frontend
+        # Replace with your actual registry image, e.g., yourdockerhub/outpost-frontend:latest
+        image: outpost-frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "250m"

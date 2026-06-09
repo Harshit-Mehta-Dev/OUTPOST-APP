@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: outpost-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: outpost-backend
+  ports:
+    - protocol: TCP
+      port: 10000
+      targetPort: 10000
+  type: ClusterIP

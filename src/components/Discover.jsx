@@ -21,9 +21,11 @@ const Discover = ({ onJoinCampsite, refreshTrigger }) => {
 
   const [publicCampsites, setPublicCampsites] = useState([]);
   const [connectionError, setConnectionError] = useState(false);
+  const [isDiscoverLoading, setIsDiscoverLoading] = useState(true);
 
   // Load campsites
   useEffect(() => {
+    setIsDiscoverLoading(true);
     setConnectionError(false);
     fetch('https://outpost-app.onrender.com/api/campsites/public')
       .then(res => {
@@ -34,10 +36,13 @@ const Discover = ({ onJoinCampsite, refreshTrigger }) => {
         if (Array.isArray(data)) {
           setPublicCampsites(data.map(c => ({ ...c, id: c._id || c.id })));
         }
+        // Artificially delay hiding the skeleton for 800ms
+        setTimeout(() => setIsDiscoverLoading(false), 800);
       })
       .catch(err => {
         console.error("Error loading public campsites:", err);
         setConnectionError(true);
+        setIsDiscoverLoading(false);
       });
   }, [refreshTrigger]); // re-run when refreshTrigger changes
 
@@ -151,10 +156,35 @@ const Discover = ({ onJoinCampsite, refreshTrigger }) => {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          key={activeFilter + searchQuery} // Re-trigger stagger on filter/search change
+          key={activeFilter + searchQuery + (isDiscoverLoading ? 'loading' : 'loaded')} // Re-trigger stagger on filter/search change
         >
-          {filteredCamps.map((camp) => {
-            const isJoining = joiningCampId === camp.id;
+          {isDiscoverLoading ? (
+            [...Array(6)].map((_, i) => (
+              <motion.div 
+                key={`skel-${i}`}
+                variants={itemVariants}
+                className="signal-card skeleton-card"
+              >
+                <div className="card-header">
+                  <div className="skeleton-icon"></div>
+                  <div className="card-metrics">
+                    <div className="skeleton-metric"></div>
+                    <div className="skeleton-metric"></div>
+                  </div>
+                </div>
+                <div className="card-body" style={{ marginTop: '16px' }}>
+                  <div className="skeleton-title"></div>
+                  <div className="skeleton-desc" style={{ width: '90%' }}></div>
+                  <div className="skeleton-desc" style={{ width: '60%' }}></div>
+                </div>
+                <div className="card-footer" style={{ marginTop: 'auto' }}>
+                  <div className="skeleton-btn"></div>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            filteredCamps.map((camp) => {
+              const isJoining = joiningCampId === camp.id;
             
             return (
               <motion.div 
@@ -207,9 +237,10 @@ const Discover = ({ onJoinCampsite, refreshTrigger }) => {
                 </div>
               </motion.div>
             );
-          })}
+            })
+          )}
           
-          {filteredCamps.length === 0 && !connectionError && (
+          {!isDiscoverLoading && filteredCamps.length === 0 && !connectionError && (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px', color: 'var(--text-secondary)' }}>
               <Search size={48} style={{ margin: '0 auto 20px', opacity: 0.2 }} />
               <h3>No signal found on this frequency.</h3>

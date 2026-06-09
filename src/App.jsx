@@ -6,8 +6,12 @@ import Auth from './pages/Auth';
 import Basecamp from './pages/Basecamp';
 import Invite from './pages/Invite';
 import { BeamsBackground } from './components/BeamsBackground';
+import { useSoundEngine } from './hooks/useSoundEngine';
 
 function App() {
+  // Initialize Global Sound Engine
+  useSoundEngine();
+
   const [isDarkMode, setIsDarkMode] = useState(true);
   const location = useLocation();
   const isAppRoute = location.pathname.startsWith('/app');

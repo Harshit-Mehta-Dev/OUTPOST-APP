@@ -691,6 +691,91 @@
 .typing-dot:nth-child(2) { animation-delay: -0.16s; }
 .typing-dot:nth-child(3) { animation-delay: 0s; }
 
+/* Skeleton Shimmer Engine */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer-effect {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s infinite linear;
+  border-radius: 4px;
+}
+
+.chat-messages-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 10px;
+}
+
+.message-skeleton {
+  display: flex;
+  gap: 16px;
+  padding: 8px 16px;
+}
+
+.skeleton-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s infinite linear;
+}
+
+.skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.skeleton-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.skeleton-name {
+  width: 120px;
+  height: 14px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-time {
+  width: 60px;
+  height: 10px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 12px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s infinite linear;
+  border-radius: 4px;
+}
+
 .expedition-header-logo span {
   font-size: 1.2rem;
   letter-spacing: 1px;
