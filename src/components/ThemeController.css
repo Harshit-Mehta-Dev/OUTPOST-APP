@@ -1,0 +1,193 @@
+.theme-controller-overlay {
+  position: absolute;
+  top: 4rem;
+  right: 1rem;
+  width: 20rem;
+  background-color: rgba(9, 9, 11, 0.95);
+  border: 1px solid #18181b;
+  backdrop-filter: blur(24px);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  color: #d4d4d8;
+  font-family: var(--font-body);
+}
+
+.theme-controller-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #18181b;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.theme-controller-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: 0.05em;
+  color: #f4f4f5;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.theme-reset-btn {
+  color: #52525b;
+  transition: color 0.3s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-reset-btn:hover {
+  color: #a1a1aa;
+}
+
+.theme-controller-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.theme-grid-label {
+  font-size: 10px;
+  font-family: monospace;
+  letter-spacing: 0.1em;
+  color: #71717a;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.theme-swatch-btn {
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid #27272a;
+}
+
+.theme-swatch-btn:hover {
+  border-color: #3f3f46;
+}
+
+.theme-swatch-btn.active {
+  border-color: white;
+  transform: scale(1.05);
+}
+
+.theme-swatch-active-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-status-box {
+  background-color: rgba(24, 24, 27, 0.4);
+  border: 1px solid rgba(24, 24, 27, 0.8);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.theme-status-label {
+  font-size: 11px;
+  color: #71717a;
+  font-family: monospace;
+  margin-bottom: 0.25rem;
+}
+
+.theme-status-value {
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: 0.025em;
+}
+
+.theme-actions {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-family: monospace;
+  padding-top: 0.5rem;
+}
+
+.theme-btn-retreat {
+  flex: 1;
+  padding: 0.5rem 0;
+  background-color: #18181b;
+  color: #a1a1aa;
+  border-radius: 0.75rem;
+  transition: background-color 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.theme-btn-retreat:hover {
+  background-color: #27272a;
+}
+
+.theme-btn-deploy {
+  flex: 1;
+  padding: 0.5rem 0;
+  background-color: #ea580c;
+  color: white;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
+}
+
+.theme-btn-deploy:hover {
+  background-color: #f97316;
+}
+
+/* Basecamp Top Bar adjustments */
+.theme-trigger-btn {
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #09090b;
+  color: #a1a1aa;
+  border-color: #18181b;
+}
+
+.theme-trigger-btn:hover {
+  color: #e4e4e7;
+  border-color: #27272a;
+}
+
+.theme-trigger-btn.active {
+  background-color: #18181b;
+  border-color: #3f3f46;
+  color: #f97316;
+}

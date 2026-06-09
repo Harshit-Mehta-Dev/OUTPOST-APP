@@ -22,6 +22,37 @@ function App() {
     }
   }, [isDarkMode]);
 
+  // Global Theme Bootstrapper
+  useEffect(() => {
+    const activeThemeId = localStorage.getItem("outpost-theme-id");
+    if (activeThemeId) {
+      const root = document.documentElement;
+      
+      const themeColors = {
+        "orange-solid": { primary: "234, 88, 12", isGradient: false },
+        "rose-solid": { primary: "225, 29, 72", isGradient: false },
+        "slate-solid": { primary: "71, 85, 105", isGradient: false },
+        "emerald-solid": { primary: "5, 150, 105", isGradient: false },
+        "slate-khaki": { primary: "115, 115, 95", isGradient: true, start: "#475569", end: "#8a8a73" },
+        "rose-gold": { primary: "225, 29, 72", isGradient: true, start: "#e11d48", end: "#fb923c" },
+        "cyber-pulse": { primary: "234, 88, 12", isGradient: true, start: "#ea580c", end: "#701a75" },
+        "deep-blue-blend": { primary: "29, 78, 216", isGradient: true, start: "#0369a1", end: "#1d4ed8" }
+      };
+
+      const theme = themeColors[activeThemeId];
+      if (theme) {
+        root.style.setProperty("--brand-primary", theme.primary);
+        if (theme.isGradient) {
+          root.style.setProperty("--brand-gradient-start", theme.start);
+          root.style.setProperty("--brand-gradient-end", theme.end);
+        } else {
+          root.style.setProperty("--brand-gradient-start", `rgb(${theme.primary})`);
+          root.style.setProperty("--brand-gradient-end", `rgb(${theme.primary})`);
+        }
+      }
+    }
+  }, []);
+
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };

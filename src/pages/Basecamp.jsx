@@ -17,7 +17,8 @@ import {
   Bot,
   Target,
   Menu,
-  Trash2
+  Trash2,
+  Palette
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -29,6 +30,7 @@ import CampOperationsModal from '../components/CampOperationsModal';
 import UserProfileModal from '../components/UserProfileModal';
 import ScoutControlDeck from '../components/ScoutControlDeck';
 import Discover from '../components/Discover';
+import ThemeController from '../components/ThemeController';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -44,6 +46,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [channelToDelete, setChannelToDelete] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -582,11 +585,23 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <Target size={16} />
             <span>Outpost Status: Active</span>
           </div>
-          <div className="top-bar-right">
+          <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <button
+              onClick={() => setIsThemeOpen(!isThemeOpen)}
+              className={`theme-trigger-btn ${isThemeOpen ? 'active' : ''}`}
+              title="Modulate Theme Matrix"
+            >
+              <Palette size={18} />
+            </button>
+
             <button className="camp-ops-btn" onClick={() => setIsCampOpsModalOpen(true)}>
               <Settings size={18} />
               Camp Operations
             </button>
+
+            <AnimatePresence>
+              {isThemeOpen && <ThemeController onClose={() => setIsThemeOpen(false)} />}
+            </AnimatePresence>
           </div>
         </header>
 
