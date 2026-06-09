@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
 // POST /api/users/sync
 // Find user by email. If they don't exist, create them.
@@ -27,26 +28,50 @@ router.post('/sync', async (req, res) => {
 });
 
 // PUT /api/users/profile
-// Update user profile (username, profilePictureUrl)
+// Update user profile (username, profilePictureUrl, passwords)
 router.put('/profile', async (req, res) => {
   try {
-    const { email, username, profilePictureUrl } = req.body;
+    const { email, username, profilePictureUrl, currentPassword, newPassword } = req.body;
     
     if (!email) {
       return res.status(400).json({ error: 'Email is required to update profile' });
     }
 
-    const user = await User.findOneAndUpdate(
-      { email },
-      { $set: { username, profilePictureUrl } },
-      { new: true } // Return the updated document
-    );
-
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(user);
+    const updates = { username, profilePictureUrl };
+
+    // Handle password change
+    if (currentPassword && newPassword) {
+      if (!user.password) {
+        // If they signed up with Google, they might not have a password yet.
+        // We'll just set it without requiring old password match.
+        const salt = await bcrypt.genSalt(10);
+        updates.password = await bcrypt.hash(newPassword, salt);
+      } else {
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+          return res.status(400).json({ error: 'Invalid current password' });
+        }
+        const salt = await bcrypt.genSalt(10);
+        updates.password = await bcrypt.hash(newPassword, salt);
+      }
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
+      { email },
+      { $set: updates },
+      { new: true }
+    );
+
+    // Don't send password back
+    const userToReturn = updatedUser.toObject();
+    delete userToReturn.password;
+
+    res.json(userToReturn);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

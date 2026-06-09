@@ -1,42 +1,115 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Save, Image as ImageIcon, Link, Award, Zap } from 'lucide-react';
+import { X, Save, Shield, Award, Zap, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import './UserProfileModal.css';
 
 const PRESET_AVATARS = [
   'https://api.dicebear.com/7.x/bottts/svg?seed=Scout&backgroundColor=2c3e50',
   'https://api.dicebear.com/7.x/adventurer/svg?seed=Commander&backgroundColor=8e44ad',
   'https://api.dicebear.com/7.x/avataaars/svg?seed=Explorer&backgroundColor=16a085',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Pioneer&backgroundColor=d35400'
+  'https://api.dicebear.com/7.x/micah/svg?seed=Pioneer&backgroundColor=d35400',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Mech&backgroundColor=c0392b',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Ranger&backgroundColor=27ae60',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Hacker&backgroundColor=2980b9',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Sniper&backgroundColor=f39c12'
 ];
 
 const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
   const [username, setUsername] = useState(user?.username || '');
   const [profilePictureUrl, setProfilePictureUrl] = useState(user?.profilePictureUrl || '');
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Security State
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
+  const fileInputRef = useRef(null);
+
+  // Update internal state if user prop changes
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username || '');
+      setProfilePictureUrl(user.profilePictureUrl || '');
+    }
+  }, [user]);
 
   if (!isOpen) return null;
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // 1. Instantly show it via object URL
+      const tempUrl = URL.createObjectURL(file);
+      setProfilePictureUrl(tempUrl);
+
+      // 2. Convert to Base64 for saving
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePictureUrl(reader.result); // Overwrite temp with Base64
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Password Strength Logic
+  const getPasswordStrength = (pass) => {
+    if (!pass) return { score: 0, label: '', color: 'transparent' };
+    let score = 0;
+    if (pass.length > 7) score += 1;
+    if (pass.length > 10) score += 1;
+    if (/[A-Z]/.test(pass)) score += 1;
+    if (/[0-9]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+
+    if (score <= 2) return { score, label: 'Weak', color: '#e74c3c' };
+    if (score <= 4) return { score, label: 'Medium', color: '#f1c40f' };
+    return { score, label: 'Strong', color: '#2ecc71' };
+  };
+
+  const strength = getPasswordStrength(newPassword);
+
+  const isSaveDisabled = isSaving || 
+    (newPassword && (newPassword !== confirmPassword || newPassword.length < 8));
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      const payload = {
+        email: user.email,
+        username,
+        profilePictureUrl
+      };
+
+      if (newPassword) {
+        payload.currentPassword = currentPassword;
+        payload.newPassword = newPassword;
+      }
+
       const res = await fetch('https://outpost-app.onrender.com/api/users/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: user.email,
-          username,
-          profilePictureUrl
-        })
+        body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error('Failed to update profile');
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update profile');
+      }
+
       const updatedUser = await res.json();
       onSave(updatedUser);
       onClose();
+      
+      // Reset security fields
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setIsSecurityOpen(false);
     } catch (err) {
       console.error(err);
-      alert('Error saving profile');
+      alert(err.message || 'Error saving profile');
     } finally {
       setIsSaving(false);
     }
@@ -64,13 +137,15 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
             </button>
 
             <div className="profile-header">
-              <h2>Scout Profile</h2>
-              <p>Customize your global identity across the Outpost.</p>
+              <h2>CUSTOMIZE YOUR SCOUT IDENTITY</h2>
             </div>
 
             <div className="profile-body">
               <div className="profile-preview-section">
-                <div className="large-avatar-preview">
+                <div 
+                  className="large-avatar-preview interactive-avatar"
+                  onClick={() => fileInputRef.current.click()}
+                >
                   {profilePictureUrl ? (
                     <img src={profilePictureUrl} alt="Avatar" />
                   ) : (
@@ -78,6 +153,15 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
                       {username ? username.charAt(0).toUpperCase() : '?'}
                     </div>
                   )}
+                  <div className="avatar-hover-overlay">Upload custom image</div>
+                  <div className="avatar-plus-badge"><Plus size={16} /></div>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    style={{ display: 'none' }} 
+                    accept=".png, .jpg, .jpeg, .webp"
+                    onChange={handleImageUpload}
+                  />
                 </div>
                 <div className="profile-stats">
                   <div className="stat-badge">
@@ -91,40 +175,102 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
                 </div>
               </div>
 
+              <div className="preset-avatars">
+                <label>Select a Basecamp Theme Preset:</label>
+                <div className="presets-grid">
+                  {PRESET_AVATARS.map((url, index) => (
+                    <button 
+                      key={index} 
+                      className={`preset-btn ${profilePictureUrl === url ? 'selected' : ''}`}
+                      onClick={() => setProfilePictureUrl(url)}
+                    >
+                      <img src={url} alt={`Preset ${index + 1}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="profile-edit-section">
-                <div className="form-group">
+                <div className="form-group identity-input-group">
                   <label>Display Name</label>
                   <input 
                     type="text" 
                     value={username} 
+                    maxLength={32}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Enter your scout name..."
                   />
+                  <span className="char-counter">{username.length}/32</span>
                 </div>
 
-                <div className="form-group">
-                  <label><Link size={14} style={{ marginRight: '6px' }}/> Avatar URL</label>
-                  <input 
-                    type="url" 
-                    value={profilePictureUrl} 
-                    onChange={(e) => setProfilePictureUrl(e.target.value)}
-                    placeholder="Paste any image URL..."
-                  />
-                </div>
-
-                <div className="preset-avatars">
-                  <label><ImageIcon size={14} style={{ marginRight: '6px' }}/> Or choose a theme preset:</label>
-                  <div className="presets-grid">
-                    {PRESET_AVATARS.map((url, index) => (
-                      <button 
-                        key={index} 
-                        className={`preset-btn ${profilePictureUrl === url ? 'selected' : ''}`}
-                        onClick={() => setProfilePictureUrl(url)}
+                <div className="security-accordion">
+                  <button 
+                    className="security-toggle" 
+                    onClick={() => setIsSecurityOpen(!isSecurityOpen)}
+                  >
+                    <Shield size={16} />
+                    🔒 Change Security Credentials
+                    {isSecurityOpen ? <ChevronUp size={16} className="margin-left-auto"/> : <ChevronDown size={16} className="margin-left-auto"/>}
+                  </button>
+                  
+                  <AnimatePresence>
+                    {isSecurityOpen && (
+                      <motion.div 
+                        className="security-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
                       >
-                        <img src={url} alt={`Preset ${index + 1}`} />
-                      </button>
-                    ))}
-                  </div>
+                        <div className="form-group">
+                          <label>Current Password</label>
+                          <input 
+                            type="password" 
+                            value={currentPassword}
+                            onChange={e => setCurrentPassword(e.target.value)}
+                            placeholder="••••••••••••••••"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>New Password</label>
+                          <input 
+                            type="password" 
+                            value={newPassword}
+                            onChange={e => setNewPassword(e.target.value)}
+                            placeholder="••••••••••••••••"
+                          />
+                          {newPassword && (
+                            <div className="strength-meter-container">
+                              <div className="strength-bar-bg">
+                                <div 
+                                  className="strength-bar-fill" 
+                                  style={{ 
+                                    width: `${(strength.score / 5) * 100}%`,
+                                    backgroundColor: strength.color 
+                                  }} 
+                                />
+                              </div>
+                              <span className="strength-label" style={{ color: strength.color }}>
+                                {strength.label}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="form-group">
+                          <label>Confirm New Password</label>
+                          <input 
+                            type="password" 
+                            value={confirmPassword}
+                            onChange={e => setConfirmPassword(e.target.value)}
+                            placeholder="••••••••••••••••"
+                          />
+                          {confirmPassword && newPassword !== confirmPassword && (
+                            <span className="error-text">Passwords do not match</span>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </div>
@@ -132,11 +278,11 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
             <div className="profile-footer">
               <button className="btn-secondary" onClick={onClose}>Cancel</button>
               <button 
-                className="btn-primary flex-center" 
+                className={`btn-primary flex-center ${isSaveDisabled ? 'disabled' : ''}`} 
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={isSaveDisabled}
               >
-                {isSaving ? 'Saving...' : <><Save size={18} style={{ marginRight: '8px' }}/> Save Profile</>}
+                {isSaving ? 'Saving...' : <><Save size={18} style={{ marginRight: '8px' }}/> SAVE PROFILE</>}
               </button>
             </div>
           </motion.div>
