@@ -1,0 +1,38 @@
+const mongoose = require('mongoose');
+
+const expeditionSchema = new mongoose.Schema({
+  id: String,
+  name: String,
+  type: { type: String, enum: ['text', 'voice'], default: 'text' }
+});
+
+const roleSchema = new mongoose.Schema({
+  name: String,
+  color: String
+});
+
+const campsiteSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  template: { type: String, enum: ['gaming', 'dev', 'casual'], default: 'casual' },
+  category: { type: String, default: 'Casual' },
+  icon: { type: String, default: '🏕️' },
+  imageUrl: { type: String },
+  adminEmail: { type: String }, // Used to check if user is the creator
+  isPublic: { type: Boolean, default: true },
+  active: { type: Boolean, default: true },
+  color: { type: String, default: '#ffcc00' },
+  
+  // Customization
+  globalAgeGate: { type: Boolean, default: false },
+  channelOverrides: { type: Map, of: Boolean, default: {} },
+  
+  expeditions: [expeditionSchema],
+  roles: [roleSchema],
+  members: [{ type: String }], // Array of usernames
+  
+  totalScouts: { type: Number, default: 1 },
+  activeScouts: { type: Number, default: 1 }
+}, { timestamps: true });
+
+module.exports = mongoose.model('Campsite', campsiteSchema);
