@@ -25,7 +25,7 @@ const Discover = ({ onJoinCampsite, refreshTrigger }) => {
   // Load campsites
   useEffect(() => {
     setConnectionError(false);
-    fetch('http://localhost:5000/api/campsites/public')
+    fetch('https://outpost-app.onrender.com/api/campsites/public')
       .then(res => {
         if (!res.ok) throw new Error("Network response was not ok");
         return res.json();

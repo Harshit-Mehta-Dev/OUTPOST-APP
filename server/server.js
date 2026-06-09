@@ -13,6 +13,9 @@ app.use(express.json());
 const campsiteRoutes = require('./routes/campsites');
 app.use('/api/campsites', campsiteRoutes);
 
+const userRoutes = require('./routes/users');
+app.use('/api/users', userRoutes);
+
 const { ServerApiVersion } = require('mongodb');
 
 // MongoDB Connection

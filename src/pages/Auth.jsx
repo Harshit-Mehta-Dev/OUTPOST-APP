@@ -34,10 +34,23 @@ const Auth = () => {
         const finalEmail = userInfo?.email || email || `scout_${Math.floor(Math.random() * 10000)}@outpost.local`;
         const finalUsername = userInfo?.name || (finalEmail.includes('@') ? finalEmail.split('@')[0] : finalEmail);
         
-        localStorage.setItem('outpost_user', JSON.stringify({ 
-          email: finalEmail.toLowerCase().trim(), 
-          username: finalUsername 
-        }));
+        // Sync with backend
+        try {
+          const syncRes = await fetch('https://outpost-app.onrender.com/api/users/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: finalEmail.toLowerCase().trim(), username: finalUsername })
+          });
+          const syncedUser = await syncRes.json();
+          localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
+        } catch (syncErr) {
+          console.error("Failed to sync user with backend", syncErr);
+          localStorage.setItem('outpost_user', JSON.stringify({ 
+            email: finalEmail.toLowerCase().trim(), 
+            username: finalUsername 
+          }));
+        }
+
         triggerLoadingAndNavigate();
       } catch (err) {
         console.error('Failed to fetch user info', err);
@@ -79,14 +92,27 @@ const Auth = () => {
       return;
     }
 
-    // Save to localStorage
-    localStorage.setItem('outpost_user', JSON.stringify({ 
-      email: email, 
-      username: isLogin ? email.split('@')[0] : username 
-    }));
+    const userEmail = email.toLowerCase().trim();
+    const userUsername = isLogin ? email.split('@')[0] : username;
 
-    // Success -> Loading Screen -> Navigate
-    triggerLoadingAndNavigate();
+    // Sync with backend
+    setIsLoading(true);
+    fetch('https://outpost-app.onrender.com/api/users/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, username: userUsername })
+    })
+    .then(res => res.json())
+    .then(syncedUser => {
+      localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
+      setTimeout(() => { navigate('/app'); }, 4000);
+    })
+    .catch(err => {
+      console.error("Failed to sync with backend", err);
+      // Fallback
+      localStorage.setItem('outpost_user', JSON.stringify({ email: userEmail, username: userUsername }));
+      setTimeout(() => { navigate('/app'); }, 4000);
+    });
   };
 
   if (isLoading) {

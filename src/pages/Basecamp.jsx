@@ -25,6 +25,7 @@ import './Basecamp.css';
 import CreateCampsiteModal from '../components/CreateCampsiteModal';
 import CreateChannelModal from '../components/CreateChannelModal';
 import CampOperationsModal from '../components/CampOperationsModal';
+import UserProfileModal from '../components/UserProfileModal';
 import Discover from '../components/Discover';
 
 const Basecamp = ({ isDarkMode, toggleTheme }) => {
@@ -36,6 +37,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [inputText, setInputText] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCampOpsModalOpen, setIsCampOpsModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [channelToDelete, setChannelToDelete] = useState(null);
@@ -44,8 +46,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // User identity
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('outpost_user');
-    return saved ? JSON.parse(saved) : null;
+    return saved ? JSON.parse(saved) : { username: 'YourUser' };
   });
+
+  // Keep currentUser fresh from localStorage/backend syncs
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const saved = localStorage.getItem('outpost_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.profilePictureUrl !== currentUser.profilePictureUrl || parsed.username !== currentUser.username) {
+          setCurrentUser(parsed);
+        }
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [currentUser]);
 
   // Wait for component init
   const [campsites, setCampsites] = useState(() => {
@@ -111,7 +127,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   useEffect(() => {
     if (!currentUser || !currentUser.username || !currentUser.email) return;
 
-    fetch(`http://localhost:5000/api/campsites/user/${currentUser.username}/${currentUser.email}`)
+    fetch(`https://outpost-app.onrender.com/api/campsites/user/${currentUser.username}/${currentUser.email}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -221,7 +237,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         expeditions: newExpeditions
       };
 
-      fetch('http://localhost:5000/api/campsites', {
+      fetch('https://outpost-app.onrender.com/api/campsites', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -250,7 +266,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   const handleDeleteCampsite = (campId) => {
-    fetch(`http://localhost:5000/api/campsites/${campId}`, {
+    fetch(`https://outpost-app.onrender.com/api/campsites/${campId}`, {
       method: 'DELETE'
     })
     .then(res => res.json())
@@ -306,7 +322,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   const handleLeaveCampsite = (campId) => {
-    fetch(`http://localhost:5000/api/campsites/${campId}/leave`, {
+    fetch(`https://outpost-app.onrender.com/api/campsites/${campId}/leave`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: currentUser?.username || 'Scout' })
@@ -407,7 +423,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <Discover 
               refreshTrigger={discoverRefreshTrigger} 
               onJoinCampsite={(camp) => {
-              fetch(`http://localhost:5000/api/campsites/${camp.id}/join`, {
+              fetch(`https://outpost-app.onrender.com/api/campsites/${camp.id}/join`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: currentUser?.username || 'Scout' })
@@ -495,14 +511,17 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </div>
 
         {/* User Controls */}
-        <div className="user-controls">
+        <div className="user-profile" onClick={() => setIsProfileModalOpen(true)} style={{ cursor: 'pointer' }}>
           <div className="user-info">
-            <div className="user-avatar">
+            <div className="user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
+              {currentUser?.profilePictureUrl ? (
+                <img src={currentUser.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : null}
               <span className="status-dot online"></span>
             </div>
             <div className="user-name">
-              <strong>YourUser</strong>
-              <span>#0001</span>
+              <strong>{currentUser?.username || 'YourUser'}</strong>
+              <span>Level {currentUser?.level || 1}</span>
             </div>
           </div>
           <div className="user-actions">
@@ -721,9 +740,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             onLeaveCampsite={handleLeaveCampsite}
           />
         )}
-      </AnimatePresence>
-
-      <AnimatePresence>
+        <UserProfileModal 
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          user={currentUser}
+          onSave={(updatedUser) => {
+            setCurrentUser(updatedUser);
+            localStorage.setItem('outpost_user', JSON.stringify(updatedUser));
+          }}
+        />
         {isCreateChannelModalOpen && (
           <CreateChannelModal
             isOpen={isCreateChannelModalOpen}
