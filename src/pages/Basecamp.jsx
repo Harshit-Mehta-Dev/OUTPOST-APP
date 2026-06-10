@@ -20,7 +20,8 @@ import {
   Trash2,
   X,
   Copy,
-  Palette
+  Palette,
+  Brain
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -36,6 +37,7 @@ import ThemeController from '../components/ThemeController';
 import AnimatedMesh from '../components/AnimatedMesh';
 import MemberDrawer from '../components/MemberDrawer';
 import AttachmentPopover from '../components/chat/AttachmentPopover';
+import AIOperations from '../components/settings/AIOperations';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -51,6 +53,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [isFetchingMessages, setIsFetchingMessages] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isAIOpen, setIsAIOpen] = useState(false);
   const [activeMembersList, setActiveMembersList] = useState([]);
   const typingTimeoutRef = useRef(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -297,8 +300,29 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (inputText.trim()) {
+      const isRangerEnabled = localStorage.getItem("outpost_ai_ranger") === "true";
+
+      if (isRangerEnabled) {
+        try {
+          const aiResponse = await fetch("/api/ai/evaluate-comms", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ textContent: inputText.trim() })
+          });
+          
+          const analysis = await aiResponse.json();
+          
+          if (!analysis.safe) {
+            alert("⚠️ Transmission Blocked: Toxicity detected by Basecamp Ranger.");
+            return; 
+          }
+        } catch (error) {
+          // Fail-safe protection: fallback silently
+        }
+      }
+
       const messageData = {
         channelKey: currentChannelKey,
         user: {
@@ -891,7 +915,25 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             <button
-              onClick={() => setIsThemeOpen(!isThemeOpen)}
+              onClick={() => {
+                setIsAIOpen(!isAIOpen);
+                setIsThemeOpen(false);
+              }}
+              className={`theme-trigger-btn ${isAIOpen ? 'active' : ''}`}
+              style={{
+                background: isAIOpen ? 'var(--bg-card)' : 'var(--bg-glass)',
+                color: isAIOpen ? 'var(--brand-primary)' : 'var(--text-secondary)'
+              }}
+              title="Compute Intelligence Matrices"
+            >
+              <Brain size={18} />
+            </button>
+
+            <button
+              onClick={() => {
+                setIsThemeOpen(!isThemeOpen);
+                setIsAIOpen(false);
+              }}
               className={`theme-trigger-btn ${isThemeOpen ? 'active' : ''}`}
               title="Modulate Theme Matrix"
             >
@@ -902,6 +944,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <Settings size={18} />
               Camp Operations
             </button>
+
+            <AnimatePresence>
+              {isAIOpen && <AIOperations onClose={() => setIsAIOpen(false)} />}
+            </AnimatePresence>
 
             <AnimatePresence>
               {isThemeOpen && <ThemeController onClose={() => setIsThemeOpen(false)} />}
