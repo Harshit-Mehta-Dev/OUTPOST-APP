@@ -1,12 +1,53 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image, BarChart3, X, Plus } from "lucide-react";
+import { Image, BarChart3, X, Plus, Mic, Square } from "lucide-react";
 import "./AttachmentPopover.css";
 
 export default function AttachmentPopover({ isOpen, onClose, onSendMedia, onSendPoll }) {
   const [showPollCreator, setShowPollCreator] = useState(false);
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState(["", ""]);
+  
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [audioChunks, setAudioChunks] = useState([]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+      recorder.onstop = () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            onSendMedia(reader.result, 'audio');
+            onClose();
+          }
+        };
+        stream.getTracks().forEach(track => track.stop());
+      };
+      setAudioChunks(chunks);
+      setMediaRecorder(recorder);
+      recorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      alert("Could not access microphone. Please check permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -65,6 +106,15 @@ export default function AttachmentPopover({ isOpen, onClose, onSendMedia, onSend
                 >
                   <BarChart3 size={20} />
                   <span>Forge Poll</span>
+                </button>
+
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className="attachment-popover-btn"
+                  style={isRecording ? { color: '#ff3b30', borderColor: '#ff3b30', background: 'rgba(255, 59, 48, 0.1)' } : {}}
+                >
+                  {isRecording ? <Square size={20} fill="#ff3b30" /> : <Mic size={20} />}
+                  <span>{isRecording ? "Stop Recording" : "Record Voice"}</span>
                 </button>
               </div>
             ) : (

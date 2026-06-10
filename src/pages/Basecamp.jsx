@@ -18,6 +18,8 @@ import {
   Target,
   Menu,
   Trash2,
+  X,
+  Copy,
   Palette
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -62,6 +64,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [messageToDelete, setMessageToDelete] = useState(null);
   const messagesEndRef = useRef(null);
+
+  const handleCopyMessage = (msg) => {
+    let textToCopy = "";
+    if (msg.type === "media") textToCopy = msg.body;
+    else if (msg.type === "poll") textToCopy = msg.pollData?.question || "";
+    else textToCopy = msg.text;
+    
+    navigator.clipboard.writeText(textToCopy).catch(err => console.error("Failed to copy", err));
+  };
 
   // User identity
   const [currentUser, setCurrentUser] = useState(() => {
@@ -639,16 +650,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 >
                   Delete for me
                 </button>
-                <button 
-                  className="btn-primary" 
-                  style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff3b30', borderColor: '#ff3b30' }}
-                  onClick={() => {
-                    socket.emit("delete_message_for_all", { messageId: messageToDelete.id, channelKey: messageToDelete.channelKey });
-                    setMessageToDelete(null);
-                  }}
-                >
-                  Delete for everyone
-                </button>
+                {messageToDelete?.isOwnMessage && (
+                  <button 
+                    className="btn-primary" 
+                    style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff3b30', borderColor: '#ff3b30' }}
+                    onClick={() => {
+                      socket.emit("delete_message_for_all", { messageId: messageToDelete.id, channelKey: messageToDelete.channelKey });
+                      setMessageToDelete(null);
+                    }}
+                  >
+                    Delete for everyone
+                  </button>
+                )}
                 <button 
                   style={{ background: 'transparent', color: 'var(--text-secondary)', border: 'none', marginTop: '8px', cursor: 'pointer' }}
                   onClick={() => setMessageToDelete(null)}
@@ -973,15 +986,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           <span className="message-author">{msg.user?.username || msg.user || 'Unknown Scout'}</span>
                           {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
                           <span className="message-time" style={{ marginLeft: '10px', flexGrow: 1 }}>{msg.time}</span>
-                          {(msg.user?.username === currentUser?.username || msg.user === currentUser?.username) && (msg.type === 'media' || msg.type === 'poll') && (
-                            <button 
-                              onClick={() => setMessageToDelete({ id: msg._id || msg.id, channelKey: currentChannelKey })}
-                              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.5, display: 'flex', alignItems: 'center', padding: '4px' }}
-                              title="Delete"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          )}
+                          <button 
+                            onClick={() => handleCopyMessage(msg)}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.5, display: 'flex', alignItems: 'center', padding: '4px', marginRight: '4px' }}
+                            title="Copy"
+                          >
+                            <Copy size={14} />
+                          </button>
+                          <button 
+                            onClick={() => setMessageToDelete({ 
+                              id: msg._id || msg.id, 
+                              channelKey: currentChannelKey,
+                              isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username 
+                            })}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.5, display: 'flex', alignItems: 'center', padding: '4px' }}
+                            title="Delete"
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         </div>
                         <div className="message-text">
                           {(!msg.type || msg.type === "text") && msg.text}
@@ -999,6 +1021,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
                           {msg.type === "media" && msg.mediaType === "video" && (
                             <video src={msg.body} controls className="mt-2 rounded-xl border border-zinc-900 shadow-xl" style={{ maxWidth: '100%', maxHeight: '300px' }} />
+                          )}
+
+                          {msg.type === "media" && msg.mediaType === "audio" && (
+                            <audio src={msg.body} controls className="mt-2" style={{ width: '100%', maxWidth: '300px', height: '40px' }} />
                           )}
 
                           {msg.type === "poll" && (
