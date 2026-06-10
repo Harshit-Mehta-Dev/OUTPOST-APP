@@ -124,7 +124,7 @@ router.put('/profile', async (req, res) => {
     const updatedUser = await User.findOneAndUpdate(
       { email },
       { $set: updates },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     // Don't send password back
@@ -149,7 +149,7 @@ router.patch('/:email/disable', async (req, res) => {
     const disabledUser = await User.findOneAndUpdate(
       { email },
       { $set: { disabled: true } },
-      { new: true }
+      { returnDocument: 'after' }
     );
     
     if (!disabledUser) {
