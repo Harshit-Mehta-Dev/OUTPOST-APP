@@ -137,4 +137,49 @@ router.put('/profile', async (req, res) => {
   }
 });
 
+// PATCH /api/users/:email/disable
+// Temporarily disable user account
+router.patch('/:email/disable', async (req, res) => {
+  try {
+    const { email } = req.params;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required to disable account' });
+    }
+
+    const disabledUser = await User.findOneAndUpdate(
+      { email },
+      { $set: { disabled: true } },
+      { new: true }
+    );
+    
+    if (!disabledUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ message: 'User disabled successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/users/:email
+// Permanently delete user account
+router.delete('/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required to delete profile' });
+    }
+
+    const deletedUser = await User.findOneAndDelete({ email });
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

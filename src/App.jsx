@@ -12,7 +12,10 @@ function App() {
   // Initialize Global Sound Engine
   useSoundEngine();
 
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('outpost_theme_dark');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const location = useLocation();
   const isAppRoute = location.pathname.startsWith('/app');
   const isInviteRoute = location.pathname.startsWith('/invite');
@@ -24,6 +27,7 @@ function App() {
     } else {
       document.documentElement.removeAttribute('data-theme');
     }
+    localStorage.setItem('outpost_theme_dark', JSON.stringify(isDarkMode));
   }, [isDarkMode]);
 
   // Global Theme Bootstrapper

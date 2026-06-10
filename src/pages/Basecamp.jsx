@@ -628,7 +628,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     localStorage.removeItem('outpost_user'); 
     localStorage.removeItem('outpost_campsites');
     localStorage.removeItem('outpost_messages');
-    navigate('/auth'); 
+    navigate('/'); 
   };
 
   return (
@@ -891,6 +891,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             isDarkMode={isDarkMode} 
             toggleTheme={toggleTheme} 
             onLogout={handleLogout} 
+            currentUser={currentUser}
           />
         </div>
       </aside>
@@ -914,20 +915,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <span>Outpost Status: Active</span>
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <button
-              onClick={() => {
-                setIsAIOpen(!isAIOpen);
-                setIsThemeOpen(false);
-              }}
-              className={`theme-trigger-btn ${isAIOpen ? 'active' : ''}`}
-              style={{
-                background: isAIOpen ? 'var(--bg-card)' : 'var(--bg-glass)',
-                color: isAIOpen ? 'var(--brand-primary)' : 'var(--text-secondary)'
-              }}
-              title="Compute Intelligence Matrices"
-            >
-              <Brain size={18} />
-            </button>
+            {isCampAdmin && (
+              <button
+                onClick={() => {
+                  setIsAIOpen(!isAIOpen);
+                  setIsThemeOpen(false);
+                }}
+                className={`theme-trigger-btn ${isAIOpen ? 'active' : ''}`}
+                style={{
+                  background: isAIOpen ? 'var(--bg-card)' : 'var(--bg-glass)',
+                  color: isAIOpen ? 'var(--brand-primary)' : 'var(--text-secondary)'
+                }}
+                title="Compute Intelligence Matrices"
+              >
+                <Brain size={18} />
+              </button>
+            )}
 
             <button
               onClick={() => {
@@ -946,7 +949,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </button>
 
             <AnimatePresence>
-              {isAIOpen && <AIOperations onClose={() => setIsAIOpen(false)} />}
+              {isCampAdmin && isAIOpen && <AIOperations onClose={() => setIsAIOpen(false)} />}
             </AnimatePresence>
 
             <AnimatePresence>

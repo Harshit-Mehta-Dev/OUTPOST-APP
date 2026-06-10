@@ -3,17 +3,23 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Mic, MicOff, Headphones, LogOut, Sun, Moon, Volume2, Mic2 } from 'lucide-react';
 import './ScoutControlDeck.css';
 
-export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout }) {
+export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, currentUser }) {
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
   const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDisabling, setIsDisabling] = useState(false);
 
   // Audio Device State
+  const [micSensitivity, setMicSensitivity] = useState(() => Number(localStorage.getItem('outpost_mic_sens')) || 50);
+  const [outputVolume, setOutputVolume] = useState(() => Number(localStorage.getItem('outpost_out_vol')) || 50);
   const [audioInputs, setAudioInputs] = useState([]);
   const [audioOutputs, setAudioOutputs] = useState([]);
-  const [selectedInput, setSelectedInput] = useState('');
-  const [selectedOutput, setSelectedOutput] = useState('');
+  const [selectedInput, setSelectedInput] = useState(() => localStorage.getItem('outpost_sel_in') || '');
+  const [selectedOutput, setSelectedOutput] = useState(() => localStorage.getItem('outpost_sel_out') || '');
 
   // Audio link synchronization logic
   const handleDeafenClick = () => {
@@ -50,8 +56,27 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout }) 
       loadAudioDevices();
     } else {
       setShowLogoutConfirm(false); // reset confirm state when closing
+      setShowDeleteConfirm(false);
+      setShowDisableConfirm(false);
     }
   }, [showAdvancedPanel]);
+
+  // Save settings on change
+  useEffect(() => {
+    localStorage.setItem('outpost_mic_sens', micSensitivity);
+  }, [micSensitivity]);
+  
+  useEffect(() => {
+    localStorage.setItem('outpost_out_vol', outputVolume);
+  }, [outputVolume]);
+  
+  useEffect(() => {
+    if (selectedInput) localStorage.setItem('outpost_sel_in', selectedInput);
+  }, [selectedInput]);
+  
+  useEffect(() => {
+    if (selectedOutput) localStorage.setItem('outpost_sel_out', selectedOutput);
+  }, [selectedOutput]);
 
   // Click outside to close
   useEffect(() => {
@@ -82,12 +107,22 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout }) 
             <label className="tactical-label">
               <Mic2 size={12} className="inline-icon" /> Mic Sensitivity
             </label>
-            <input type="range" className="tactical-range accent-orange" />
+            <input 
+              type="range" 
+              className="tactical-range accent-orange" 
+              value={micSensitivity} 
+              onChange={e => setMicSensitivity(e.target.value)} 
+            />
             
             <label className="tactical-label">
               <Volume2 size={12} className="inline-icon" /> Output Volume
             </label>
-            <input type="range" className="tactical-range accent-orange mb-4" />
+            <input 
+              type="range" 
+              className="tactical-range accent-orange mb-4" 
+              value={outputVolume} 
+              onChange={e => setOutputVolume(e.target.value)} 
+            />
 
             <label className="tactical-label">Hardware Check:</label>
             <div className="hardware-selector">
@@ -123,7 +158,103 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout }) 
 
             <hr className="tactical-divider" />
 
-            {showLogoutConfirm ? (
+            <div className="account-management-section">
+              <div className="account-action-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div className="account-action-info" style={{ textAlign: 'left' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>Disable your account</h4>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Temporarily disable your account.</p>
+                </div>
+                <button 
+                  className="btn-disable-account" 
+                  style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#ff6b6b', padding: '6px 12px', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}
+                  onClick={() => setShowDisableConfirm(true)}
+                >
+                  Disable Account
+                </button>
+              </div>
+
+              <div className="account-action-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div className="account-action-info" style={{ textAlign: 'left' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>Close your account</h4>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Permanently close your account.</p>
+                </div>
+                <button 
+                  className="btn-delete-account" 
+                  style={{ background: '#e11d48', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer' }}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Delete Account
+                </button>
+              </div>
+            </div>
+
+            <hr className="tactical-divider" />
+
+            {showDisableConfirm ? (
+              <div className="logout-confirm-gate">
+                <p className="logout-warning" style={{ color: '#ff6b6b' }}>Temporarily disable account?</p>
+                <div className="logout-actions">
+                  <button onClick={() => setShowDisableConfirm(false)} className="btn-stay">Cancel</button>
+                  <button 
+                    onClick={async () => {
+                      if (!currentUser?.email) return;
+                      setIsDisabling(true);
+                      try {
+                        const response = await fetch(`https://outpost-app.onrender.com/api/users/${currentUser.email}/disable`, {
+                          method: 'PATCH'
+                        });
+                        if (response.ok) {
+                          onLogout();
+                        } else {
+                          alert(`Failed to disable account`);
+                        }
+                      } catch (error) {
+                        alert(`Error disabling account: ${error.message}`);
+                      } finally {
+                        setIsDisabling(false);
+                      }
+                    }} 
+                    className="btn-leave" 
+                    style={{ background: '#ff6b6b', color: '#1a1a1a' }}
+                    disabled={isDisabling}
+                  >
+                    {isDisabling ? 'Disabling...' : 'Disable'}
+                  </button>
+                </div>
+              </div>
+            ) : showDeleteConfirm ? (
+              <div className="logout-confirm-gate">
+                <p className="logout-warning" style={{ color: '#e11d48' }}>Permanently delete account?</p>
+                <div className="logout-actions">
+                  <button onClick={() => setShowDeleteConfirm(false)} className="btn-stay">Cancel</button>
+                  <button 
+                    onClick={async () => {
+                      if (!currentUser?.email) return;
+                      setIsDeleting(true);
+                      try {
+                        const response = await fetch(`https://outpost-app.onrender.com/api/users/${currentUser.email}`, {
+                          method: 'DELETE'
+                        });
+                        if (response.ok) {
+                          onLogout();
+                        } else {
+                          alert(`Failed to delete account`);
+                        }
+                      } catch (error) {
+                        alert(`Error deleting account: ${error.message}`);
+                      } finally {
+                        setIsDeleting(false);
+                      }
+                    }} 
+                    className="btn-leave" 
+                    style={{ background: '#e11d48' }}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            ) : showLogoutConfirm ? (
               <div className="logout-confirm-gate">
                 <p className="logout-warning">Abandon the Basecamp?</p>
                 <div className="logout-actions">
