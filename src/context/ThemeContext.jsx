@@ -43,7 +43,18 @@ export function ThemeProvider({ children }) {
 
     if (savedThemeId) {
       const match = AVAILABLE_THEMES.find((t) => t.id === savedThemeId);
-      if (match) setActiveTheme(match);
+      if (match) {
+        setActiveTheme(match);
+        const root = document.documentElement;
+        root.style.setProperty("--brand-primary", match.primaryRGB);
+        if (match.isGradient) {
+          root.style.setProperty("--brand-gradient-start", match.gradStart);
+          root.style.setProperty("--brand-gradient-end", match.gradEnd);
+        } else {
+          root.style.setProperty("--brand-gradient-start", `rgb(${match.primaryRGB})`);
+          root.style.setProperty("--brand-gradient-end", `rgb(${match.primaryRGB})`);
+        }
+      }
     }
   }, []);
 

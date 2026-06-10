@@ -59,6 +59,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [channelToDelete, setChannelToDelete] = useState(null);
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [messageToDelete, setMessageToDelete] = useState(null);
   const messagesEndRef = useRef(null);
 
   // User identity
@@ -208,11 +210,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         const currentMessages = prev[channelKey] || [];
         const updated = currentMessages.map(msg => {
           if ((msg._id || msg.id) === messageId && msg.type === 'poll') {
-            const newPollData = { ...msg.pollData };
+            const newPollData = { 
+              ...msg.pollData,
+              votesArray: [...(msg.pollData.votesArray || [])],
+              votesMap: { ...msg.pollData.votesMap }
+            };
             if (!newPollData.votesArray.includes(scoutId)) {
               newPollData.votesArray.push(scoutId);
-              if(!newPollData.votesMap[optionIndex]) newPollData.votesMap[optionIndex] = [];
-              newPollData.votesMap[optionIndex].push(scoutId);
+              newPollData.votesMap[optionIndex] = [...(newPollData.votesMap[optionIndex] || []), scoutId];
             }
             return { ...msg, pollData: newPollData };
           }
@@ -222,9 +227,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       });
     };
 
+    const handleMessageDeleted = ({ messageId, channelKey }) => {
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[channelKey] || [];
+        return {
+          ...prev,
+          [channelKey]: currentMessages.filter(m => (m._id || m.id) !== messageId)
+        };
+      });
+    };
+
     socket.on("scout-joined-list", handleScoutJoinedList);
     socket.on("campsite-admin-notification", handleAdminNotification);
     socket.on("broadcast-updated-vote", handleUpdatedVote);
+    socket.on("message_deleted", handleMessageDeleted);
 
     return () => {
       socket.off('receive_message', handleReceiveMessage);
@@ -233,6 +249,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("scout-joined-list", handleScoutJoinedList);
       socket.off("campsite-admin-notification", handleAdminNotification);
       socket.off("broadcast-updated-vote", handleUpdatedVote);
+      socket.off("message_deleted", handleMessageDeleted);
     };
   }, []);
 
@@ -587,6 +604,86 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         style={{ gridTemplateColumns: showDiscover ? '72px 1fr' : (isSidebarOpen ? '72px 280px 1fr' : '72px 1fr') }}
       >
       <AnimatePresence>
+        {messageToDelete && (
+          <motion.div 
+            className="welcome-modal-overlay"
+            style={{ zIndex: 9999, padding: '20px' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="welcome-modal-content"
+              style={{ maxWidth: '400px', textAlign: 'center' }}
+              initial={{ scale: 0.8, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.8, y: -20, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            >
+              <h3 style={{ color: 'var(--brand-primary)', marginBottom: '16px' }}>Delete Content?</h3>
+              <p style={{ marginBottom: '24px', opacity: 0.8 }}>Choose how you want to delete this content.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button 
+                  className="btn-primary" 
+                  style={{ background: 'transparent', border: '1px solid var(--text-secondary)' }}
+                  onClick={() => {
+                    setMessagesByChannel(prev => {
+                      const currentMessages = prev[messageToDelete.channelKey] || [];
+                      return {
+                        ...prev,
+                        [messageToDelete.channelKey]: currentMessages.filter(m => (m._id || m.id) !== messageToDelete.id)
+                      };
+                    });
+                    setMessageToDelete(null);
+                  }}
+                >
+                  Delete for me
+                </button>
+                <button 
+                  className="btn-primary" 
+                  style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff3b30', borderColor: '#ff3b30' }}
+                  onClick={() => {
+                    socket.emit("delete_message_for_all", { messageId: messageToDelete.id, channelKey: messageToDelete.channelKey });
+                    setMessageToDelete(null);
+                  }}
+                >
+                  Delete for everyone
+                </button>
+                <button 
+                  style={{ background: 'transparent', color: 'var(--text-secondary)', border: 'none', marginTop: '8px', cursor: 'pointer' }}
+                  onClick={() => setMessageToDelete(null)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            className="welcome-modal-overlay"
+            style={{ zIndex: 9999, padding: '20px' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImage(null)}
+          >
+            <motion.img 
+              src={selectedImage}
+              alt="Enlarged"
+              style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: '8px', cursor: 'zoom-out', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
         {showWelcome && (
           <motion.div 
             className="welcome-modal-overlay"
@@ -872,10 +969,19 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         )}
                       </div>
                       <div className="message-content">
-                        <div className="message-meta">
+                        <div className="message-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
                           <span className="message-author">{msg.user?.username || msg.user || 'Unknown Scout'}</span>
                           {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
-                          <span className="message-time">{msg.time}</span>
+                          <span className="message-time" style={{ marginLeft: '10px', flexGrow: 1 }}>{msg.time}</span>
+                          {(msg.user?.username === currentUser?.username || msg.user === currentUser?.username) && (msg.type === 'media' || msg.type === 'poll') && (
+                            <button 
+                              onClick={() => setMessageToDelete({ id: msg._id || msg.id, channelKey: currentChannelKey })}
+                              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.5, display: 'flex', alignItems: 'center', padding: '4px' }}
+                              title="Delete"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
                         <div className="message-text">
                           {(!msg.type || msg.type === "text") && msg.text}
@@ -887,6 +993,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                               alt="Shared asset"
                               className="mt-2 rounded-xl border border-zinc-900 shadow-xl"
                               style={{ maxWidth: '100%', maxHeight: '250px', cursor: 'zoom-in' }}
+                              onClick={() => setSelectedImage(msg.body)}
                             />
                           )}
 

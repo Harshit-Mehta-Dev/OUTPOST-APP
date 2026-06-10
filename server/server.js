@@ -180,6 +180,15 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on("delete_message_for_all", async ({ messageId, channelKey }) => {
+    try {
+      await Message.findByIdAndDelete(messageId);
+      io.to(channelKey).emit("message_deleted", { messageId, channelKey });
+    } catch(err) {
+      console.error("Error deleting message:", err);
+    }
+  });
+
   // Catch and Broadcast "Scout stopped typing"
   socket.on("scout-typing-stop", ({ channelId, scoutName }) => {
     socket.broadcast.to(channelId).emit("broadcast-typing-stop", { scoutName });
