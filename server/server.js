@@ -12,6 +12,7 @@ const server = http.createServer(app);
 
 // Setup Socket.io
 const io = new Server(server, {
+  maxHttpBufferSize: 5e7, // 50MB payload limit for images
   cors: {
     origin: "*", // allow all frontend origins
     methods: ["GET", "POST"]
