@@ -22,7 +22,9 @@ import {
   Copy,
   Palette,
   Brain,
-  Bell
+  Bell,
+  Award,
+  Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -69,6 +71,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [messageToDelete, setMessageToDelete] = useState(null);
+  const [levelUpData, setLevelUpData] = useState(null);
   const messagesEndRef = useRef(null);
 
   const handleCopyMessage = (msg) => {
@@ -92,7 +95,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       const saved = localStorage.getItem('outpost_user');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.profilePictureUrl !== currentUser.profilePictureUrl || parsed.username !== currentUser.username) {
+        if (
+          parsed.profilePictureUrl !== currentUser.profilePictureUrl || 
+          parsed.username !== currentUser.username ||
+          parsed.level !== currentUser.level ||
+          parsed.xp !== currentUser.xp
+        ) {
           setCurrentUser(parsed);
         }
       }
@@ -261,6 +269,21 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       setTimeout(() => setAdminNotification(null), 5000);
     };
 
+    const handleLevelUp = ({ newLevel, xp }) => {
+      setLevelUpData({ newLevel, xp });
+      
+      // Update local storage so the new level persists across refresh
+      const saved = localStorage.getItem('outpost_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        parsed.level = newLevel;
+        parsed.xp = xp;
+        localStorage.setItem('outpost_user', JSON.stringify(parsed));
+      }
+      
+      setTimeout(() => setLevelUpData(null), 6000); // hide celebration after 6 seconds
+    };
+
     const handleUpdatedVote = ({ messageId, optionIndex, scoutId, channelKey }) => {
       setMessagesByChannel(prev => {
         const currentMessages = prev[channelKey] || [];
@@ -295,6 +318,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
     socket.on("scout-joined-list", handleScoutJoinedList);
     socket.on("campsite-admin-notification", handleAdminNotification);
+    socket.on("level_up_alert", handleLevelUp);
     socket.on("broadcast-updated-vote", handleUpdatedVote);
     socket.on("message_deleted", handleMessageDeleted);
 
@@ -304,6 +328,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("broadcast-typing-stop", handleTypingStop);
       socket.off("scout-joined-list", handleScoutJoinedList);
       socket.off("campsite-admin-notification", handleAdminNotification);
+      socket.off("level_up_alert", handleLevelUp);
       socket.off("broadcast-updated-vote", handleUpdatedVote);
       socket.off("message_deleted", handleMessageDeleted);
     };
@@ -1306,6 +1331,50 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#ff9500', letterSpacing: '1px' }}>Perimeter Breached</span>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{adminNotification}</span>
+            </div>
+          </motion.div>
+        )}
+        {levelUpData && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            style={{
+              position: 'fixed',
+              bottom: '40px',
+              right: '40px',
+              background: 'linear-gradient(135deg, rgba(88, 101, 242, 0.9), rgba(41, 128, 185, 0.9))',
+              border: '2px solid rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(15px)',
+              padding: '20px 24px',
+              borderRadius: '16px',
+              color: '#fff',
+              zIndex: 10000,
+              boxShadow: '0 20px 40px rgba(0,0,0,0.6), 0 0 30px rgba(88, 101, 242, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              minWidth: '300px'
+            }}
+          >
+            <div style={{ 
+              padding: '12px', 
+              background: 'rgba(255,255,255,0.2)', 
+              borderRadius: '50%',
+              boxShadow: '0 0 20px rgba(255,255,255,0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Award size={28} color="#f1c40f" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', letterSpacing: '2px', fontWeight: 'bold' }}>Level Up Achieved!</span>
+              <span style={{ fontSize: '1.4rem', fontWeight: '800', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>Scout Level {levelUpData.newLevel}</span>
+            </div>
+            <div style={{ marginLeft: 'auto', background: 'rgba(0,0,0,0.3)', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+              <Zap size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} color="#f1c40f"/>
+              {levelUpData.xp} XP
             </div>
           </motion.div>
         )}

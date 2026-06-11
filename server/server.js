@@ -124,6 +124,7 @@ app.get('/api/health', (req, res) => {
 
 const Message = require('./models/Message');
 const Campsite = require('./models/Campsite');
+const User = require('./models/User');
 
 // Messages Route
 app.get('/api/messages/:channelKey', async (req, res) => {
@@ -183,10 +184,48 @@ io.on('connection', (socket) => {
       await newMessage.save();
       syncMessageToSupabase(newMessage);
 
+      // --- Phase 1: XP & Levelling Engine ---
+      let currentLevel = data.user.level || 1;
+      let currentXp = data.user.xp || 0;
+      
+      try {
+        const userDoc = await User.findOne({ username: data.user.username });
+        if (userDoc) {
+          const xpGain = data.type === 'poll' ? 20 : (data.mediaType ? 15 : 10);
+          userDoc.xp += xpGain;
+          
+          // Formula: Level = floor(sqrt(XP * 0.1)) + 1
+          const calculatedLevel = Math.floor(Math.sqrt(userDoc.xp * 0.1)) + 1;
+          
+          let leveledUp = false;
+          if (calculatedLevel > userDoc.level) {
+            userDoc.level = calculatedLevel;
+            leveledUp = true;
+          }
+          await userDoc.save();
+          
+          currentLevel = userDoc.level;
+          currentXp = userDoc.xp;
+
+          if (leveledUp) {
+            io.to(`user-room-${userDoc.username}`).emit('level_up_alert', {
+              newLevel: userDoc.level,
+              xp: userDoc.xp
+            });
+          }
+        }
+      } catch (xpErr) {
+        console.error("XP Calculation Error:", xpErr);
+      }
+      // --- End XP Engine ---
+
+      // Inject the live XP data back into the broadcast so the UI can update
+      const broadcastUser = { ...newMessage.user, level: currentLevel, xp: currentXp };
+
       // 2. Broadcast to everyone in the room (including sender to confirm)
       io.to(data.channelKey).emit('receive_message', {
         id: newMessage._id,
-        user: newMessage.user,
+        user: broadcastUser,
         time: newMessage.time,
         type: newMessage.type,
         text: newMessage.text,
