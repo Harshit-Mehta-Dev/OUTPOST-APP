@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import './OutpostFooter.css';
 import logoUrl from '../assets/logo.png';
+import footerBannerUrl from '../assets/footer-banner.png';
 
 const LinkedinIcon = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -72,6 +73,10 @@ const infrastructureLinks = [
 export default function OutpostFooter() {
   return (
     <footer className="outpost-footer">
+      <div className="footer-banner-container">
+        <img src={footerBannerUrl} alt="Outpost Flame Banner" className="footer-banner-img" />
+      </div>
+
       {/* 🎬 Subtle Animated Ambient Cloud Glow Background */}
       <div className="footer-ambient-glow" />
 

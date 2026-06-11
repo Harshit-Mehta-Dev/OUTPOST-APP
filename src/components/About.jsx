@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { Compass, Tent } from 'lucide-react';
 import './About.css';
 
 const About = () => {
@@ -58,13 +59,15 @@ const About = () => {
         </motion.div>
 
         <motion.div 
-          className="about-outro glass-panel"
+          className="about-outro glass-panel sticker-container"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
+          <div className="sticker sticker-left"><Compass size={24} /></div>
           <h3 className="outro-title">Why We Built This</h3>
+          <div className="sticker sticker-right"><Tent size={24} /></div>
           <blockquote className="quote">"Built for Connection, Not Consumption."</blockquote>
           
           <div className="outro-content">

@@ -175,6 +175,28 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     }
   }, [currentUser?.email]);
 
+  // Reconnect logic to never lose channel assignment
+  useEffect(() => {
+    const onConnect = () => {
+      console.log("Socket reconnected! Re-joining rooms...");
+      socket.emit('join_channel', currentChannelKey);
+      if (activeCampsite) socket.emit('join_campsite_room', activeCampsite.id);
+      if (currentUser?.email) socket.emit('join_admin_room', currentUser.email);
+    };
+    
+    socket.on('connect', onConnect);
+    return () => socket.off('connect', onConnect);
+  }, [currentChannelKey, activeCampsite, currentUser]);
+
+  // Frontend Ping to keep Render Server Awake while app is open
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch('https://outpost-app.onrender.com/api/health').catch(err => {});
+    }, 10 * 60 * 1000); // 10 minutes
+    
+    return () => clearInterval(interval);
+  }, []);
+
   // Listen for real-time messages and member events
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {

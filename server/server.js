@@ -82,6 +82,10 @@ app.use('/api/campsites', campsiteRoutes);
 
 const userRoutes = require('./routes/users');
 app.use('/api/users', userRoutes);
+// Health Check for Keep-Alive
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', time: new Date() });
+});
 
 const Message = require('./models/Message');
 

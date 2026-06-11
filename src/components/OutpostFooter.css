@@ -8,6 +8,20 @@
   margin-top: 6rem; /* mt-24 */
 }
 
+.footer-banner-container {
+  width: 100%;
+  display: block;
+  overflow: hidden;
+}
+
+.footer-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  margin-bottom: -1rem; /* Shifts the image down/pulls footer up to hide the bottom orange line */
+}
+
 /* Subtle Animated Ambient Cloud Glow Background */
 .footer-ambient-glow {
   position: absolute;
