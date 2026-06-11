@@ -311,14 +311,7 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, cu
           )}
         </button>
 
-        {/* Sun/Moon Icon */}
-        <button 
-          className="deck-btn theme-toggle" 
-          onClick={toggleTheme}
-          title="Toggle Theme"
-        >
-          {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+
 
         {/* Safe Logout Trigger */}
         <button 

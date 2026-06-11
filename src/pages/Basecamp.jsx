@@ -145,6 +145,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const [messagesByChannel, setMessagesByChannel] = useState({});
   const [discoverRefreshTrigger, setDiscoverRefreshTrigger] = useState(0);
+  const [isDark, setIsDark] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark');
 
   const activeCampsite = campsites && campsites.length > 0 ? (campsites.find(c => c.active) || campsites[0]) : null;
   const expeditions = activeCampsite?.expeditions || [];
@@ -747,7 +748,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     className="btn-primary" 
                     style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff3b30', borderColor: '#ff3b30' }}
                     onClick={() => {
-                      socket.emit("delete_message_for_all", { messageId: messageToDelete.id, channelKey: messageToDelete.channelKey });
+                      socket.emit("delete_message_for_all", { 
+                        messageId: messageToDelete.id, 
+                        channelKey: messageToDelete.channelKey,
+                        username: currentUser.username
+                      });
                       setMessageToDelete(null);
                     }}
                   >
@@ -1029,6 +1034,25 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
             <button
               onClick={() => {
+                if (isDark) {
+                  document.documentElement.removeAttribute('data-theme');
+                  localStorage.setItem('outpost_theme_dark', 'false');
+                  setIsDark(false);
+                } else {
+                  document.documentElement.setAttribute('data-theme', 'dark');
+                  localStorage.setItem('outpost_theme_dark', 'true');
+                  setIsDark(true);
+                }
+              }}
+              className={`theme-trigger-btn ${!isDark ? 'active' : ''}`}
+              title="Toggle Light/Dark Mode"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
+
+            <button
+              onClick={() => {
                 setIsThemeOpen(!isThemeOpen);
                 setIsAIOpen(false);
               }}
@@ -1087,8 +1111,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <h1>Welcome to #{activeChannel}!</h1>
             <p>This is the start of the #{activeChannel} expedition. Please review the community guidelines before participating.</p>
             
-            <div className="community-guidelines" style={{ marginTop: '20px', padding: '20px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px', borderLeft: '4px solid var(--primary-color)' }}>
-              <h3 style={{ marginBottom: '15px', color: 'var(--primary-color)' }}>🏕️ Outpost Community Guidelines</h3>
+            <div className="community-guidelines" style={{ marginTop: '20px', padding: '20px', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', borderLeft: '4px solid var(--brand-primary)' }}>
+              <h3 style={{ marginBottom: '15px', color: 'var(--brand-primary)' }}>🏕️ Outpost Community Guidelines</h3>
               <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <li><strong>1. Respect Everyone:</strong> Treat all scouts and commanders with respect. No harassment, hate speech, or toxicity.</li>
                 <li><strong>2. Stay on Mission:</strong> Keep conversations relevant to the channel topic.</li>
@@ -1191,7 +1215,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           )}
 
                           {msg.type === "poll" && (
-                            <div className="mt-3 bg-zinc-900/40 border border-zinc-900 p-4 rounded-xl backdrop-blur-sm font-sans" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', padding: '16px', borderRadius: '12px', marginTop: '12px', width: '100%', maxWidth: '350px' }}>
+                            <div className="mt-3 p-4 rounded-xl font-sans" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-glass)', padding: '16px', borderRadius: '12px', marginTop: '12px', width: '100%', maxWidth: '350px' }}>
                               <p className="font-bold font-mono tracking-wide text-xs uppercase mb-3" style={{ color: 'var(--brand-primary)', marginBottom: '12px', fontWeight: 'bold' }}>📊 {msg.pollData.question}</p>
                               <div className="space-y-2.5" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {msg.pollData.options.map((option, idx) => {
@@ -1208,7 +1232,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                                       key={idx}
                                       disabled={hasVotedInPoll}
                                       onClick={() => { if (!hasVotedInPoll) handleVoteSubmission(msg._id || msg.id, idx); }}
-                                      style={{ position: 'relative', overflow: 'hidden', background: votedForThisOption ? 'rgba(88,101,242,0.2)' : 'rgba(0,0,0,0.5)', border: votedForThisOption ? '1px solid var(--brand-primary)' : '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', color: '#fff', cursor: hasVotedInPoll ? 'default' : 'pointer', outline: 'none', transition: 'all 0.2s ease', opacity: hasVotedInPoll && !votedForThisOption ? 0.6 : 1 }}
+                                      style={{ position: 'relative', overflow: 'hidden', background: votedForThisOption ? 'var(--accent-glow)' : 'var(--bg-glass)', border: votedForThisOption ? '1px solid var(--brand-primary)' : '1px solid var(--border-glass)', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', color: 'var(--text-primary)', cursor: hasVotedInPoll ? 'default' : 'pointer', outline: 'none', transition: 'all 0.2s ease', opacity: hasVotedInPoll && !votedForThisOption ? 0.6 : 1 }}
                                     >
                                       <motion.div
                                         initial={{ width: 0 }}

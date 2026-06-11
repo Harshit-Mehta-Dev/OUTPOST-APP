@@ -13,6 +13,24 @@ const server = http.createServer(app);
 const { createAdapter } = require('@socket.io/redis-adapter');
 const { createClient } = require('redis');
 const supabase = require('./supabaseClient');
+const { checkScoutPermission } = require('./utils/rbac');
+const Notification = require('./models/Notification');
+const { compressMediaPayload } = require('./utils/compression');
+
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const morgan = require('morgan');
+
+// Global Crash Handlers
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION! 💥 System recovered.');
+  console.error(err.name, err.message, err.stack);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION! 💥 System recovered.');
+  console.error(err.name, err.message, err.stack);
+});
 
 // Helper to push message backups to Supabase
 const syncMessageToSupabase = async (messageDoc) => {
@@ -65,6 +83,18 @@ app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// --- Phase 6: 24/7 Ops & Security ---
+// 3.5. Logging & Sanitization
+app.use(morgan('combined')); // Operational Logging
+app.use(mongoSanitize());    // Prevent NoSQL Injection
+app.use(xss());              // Prevent XSS Attacks
+
+// 24/7 Health Check Endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'Operational', timestamp: new Date() });
+});
+// ------------------------------------
 
 // 4. Rate Limiters
 
@@ -170,6 +200,11 @@ io.on('connection', (socket) => {
   // Handle incoming messages
   socket.on('send_message', async (data) => {
     try {
+      // --- Phase 5: Media Compression Engine ---
+      if (data.type === 'media' && data.body) {
+        data.body = await compressMediaPayload(data.body, data.mediaType);
+      }
+
       // 1. Save to MongoDB
       const newMessage = new Message({
         channelKey: data.channelKey,
@@ -267,7 +302,19 @@ io.on('connection', (socket) => {
   });
 
   // Catch and Broadcast "Scout is typing"
-  socket.on("scout-typing-start", ({ channelId, scoutName }) => {
+  socket.on("scout-typing-start", async ({ channelId, scoutName }) => {
+    try {
+      const campsiteId = channelId.split('_')[0];
+      const typingNotif = new Notification({
+        campsiteId,
+        message: `${scoutName} is typing...`,
+        scoutName,
+        type: 'typing'
+      });
+      await typingNotif.save();
+    } catch (err) {
+      console.error("Error saving typing notification:", err);
+    }
     socket.broadcast.to(channelId).emit("broadcast-typing-start", { scoutName });
   });
 
@@ -294,8 +341,18 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on("delete_message_for_all", async ({ messageId, channelKey }) => {
+  socket.on("delete_message_for_all", async ({ messageId, channelKey, username }) => {
     try {
+      if (!username) return; // Silent fail if no username
+
+      const campsiteId = channelKey.split('_')[0];
+      const hasPermission = await checkScoutPermission(username, campsiteId, 'canDeleteMessages');
+
+      if (!hasPermission) {
+        socket.emit("permission_denied", { message: "You do not have the clearance code to delete this message." });
+        return;
+      }
+
       await Message.findByIdAndDelete(messageId);
       io.to(channelKey).emit("message_deleted", { messageId, channelKey });
     } catch(err) {
@@ -309,9 +366,21 @@ io.on('connection', (socket) => {
   });
 
   // Handle new scout joining a campsite
-  socket.on("register-new-scout-join", ({ campsiteId, adminEmail, scoutName, scoutAvatar }) => {
+  socket.on("register-new-scout-join", async ({ campsiteId, adminEmail, scoutName, scoutAvatar }) => {
     // 1. Tell everyone currently looking at the campsite to update their member lists
     io.to(`camp_${campsiteId}`).emit("scout-joined-list", { scoutName, scoutAvatar });
+
+    try {
+      const joinNotif = new Notification({
+        campsiteId,
+        message: `A new Scout has breached the perimeter! Welcome ${scoutName}.`,
+        scoutName,
+        type: 'alert'
+      });
+      await joinNotif.save();
+    } catch (err) {
+      console.error("Error saving join notification:", err);
+    }
 
     // 2. Explicitly target the campsite owner/admin socket connection with a banner notification
     if (adminEmail) {

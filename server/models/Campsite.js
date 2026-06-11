@@ -8,7 +8,9 @@ const expeditionSchema = new mongoose.Schema({
 
 const roleSchema = new mongoose.Schema({
   name: String,
-  color: String
+  color: String,
+  canDeleteMessages: { type: Boolean, default: false },
+  canManageAI: { type: Boolean, default: false }
 });
 
 const campsiteSchema = new mongoose.Schema({
