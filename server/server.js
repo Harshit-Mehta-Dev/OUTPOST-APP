@@ -10,6 +10,24 @@ require('dotenv').config();
 const app = express();
 const server = http.createServer(app);
 
+const { createAdapter } = require('@socket.io/redis-adapter');
+const { createClient } = require('redis');
+const supabase = require('./supabaseClient');
+
+// Helper to push message backups to Supabase
+const syncMessageToSupabase = async (messageDoc) => {
+  try {
+    const { _id, __v, ...data } = messageDoc.toObject ? messageDoc.toObject() : messageDoc;
+    const { error } = await supabase.from('messages').upsert(
+      { id: _id.toString(), ...data }, 
+      { onConflict: 'id' }
+    );
+    if (error) console.error('Supabase Message Backup Error:', error.message);
+  } catch (err) {
+    console.error('Supabase Message Backup Exception:', err.message);
+  }
+};
+
 // Setup Socket.io
 const io = new Server(server, {
   maxHttpBufferSize: 5e7, // 50MB payload limit for images
@@ -18,6 +36,17 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
+
+// Setup Redis Adapter for multi-container orchestration
+if (process.env.REDIS_URL || process.env.NODE_ENV === 'production') {
+  const pubClient = createClient({ url: process.env.REDIS_URL || 'redis://redis:6379' });
+  const subClient = pubClient.duplicate();
+
+  Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log('Redis adapter connected to Socket.io');
+  }).catch(err => console.error('Redis connection error:', err));
+}
 
 // Security Middleware
 // 1. Helmet to secure HTTP headers
@@ -141,6 +170,7 @@ io.on('connection', (socket) => {
         pollData: data.pollData
       });
       await newMessage.save();
+      syncMessageToSupabase(newMessage);
 
       // 2. Broadcast to everyone in the room (including sender to confirm)
       io.to(data.channelKey).emit('receive_message', {
@@ -177,6 +207,7 @@ io.on('connection', (socket) => {
           message.pollData = newPollData;
           message.markModified('pollData');
           await message.save();
+          syncMessageToSupabase(message);
           
           io.to(channelKey).emit("broadcast-updated-vote", { messageId, optionIndex, scoutId, channelKey });
         }

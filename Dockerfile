@@ -10,27 +10,22 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
-# Build the Vite application for production
-RUN npm run build
+# Build the Vite application for production SSR
+RUN npm run build:ssr
 
-# Stage 2: Serve the application with NGINX
-FROM nginx:alpine
+# Stage 2: Serve the application with Node.js SSR
+FROM node:20-alpine
 
-# Copy the built files from the builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+WORKDIR /app
 
-# Add a simple custom NGINX configuration for React Router
-RUN echo 'server { \
-    listen 80; \
-    location / { \
-        root /usr/share/nginx/html; \
-        index index.html index.htm; \
-        try_files $uri $uri/ /index.html; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/package*.json ./
+# Install production dependencies for the SSR server
+RUN npm install --omit=dev
 
-# Expose port 80
-EXPOSE 80
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/ssr-server.js ./
+COPY --from=builder /app/index.html ./
 
-# Start NGINX
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 8080
+
+CMD ["npm", "run", "start"]

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: outpost-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: outpost-redis
+  template:
+    metadata:
+      labels:
+        app: outpost-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        ports:
+        - containerPort: 6379

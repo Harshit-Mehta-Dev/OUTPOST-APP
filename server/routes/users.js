@@ -2,6 +2,21 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const supabase = require('../supabaseClient');
+
+// Helper to push user backups to Supabase
+const syncToSupabase = async (userDoc) => {
+  try {
+    const { _id, password, __v, ...data } = userDoc.toObject ? userDoc.toObject() : userDoc;
+    const { error } = await supabase.from('users').upsert(
+      { email: data.email, ...data }, 
+      { onConflict: 'email' }
+    );
+    if (error) console.error('Supabase User Backup Error:', error.message);
+  } catch (err) {
+    console.error('Supabase User Backup Exception:', err.message);
+  }
+};
 
 // POST /api/users/sync
 // Find user by email. If they don't exist, create them. (For Google Auth)
@@ -18,6 +33,7 @@ router.post('/sync', async (req, res) => {
     if (!user) {
       user = new User({ email, username });
       await user.save();
+      syncToSupabase(user);
     }
 
     res.json(user);
@@ -45,6 +61,7 @@ router.post('/register', async (req, res) => {
 
     user = new User({ email, username, password: hashedPassword });
     await user.save();
+    syncToSupabase(user);
     
     const userToReturn = user.toObject();
     delete userToReturn.password;
@@ -126,6 +143,7 @@ router.put('/profile', async (req, res) => {
       { $set: updates },
       { returnDocument: 'after' }
     );
+    if (updatedUser) syncToSupabase(updatedUser);
 
     // Don't send password back
     const userToReturn = updatedUser.toObject();

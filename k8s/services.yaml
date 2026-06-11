@@ -8,7 +8,7 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: 8080
   type: ClusterIP
 
 ---
@@ -17,10 +17,26 @@ kind: Service
 metadata:
   name: backend-service
 spec:
+  # Session affinity (sticky sessions) is required for Socket.io to work properly with multi-container orchestration
+  sessionAffinity: ClientIP
   selector:
     app: outpost-backend
   ports:
     - protocol: TCP
       port: 10000
       targetPort: 10000
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector:
+    app: outpost-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
   type: ClusterIP
