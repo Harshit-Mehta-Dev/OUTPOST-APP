@@ -24,7 +24,8 @@ import {
   Brain,
   Bell,
   Award,
-  Zap
+  Zap,
+  Check
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -1198,19 +1199,30 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                                   const optionVotes = msg.pollData.votesMap?.[idx]?.length || 0;
                                   const percentage = totalVotes > 0 ? Math.round((optionVotes / totalVotes) * 100) : 0;
                                   
+                                  const currentUsername = currentUser?.username || 'Scout';
+                                  const hasVotedInPoll = msg.pollData.votesArray?.includes(currentUsername);
+                                  const votedForThisOption = msg.pollData.votesMap?.[idx]?.includes(currentUsername);
+                                  
                                   return (
                                     <button
                                       key={idx}
-                                      onClick={() => handleVoteSubmission(msg._id || msg.id, idx)}
-                                      style={{ position: 'relative', overflow: 'hidden', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', color: '#fff', cursor: 'pointer', outline: 'none' }}
+                                      disabled={hasVotedInPoll}
+                                      onClick={() => { if (!hasVotedInPoll) handleVoteSubmission(msg._id || msg.id, idx); }}
+                                      style={{ position: 'relative', overflow: 'hidden', background: votedForThisOption ? 'rgba(88,101,242,0.2)' : 'rgba(0,0,0,0.5)', border: votedForThisOption ? '1px solid var(--brand-primary)' : '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', color: '#fff', cursor: hasVotedInPoll ? 'default' : 'pointer', outline: 'none', transition: 'all 0.2s ease', opacity: hasVotedInPoll && !votedForThisOption ? 0.6 : 1 }}
                                     >
                                       <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${percentage}%` }}
-                                        style={{ position: 'absolute', top: 0, left: 0, bottom: 0, background: 'var(--brand-primary)', opacity: 0.2, pointerEvents: 'none' }}
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
+                                        style={{ position: 'absolute', top: 0, left: 0, bottom: 0, background: 'var(--brand-primary)', opacity: votedForThisOption ? 0.4 : 0.2, pointerEvents: 'none' }}
                                       />
-                                      <span style={{ position: 'relative', zIndex: 10, fontSize: '0.85rem' }}>{option}</span>
-                                      <span style={{ position: 'relative', zIndex: 10, fontSize: '0.75rem', opacity: 0.7 }}>{percentage}% ({optionVotes})</span>
+                                      <span style={{ position: 'relative', zIndex: 10, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        {option}
+                                        {votedForThisOption && <Check size={14} style={{ color: 'var(--brand-primary)' }} />}
+                                      </span>
+                                      <span style={{ position: 'relative', zIndex: 10, fontSize: '0.75rem', opacity: 0.9, fontWeight: votedForThisOption ? 'bold' : 'normal' }}>
+                                        {percentage}% ({optionVotes})
+                                      </span>
                                     </button>
                                   );
                                 })}
