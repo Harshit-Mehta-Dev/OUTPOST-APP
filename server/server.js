@@ -123,6 +123,7 @@ app.get('/api/health', (req, res) => {
 });
 
 const Message = require('./models/Message');
+const Campsite = require('./models/Campsite');
 
 // Messages Route
 app.get('/api/messages/:channelKey', async (req, res) => {
@@ -161,6 +162,10 @@ io.on('connection', (socket) => {
     socket.join(email);
   });
 
+  socket.on('join_user_room', (username) => {
+    socket.join(`user-room-${username}`);
+  });
+
   // Handle incoming messages
   socket.on('send_message', async (data) => {
     try {
@@ -190,6 +195,33 @@ io.on('connection', (socket) => {
         pollData: newMessage.pollData,
         channelKey: newMessage.channelKey
       });
+
+      // 3. FAN-OUT Notification Logic
+      try {
+        const campsiteId = data.channelKey.split('_')[0];
+        const campsite = await Campsite.findById(campsiteId);
+        
+        if (campsite && campsite.members) {
+          campsite.members.forEach((memberUsername) => {
+            if (memberUsername !== data.user.username) {
+              let textPreview = data.type === 'text' ? data.text : (data.type === 'poll' ? '[Poll]' : '[Media]');
+              if (textPreview && textPreview.length > 45) {
+                textPreview = textPreview.substring(0, 45) + '...';
+              }
+              
+              io.to(`user-room-${memberUsername}`).emit('incoming-signal-alert', {
+                campsiteId: campsiteId,
+                campsiteName: campsite.name,
+                channelId: data.channelKey,
+                senderName: data.user.username,
+                textPreview: textPreview
+              });
+            }
+          });
+        }
+      } catch (fanOutError) {
+        console.error("Error broadcasting notification signal:", fanOutError);
+      }
     } catch (err) {
       console.error("Error saving/broadcasting message:", err);
     }

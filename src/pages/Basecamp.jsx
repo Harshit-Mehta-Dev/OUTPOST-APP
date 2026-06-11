@@ -21,7 +21,8 @@ import {
   X,
   Copy,
   Palette,
-  Brain
+  Brain,
+  Bell
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -38,6 +39,8 @@ import AnimatedMesh from '../components/AnimatedMesh';
 import MemberDrawer from '../components/MemberDrawer';
 import AttachmentPopover from '../components/chat/AttachmentPopover';
 import AIOperations from '../components/settings/AIOperations';
+import NotificationDropdown from '../components/navigation/NotificationDropdown';
+import { useSignalRadar } from '../hooks/useSignalRadar';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -139,6 +142,19 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const currentChannelKey = activeCampsite ? `${activeCampsite.id}_${activeChannel}` : 'fallback';
   const messages = messagesByChannel[currentChannelKey] || [];
 
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  
+  const changeViewChannelCallback = (campsiteId, channelId) => {
+    setCampsites(prev => prev.map(c => ({
+      ...c,
+      active: c.id === campsiteId || String(c._id) === String(campsiteId)
+    })));
+    const pureChannel = channelId.split('_').slice(1).join('_');
+    setActiveChannel(pureChannel);
+  };
+
+  const { alerts, setAlerts, handleSelectNotification } = useSignalRadar(socket, currentChannelKey, changeViewChannelCallback);
+
   // Fetch messages from MongoDB when joining a new channel
   useEffect(() => {
     setIsFetchingMessages(true);
@@ -173,7 +189,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     if (currentUser?.email) {
       socket.emit('join_admin_room', currentUser.email);
     }
-  }, [currentUser?.email]);
+    if (currentUser?.username) {
+      socket.emit('join_user_room', currentUser.username);
+    }
+  }, [currentUser?.email, currentUser?.username]);
 
   // Reconnect logic to never lose channel assignment
   useEffect(() => {
@@ -182,6 +201,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.emit('join_channel', currentChannelKey);
       if (activeCampsite) socket.emit('join_campsite_room', activeCampsite.id);
       if (currentUser?.email) socket.emit('join_admin_room', currentUser.email);
+      if (currentUser?.username) socket.emit('join_user_room', currentUser.username);
     };
     
     socket.on('connect', onConnect);
@@ -937,6 +957,33 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <span>Outpost Status: Active</span>
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => {
+                  setIsAlertOpen(!isAlertOpen);
+                  setIsAIOpen(false); // Close AI panel to prevent stacked layout collisions
+                }}
+                className={`theme-trigger-btn ${isAlertOpen ? 'active' : ''}`}
+                style={{
+                  background: isAlertOpen ? 'var(--bg-card)' : 'var(--bg-glass)',
+                  color: isAlertOpen ? 'var(--brand-primary)' : 'var(--text-secondary)'
+                }}
+              >
+                <Bell size={18} />
+                {alerts.length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand animate-pulse shadow-[0_0_8px_rgba(var(--brand-primary),0.6)]" style={{ width: '8px', height: '8px', position: 'absolute' }} />
+                )}
+              </button>
+
+              {/* Dropdown Card Injection Portal */}
+              <NotificationDropdown 
+                isOpen={isAlertOpen} 
+                alerts={alerts} 
+                onSelectAlert={handleSelectNotification} 
+                onClearAll={() => setAlerts([])} 
+              />
+            </div>
+
             {isCampAdmin && (
               <button
                 onClick={() => {
@@ -1043,8 +1090,17 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               ))}
             </div>
           ) : (
-            messages.map((msg, index) => (
-                    <div className="message-item" key={msg._id || msg.id || index}>
+            messages.map((msg, index) => {
+              const evaluateFlash = localStorage.getItem("highlight_message_trigger");
+              const isThisTheNewestMessage = index === messages.length - 1;
+              let highlightClass = "";
+              if (evaluateFlash && isThisTheNewestMessage) {
+                localStorage.removeItem("highlight_message_trigger");
+                highlightClass = " animate-signal-glow";
+              }
+
+              return (
+                    <div className={`message-item${highlightClass}`} key={msg._id || msg.id || index}>
                       <div className="message-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
                         {msg.user?.profilePictureUrl ? (
                           <img src={msg.user.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
