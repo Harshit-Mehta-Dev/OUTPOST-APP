@@ -141,7 +141,7 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
             </button>
 
             <div className="profile-header">
-              <h2>CUSTOMIZE YOUR SCOUT IDENTITY</h2>
+              <h2>Scout Registry</h2>
             </div>
 
             <div className="profile-body">

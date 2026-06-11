@@ -17,7 +17,7 @@
   width: 100%;
   max-width: 500px;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-glass);
   border-radius: 16px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
@@ -47,14 +47,14 @@
 
 .profile-header {
   padding: 30px 30px 20px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-glass);
   background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
 }
 
 .profile-header h2 {
   font-size: 1.4rem;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, #fff, var(--primary-color));
+  background: linear-gradient(135deg, #fff, rgb(var(--brand-primary)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: 1px;
@@ -87,7 +87,7 @@
 
 .interactive-avatar-container:hover .interactive-avatar {
   transform: scale(1.05);
-  box-shadow: 0 0 25px rgba(var(--primary-rgb, 88, 101, 242), 0.5);
+  box-shadow: 0 0 25px rgba(var(--brand-primary), 0.5);
 }
 
 .large-avatar-preview {
@@ -95,9 +95,9 @@
   height: 100px;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--bg-dark);
-  border: 3px solid var(--primary-color);
-  box-shadow: 0 0 20px rgba(var(--primary-rgb, 88, 101, 242), 0.3);
+  background: var(--bg-primary);
+  border: 3px solid rgb(var(--brand-primary));
+  box-shadow: 0 0 20px rgba(var(--brand-primary), 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,7 +143,7 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  background: var(--primary-color);
+  background: rgb(var(--brand-primary));
   color: white;
   border-radius: 50%;
   width: 28px;
@@ -227,8 +227,8 @@
 }
 
 .preset-btn.selected {
-  border-color: var(--primary-color);
-  background: rgba(var(--primary-rgb, 88, 101, 242), 0.1);
+  border-color: rgb(var(--brand-primary));
+  background: rgba(var(--brand-primary), 0.1);
 }
 
 /* Identity Ward */
@@ -253,7 +253,7 @@
 /* Security Core */
 .security-accordion {
   background: rgba(0,0,0,0.2);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-glass);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -353,7 +353,7 @@
 .profile-footer {
   padding: 20px 30px;
   background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-glass);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
