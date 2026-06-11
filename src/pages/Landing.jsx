@@ -6,6 +6,7 @@ import About from '../components/About';
 import Community from '../components/Community';
 import OutpostFooter from '../components/OutpostFooter';
 import LegalHub from '../components/LegalHub';
+import FounderSection from '../components/landing/FounderSection';
 
 const Landing = () => {
   const location = useLocation();
@@ -28,6 +29,7 @@ const Landing = () => {
             <Features />
             <Community />
             <About />
+            <FounderSection />
           </>
         )}
       </div>
