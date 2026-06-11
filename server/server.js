@@ -87,8 +87,6 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // --- Phase 6: 24/7 Ops & Security ---
 // 3.5. Logging & Sanitization
 app.use(morgan('combined')); // Operational Logging
-app.use(mongoSanitize());    // Prevent NoSQL Injection
-app.use(xss());              // Prevent XSS Attacks
 
 // 24/7 Health Check Endpoint
 app.get('/api/health', (req, res) => {
