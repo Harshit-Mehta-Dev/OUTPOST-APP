@@ -38,15 +38,20 @@ const io = new Server(server, {
   }
 });
 
-// Setup Redis Adapter for multi-container orchestration
-if (process.env.REDIS_URL || process.env.NODE_ENV === 'production') {
-  const pubClient = createClient({ url: process.env.REDIS_URL || 'redis://redis:6379' });
+// Setup Redis Adapter for multi-container orchestration (Only if REDIS_URL is explicitly provided)
+if (process.env.REDIS_URL) {
+  const pubClient = createClient({ url: process.env.REDIS_URL });
   const subClient = pubClient.duplicate();
+
+  pubClient.on('error', (err) => console.error('Redis Pub Client Error:', err));
+  subClient.on('error', (err) => console.error('Redis Sub Client Error:', err));
 
   Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
     io.adapter(createAdapter(pubClient, subClient));
-    console.log('Redis adapter connected to Socket.io');
+    console.log('✅ Redis adapter connected to Socket.io');
   }).catch(err => console.error('Redis connection error:', err));
+} else {
+  console.log('ℹ️ REDIS_URL not provided. Socket.io running in standalone mode.');
 }
 
 // Security Middleware
