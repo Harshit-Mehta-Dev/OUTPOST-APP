@@ -1185,7 +1185,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         </div>
                 </div>
               </div>
-            ))
+            );
+          })
           )}
           <div ref={messagesEndRef} />
         </div>
