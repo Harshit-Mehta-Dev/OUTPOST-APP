@@ -1073,6 +1073,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               onClose={() => setIsDrawerOpen(false)} 
               members={activeMembersList}
               adminEmail={activeCampsite?.adminEmail}
+              campsite={activeCampsite}
             />
           </div>
         </header>
@@ -1135,7 +1136,16 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                       </div>
                       <div className="message-content">
                         <div className="message-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
-                          <span className="message-author">{msg.user?.username || msg.user || 'Unknown Scout'}</span>
+                          {(() => {
+                            const username = msg.user?.username || msg.user || 'Unknown Scout';
+                            const userRoleName = activeCampsite?.memberRoles?.[username];
+                            const userRoleColor = activeCampsite?.roles?.find(r => r.name === userRoleName)?.color || 'var(--text-primary)';
+                            return (
+                              <span className="message-author" style={{ color: userRoleColor, fontWeight: userRoleName ? 'bold' : 'normal' }}>
+                                {username}
+                              </span>
+                            );
+                          })()}
                           {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
                           <span className="message-time" style={{ marginLeft: '10px', flexGrow: 1 }}>{msg.time}</span>
                           <button 

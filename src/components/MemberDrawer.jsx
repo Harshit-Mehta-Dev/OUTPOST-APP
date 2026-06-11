@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Users, ShieldCheck, X } from 'lucide-react';
 import './MemberDrawer.css';
 
-const MemberDrawer = ({ isOpen, onClose, members = [], adminEmail }) => {
+const MemberDrawer = ({ isOpen, onClose, members = [], adminEmail, campsite }) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -29,6 +29,10 @@ const MemberDrawer = ({ isOpen, onClose, members = [], adminEmail }) => {
               const isAdmin = member === adminEmail || (member.email && member.email === adminEmail);
               const displayName = typeof member === 'string' ? member : (member.username || 'Scout');
               const avatar = typeof member === 'string' ? null : member.profilePictureUrl;
+              
+              const userRoleName = campsite?.memberRoles?.[displayName];
+              const userRoleColor = campsite?.roles?.find(r => r.name === userRoleName)?.color || 'var(--text-primary)';
+              const defaultRoleText = isAdmin ? 'Admin' : 'Scout';
 
               return (
                 <div key={index} className="member-item">
@@ -43,10 +47,10 @@ const MemberDrawer = ({ isOpen, onClose, members = [], adminEmail }) => {
                     <span className="member-status-dot online"></span>
                   </div>
                   <div className="member-info">
-                    <span className="member-name">{displayName}</span>
-                    <span className="member-role">
+                    <span className="member-name" style={{ color: userRoleColor, fontWeight: userRoleName ? 'bold' : 'normal' }}>{displayName}</span>
+                    <span className="member-role" style={{ color: userRoleName ? userRoleColor : undefined, opacity: userRoleName ? 0.8 : 0.5 }}>
                       {isAdmin && <ShieldCheck size={12} className="admin-badge" />}
-                      {isAdmin ? 'Admin' : 'Scout'}
+                      {userRoleName || defaultRoleText}
                     </span>
                   </div>
                 </div>

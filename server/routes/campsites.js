@@ -114,4 +114,44 @@ router.post('/:id/leave', async (req, res) => {
   }
 });
 
+// POST create a role in a campsite
+router.post('/:id/roles', async (req, res) => {
+  try {
+    const { name, color } = req.body;
+    const camp = await Campsite.findById(req.params.id);
+    if (!camp) return res.status(404).json({ message: 'Campsite not found' });
+    
+    camp.roles.push({ name, color });
+    await camp.save();
+    res.json(camp);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST assign a role to a member in a campsite
+router.post('/:id/roles/assign', async (req, res) => {
+  try {
+    const { username, roleName } = req.body;
+    const camp = await Campsite.findById(req.params.id);
+    if (!camp) return res.status(404).json({ message: 'Campsite not found' });
+    
+    if (!camp.memberRoles) {
+      camp.memberRoles = new Map();
+    }
+    
+    // Assign role to member. If roleName is empty, remove the role.
+    if (roleName) {
+      camp.memberRoles.set(username, roleName);
+    } else {
+      camp.memberRoles.delete(username);
+    }
+    
+    await camp.save();
+    res.json(camp);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

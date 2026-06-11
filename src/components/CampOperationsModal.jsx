@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Users, Shield, Trash2, Plus, UserPlus, LogOut } from 'lucide-react';
+import { X, Users, Shield, Trash2, Plus, UserPlus, LogOut, Wrench, Palette, ChevronDown, Check } from 'lucide-react';
 import './CampOperationsModal.css';
 
 const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCampsite, onUpdateCampsite, onLeaveCampsite }) => {
@@ -11,6 +11,8 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
   const [recruitName, setRecruitName] = useState('');
   const [isForgingRole, setIsForgingRole] = useState(false);
   const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleColor, setNewRoleColor] = useState('#5865F2');
+  const [assignDropdownFor, setAssignDropdownFor] = useState(null); // which user's dropdown is open
 
   if (!isOpen || !campsite) return null;
 
@@ -35,17 +37,41 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
     }
   };
 
-  const handleForgeRole = () => {
+  const handleForgeRole = async () => {
     if (newRoleName.trim()) {
-      // Pick a random pleasant color
-      const colors = ['#ff3b30', '#34c759', '#af52de', '#ffcc00', '#5ac8fa'];
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
-      
-      onUpdateCampsite(campsite.id, {
-        roles: [...roles, { name: newRoleName.trim(), color: randomColor }]
+      try {
+        const response = await fetch(`https://outpost-app.onrender.com/api/campsites/${campsite.id}/roles`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newRoleName.trim(), color: newRoleColor })
+        });
+        if (response.ok) {
+          const updated = await response.json();
+          // We assume onUpdateCampsite acts as a state setter on the frontend
+          onUpdateCampsite(campsite.id, { roles: updated.roles });
+          setNewRoleName('');
+          setIsForgingRole(false);
+        }
+      } catch (err) {
+        console.error("Failed to forge role", err);
+      }
+    }
+  };
+
+  const handleAssignRole = async (username, roleName) => {
+    try {
+      const response = await fetch(`https://outpost-app.onrender.com/api/campsites/${campsite.id}/roles/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, roleName })
       });
-      setNewRoleName('');
-      setIsForgingRole(false);
+      if (response.ok) {
+        const updated = await response.json();
+        onUpdateCampsite(campsite.id, { memberRoles: updated.memberRoles });
+        setAssignDropdownFor(null);
+      }
+    } catch (err) {
+      console.error("Failed to assign role", err);
     }
   };
 
@@ -92,12 +118,20 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
             <Users size={18} /> Personnel Management
           </button>
           {isAdmin && (
-            <button 
-              className={`ops-tab-btn ${activeTab === 'safety' ? 'active' : ''}`}
-              onClick={() => setActiveTab('safety')}
-            >
-              <Shield size={18} /> Perimeter Safety
-            </button>
+            <>
+              <button 
+                className={`ops-tab-btn ${activeTab === 'safety' ? 'active' : ''}`}
+                onClick={() => setActiveTab('safety')}
+              >
+                <Shield size={18} /> Perimeter Safety
+              </button>
+              <button 
+                className={`ops-tab-btn ${activeTab === 'roles' ? 'active' : ''}`}
+                onClick={() => setActiveTab('roles')}
+              >
+                <Wrench size={18} /> The Role Forge
+              </button>
+            </>
           )}
           
           <button 
@@ -117,6 +151,7 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
             <h2>
               {activeTab === 'personnel' && 'Personnel Management'}
               {activeTab === 'safety' && 'Perimeter Safety'}
+              {activeTab === 'roles' && 'The Role Forge'}
               {activeTab === 'destruction' && (isAdmin ? 'Danger Perimeter' : 'Leave Bootcamp')}
             </h2>
             <button className="close-btn" onClick={onClose}><X size={20} /></button>
@@ -188,23 +223,18 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
                   )}
                 </div>
                 
-                {isAdmin && (
-                  <div className="ops-section">
-                    <h4>The Role Forge</h4>
-                    <p>Create and assign custom permissions for your community.</p>
-                    <div style={{ marginBottom: '15px' }}>
-                      {roles.map(role => (
-                        <div key={role.name} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', marginBottom: '8px' }}>
-                          <span style={{ color: role.color, fontWeight: 'bold' }}>{role.name}</span>
-                          {!defaultRoles.find(r => r.name === role.name) && (
-                            <X size={16} style={{ cursor: 'pointer', color: 'var(--text-secondary)' }} onClick={() => removeRole(role.name)} />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {isForgingRole ? (
-                      <div className="recruitment-field" style={{ marginTop: '10px' }}>
+              </motion.div>
+            )}
+
+            {activeTab === 'roles' && isAdmin && (
+              <motion.div key="roles" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="ops-section">
+                  <h4>The Role Forge</h4>
+                  <p>Create and assign custom permissions for your community.</p>
+                  
+                  {isForgingRole ? (
+                    <div className="recruitment-field" style={{ marginTop: '10px', flexDirection: 'column', alignItems: 'stretch' }}>
+                      <div style={{ display: 'flex', gap: '10px' }}>
                         <input 
                           type="text" 
                           placeholder="Enter Role name..." 
@@ -212,23 +242,98 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
                           value={newRoleName}
                           onChange={e => setNewRoleName(e.target.value)}
                           onKeyDown={e => e.key === 'Enter' && handleForgeRole()}
+                          style={{ flex: 1 }}
                         />
-                        <button className="btn-primary" style={{ padding: '10px 15px', fontSize: '0.9rem' }} onClick={handleForgeRole}>
+                        <label style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '0 10px', borderRadius: '6px', cursor: 'pointer' }}>
+                          <Palette size={16} style={{ marginRight: '8px' }}/>
+                          <input 
+                            type="color" 
+                            value={newRoleColor} 
+                            onChange={e => setNewRoleColor(e.target.value)} 
+                            style={{ width: '30px', height: '30px', border: 'none', background: 'none', cursor: 'pointer' }}
+                          />
+                        </label>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                        <button className="btn-primary" style={{ flex: 1, padding: '10px 15px', fontSize: '0.9rem' }} onClick={handleForgeRole}>
                           Save Role
                         </button>
-                        <button style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '10px 15px', borderRadius: '6px' }} onClick={() => setIsForgingRole(false)}>
+                        <button style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '10px 15px', borderRadius: '6px' }} onClick={() => setIsForgingRole(false)}>
                           Cancel
                         </button>
                       </div>
-                    ) : (
-                      <button className="btn-forge" onClick={() => setIsForgingRole(true)}>
-                        <Plus size={16} /> Forge New Role
-                      </button>
-                    )}
+                    </div>
+                  ) : (
+                    <button className="btn-forge" onClick={() => setIsForgingRole(true)}>
+                      <Plus size={16} /> Forge New Role
+                    </button>
+                  )}
+
+                  <div style={{ marginTop: '20px', marginBottom: '15px' }}>
+                    <h5 style={{ color: 'var(--text-secondary)', marginBottom: '8px', fontSize: '0.8rem', textTransform: 'uppercase' }}>Created Roles</h5>
+                    {roles.map(role => (
+                      <div key={role.name} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', marginBottom: '8px' }}>
+                        <span style={{ color: role.color, fontWeight: 'bold' }}>{role.name}</span>
+                        {!defaultRoles.find(r => r.name === role.name) && (
+                          <X size={16} style={{ cursor: 'pointer', color: 'var(--text-secondary)' }} onClick={() => removeRole(role.name)} />
+                        )}
+                      </div>
+                    ))}
                   </div>
-                )}
-              </motion.div>
-            )}
+                  
+                  <div style={{ marginTop: '20px' }}>
+                    <h5 style={{ color: 'var(--text-secondary)', marginBottom: '8px', fontSize: '0.8rem', textTransform: 'uppercase' }}>Role Assignments</h5>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {members.map(member => {
+                        const currentRoleName = campsite.memberRoles?.[member];
+                        const currentRole = roles.find(r => r.name === currentRoleName) || roles.find(r => r.name === 'Scout') || defaultRoles[1];
+                        
+                        return (
+                          <div key={member} style={{ background: 'rgba(255,255,255,0.05)', padding: '10px 15px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontWeight: 'bold', color: currentRole?.color }}>{member}</span>
+                            
+                            <div style={{ position: 'relative' }}>
+                              <button 
+                                onClick={() => setAssignDropdownFor(assignDropdownFor === member ? null : member)}
+                                style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+                              >
+                                {currentRole.name} <ChevronDown size={12} />
+                              </button>
+                              
+                              <AnimatePresence>
+                                {assignDropdownFor === member && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    style={{ position: 'absolute', top: '100%', right: 0, marginTop: '5px', background: 'var(--bg-secondary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '5px', zIndex: 10, width: '150px', boxShadow: '0 10px 20px rgba(0,0,0,0.5)' }}
+                                  >
+                                    <button
+                                      onClick={() => handleAssignRole(member, '')}
+                                      style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', color: 'var(--text-primary)', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                    >
+                                      Remove Role
+                                    </button>
+                                    {roles.map(r => (
+                                      <button
+                                        key={r.name}
+                                        onClick={() => handleAssignRole(member, r.name)}
+                                        style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', color: r.color, padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                      >
+                                        {r.name}
+                                        {currentRoleName === r.name && <Check size={12} />}
+                                      </button>
+                                    ))}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
 
             {activeTab === 'safety' && (
               <motion.div key="safety" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>

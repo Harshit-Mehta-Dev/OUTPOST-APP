@@ -29,6 +29,7 @@ const campsiteSchema = new mongoose.Schema({
   
   expeditions: [expeditionSchema],
   roles: [roleSchema],
+  memberRoles: { type: Map, of: String, default: {} }, // Maps username to roleName
   members: [{ type: String }], // Array of usernames
   
   totalScouts: { type: Number, default: 1 },
