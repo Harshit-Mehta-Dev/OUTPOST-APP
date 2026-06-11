@@ -17,7 +17,7 @@ const MemberDrawer = ({ isOpen, onClose, members = [], adminEmail }) => {
           <div className="drawer-header">
             <div className="drawer-title">
               <Users size={16} className="drawer-icon" />
-              <span>Scouts on Grid ({members.length})</span>
+              <span>Scout Registry ({members.length})</span>
             </div>
             <button className="drawer-close-btn" onClick={onClose}>
               <X size={18} />
