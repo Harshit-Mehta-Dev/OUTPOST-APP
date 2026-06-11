@@ -40,10 +40,10 @@ export default function FounderSection() {
             <div className="founder-glass-badge">
               <div>
                 <p className="founder-badge-name">Harshit Mehta</p>
-                <p className="founder-badge-role">Jalandhar Node // Founder</p>
+                <p className="founder-badge-role">INDIA // Founder</p>
               </div>
               <div className="founder-badge-icon">
-                Ω
+                <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
             </div>
           </div>

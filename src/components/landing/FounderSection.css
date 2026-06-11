@@ -108,7 +108,7 @@
 }
 
 .founder-badge-name {
-  color: white;
+  color: var(--text-primary);
   font-weight: 900;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
@@ -117,7 +117,7 @@
 }
 
 .founder-badge-role {
-  color: #71717a;
+  color: var(--text-secondary);
   font-family: monospace;
   font-size: 0.625rem;
   margin: 0.125rem 0 0 0;
@@ -164,7 +164,7 @@
   font-weight: 900;
   font-family: monospace;
   letter-spacing: -0.025em;
-  color: white;
+  color: var(--text-primary);
   text-transform: uppercase;
   line-height: 1.2;
   margin: 0;
@@ -197,7 +197,7 @@
 
 .founder-quote-text {
   font-size: 0.875rem;
-  color: #a1a1aa;
+  color: var(--text-secondary);
   line-height: 1.625;
   font-style: italic;
   position: relative;
@@ -216,7 +216,7 @@
 }
 
 .founder-sig-name {
-  color: white;
+  color: var(--text-primary);
   font-weight: bold;
   font-family: monospace;
   font-size: 0.75rem;
@@ -226,7 +226,7 @@
 }
 
 .founder-sig-role {
-  color: #71717a;
+  color: var(--text-secondary);
   font-family: monospace;
   font-size: 0.6875rem;
   margin: 0.125rem 0 0 0;
@@ -270,7 +270,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #71717a;
+  color: var(--text-secondary);
   font-family: monospace;
   font-size: 0.5625rem;
   text-transform: uppercase;
@@ -284,7 +284,7 @@
 .founder-spec-value {
   font-size: 0.75rem;
   font-weight: bold;
-  color: #e4e4e7;
+  color: var(--text-primary);
   margin: 0.25rem 0 0 0;
   font-family: monospace;
 }
