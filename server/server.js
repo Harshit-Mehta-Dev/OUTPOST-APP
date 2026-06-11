@@ -17,6 +17,7 @@ const supabase = require('./supabaseClient');
 // Helper to push message backups to Supabase
 const syncMessageToSupabase = async (messageDoc) => {
   try {
+    if (!supabase) return;
     const { _id, __v, ...data } = messageDoc.toObject ? messageDoc.toObject() : messageDoc;
     const { error } = await supabase.from('messages').upsert(
       { id: _id.toString(), ...data }, 

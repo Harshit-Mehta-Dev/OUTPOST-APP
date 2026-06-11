@@ -7,6 +7,7 @@ const supabase = require('../supabaseClient');
 // Helper to push user backups to Supabase
 const syncToSupabase = async (userDoc) => {
   try {
+    if (!supabase) return;
     const { _id, password, __v, ...data } = userDoc.toObject ? userDoc.toObject() : userDoc;
     const { error } = await supabase.from('users').upsert(
       { email: data.email, ...data }, 
