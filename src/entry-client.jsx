@@ -12,7 +12,7 @@ hydrateRoot(document.getElementById('root'),
   <StrictMode>
     <GoogleOAuthProvider clientId={CLIENT_ID}>
       <ThemeProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <App />
         </BrowserRouter>
       </ThemeProvider>

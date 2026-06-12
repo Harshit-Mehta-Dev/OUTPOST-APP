@@ -12,7 +12,7 @@ export function render(url) {
     <React.StrictMode>
       <GoogleOAuthProvider clientId={CLIENT_ID}>
         <ThemeProvider>
-          <StaticRouter location={url}>
+          <StaticRouter location={url} basename={import.meta.env.BASE_URL}>
             <App />
           </StaticRouter>
         </ThemeProvider>
