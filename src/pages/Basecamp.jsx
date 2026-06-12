@@ -43,7 +43,6 @@ import MemberDrawer from '../components/MemberDrawer';
 import AttachmentPopover from '../components/chat/AttachmentPopover';
 import AIOperations from '../components/settings/AIOperations';
 import NotificationDropdown from '../components/navigation/NotificationDropdown';
-import PerimeterStanding from '../components/dashboard/PerimeterStanding';
 import { useSignalRadar } from '../hooks/useSignalRadar';
 
 const socket = io('https://outpost-app.onrender.com');
@@ -51,7 +50,6 @@ const socket = io('https://outpost-app.onrender.com');
 const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const navigate = useNavigate();
   const [activeChannel, setActiveChannel] = useState('community-chat');
-  const [currentView, setCurrentView] = useState('chat');
   const [showWelcome, setShowWelcome] = useState(true);
   const [showDiscover, setShowDiscover] = useState(false);
   const [joinNotification, setJoinNotification] = useState(null);
@@ -909,8 +907,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               {expeditions.filter(e => e.type === 'text').map(exp => (
                 <div 
                   key={exp.id} 
-                  className={`expedition-item ${activeChannel === exp.id && currentView === 'chat' ? 'active' : ''}`}
-                  onClick={() => { setActiveChannel(exp.id); setCurrentView('chat'); }}
+                  className={`expedition-item ${activeChannel === exp.id ? 'active' : ''}`}
+                  onClick={() => setActiveChannel(exp.id)}
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Hash size={18} className="exp-icon" />
@@ -930,7 +928,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
           <div className="expedition-category mt-4">VOICE EXPEDITIONS</div>
           {expeditions.filter(e => e.type === 'voice').map(exp => (
-            <div key={exp.id} className="expedition-item voice" onClick={() => { setActiveChannel(exp.id); setCurrentView('chat'); }}>
+            <div key={exp.id} className="expedition-item voice" onClick={() => setActiveChannel(exp.id)}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <Volume2 size={18} className="exp-icon" />
                 <span>{exp.name}</span>
@@ -950,7 +948,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
         {/* User Controls */}
         <div className="user-profile">
-          <div className={`user-info ${currentView === 'perimeter_standing' ? 'active-standing' : ''}`} onClick={() => setCurrentView('perimeter_standing')} style={{ cursor: 'pointer', background: currentView === 'perimeter_standing' ? 'var(--bg-card)' : 'transparent', border: currentView === 'perimeter_standing' ? '1px solid var(--border-glass)' : '1px solid transparent', borderRadius: '12px', padding: '8px', transition: 'all 0.2s' }}>
+          <div className="user-info" onClick={() => setIsProfileModalOpen(true)} style={{ cursor: 'pointer' }}>
             <div className="user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
               {currentUser?.profilePictureUrl ? (
                 <img src={currentUser.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -983,7 +981,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             >
               <Menu size={20} style={{ color: 'var(--text-secondary)' }} />
             </button>
-            <span className="active-camp-name"># {currentView === 'chat' ? (activeCampsite?.name || 'Loading...') : 'Perimeter Telemetry'}</span>
+            <span className="active-camp-name"># {activeCampsite?.name || 'Loading...'}</span>
           </div>
           <div className="top-bar-center">
             <Target size={16} />
@@ -1079,8 +1077,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
         </header>
 
-        {currentView === 'chat' ? (
-        <>
         <header className="chat-header">
           <div className="chat-title">
             <Hash size={24} className="chat-title-icon" />
@@ -1320,12 +1316,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </button>
           </div>
         </div>
-        </>
-        ) : (
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-            <PerimeterStanding />
-          </div>
-        )}
       </main>
       </>
       )}
