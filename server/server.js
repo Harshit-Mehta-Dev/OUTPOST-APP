@@ -271,25 +271,35 @@ io.on('connection', (socket) => {
       // 3. FAN-OUT Notification Logic
       try {
         const campsiteId = data.channelKey.split('_')[0];
-        const campsite = await Campsite.findById(campsiteId);
-        
-        if (campsite && campsite.members) {
-          campsite.members.forEach((memberUsername) => {
-            if (memberUsername !== data.user.username) {
-              let textPreview = data.type === 'text' ? data.text : (data.type === 'poll' ? '[Poll]' : '[Media]');
-              if (textPreview && textPreview.length > 45) {
-                textPreview = textPreview.substring(0, 45) + '...';
-              }
-              
-              io.to(`user-room-${memberUsername}`).emit('incoming-signal-alert', {
-                campsiteId: campsiteId,
-                campsiteName: campsite.name,
-                channelId: data.channelKey,
-                senderName: data.user.username,
-                textPreview: textPreview
-              });
-            }
+        let textPreview = data.type === 'text' ? data.text : (data.type === 'poll' ? '[Poll]' : '[Media]');
+        if (textPreview && textPreview.length > 45) {
+          textPreview = textPreview.substring(0, 45) + '...';
+        }
+
+        if (String(campsiteId) === '1') {
+          // Outpost HQ - global broadcast to all users except the sender
+          socket.broadcast.emit('incoming-signal-alert', {
+            campsiteId: '1',
+            campsiteName: 'Outpost HQ',
+            channelId: data.channelKey,
+            senderName: data.user.username,
+            textPreview: textPreview
           });
+        } else {
+          const campsite = await Campsite.findById(campsiteId);
+          if (campsite && campsite.members) {
+            campsite.members.forEach((memberUsername) => {
+              if (memberUsername !== data.user.username) {
+                io.to(`user-room-${memberUsername}`).emit('incoming-signal-alert', {
+                  campsiteId: campsiteId,
+                  campsiteName: campsite.name,
+                  channelId: data.channelKey,
+                  senderName: data.user.username,
+                  textPreview: textPreview
+                });
+              }
+            });
+          }
         }
       } catch (fanOutError) {
         console.error("Error broadcasting notification signal:", fanOutError);

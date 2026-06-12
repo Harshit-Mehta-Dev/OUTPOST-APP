@@ -993,6 +993,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 onClick={() => {
                   setIsAlertOpen(!isAlertOpen);
                   setIsAIOpen(false); // Close AI panel to prevent stacked layout collisions
+                  if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+                    Notification.requestPermission();
+                  }
                 }}
                 className={`theme-trigger-btn ${isAlertOpen ? 'active' : ''}`}
                 style={{

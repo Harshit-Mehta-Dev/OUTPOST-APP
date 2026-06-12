@@ -26,7 +26,7 @@ export function useSignalRadar(socket, activeChannelId, changeViewChannelCallbac
       if (Notification.permission === "granted") {
         const osBanner = new Notification(`OUTPOST: #${payload.campsiteName}`, {
           body: `${payload.senderName}: ${payload.textPreview}`,
-          icon: "/logo.webp" // Mounts your vector watchtower branding asset safely
+          icon: "/logo.png" // Mounts your vector watchtower branding asset safely
         });
         
         osBanner.onclick = () => {
