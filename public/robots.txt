@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://outpost-app-a0c.pages.dev/sitemap.xml
