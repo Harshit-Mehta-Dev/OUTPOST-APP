@@ -25,7 +25,8 @@ import {
   Bell,
   Award,
   Zap,
-  Check
+  Check,
+  Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -68,6 +69,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState('chat'); // Mobile Bottom Dock Tab
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false); // Mobile Sliding Drawer
   const [channelToDelete, setChannelToDelete] = useState(null);
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -975,9 +978,16 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         <header className="outpost-top-bar">
           <div className="top-bar-left">
             <button 
-              className="icon-btn menu-toggle-btn" 
+              className="icon-btn menu-toggle-btn desktop-only-menu-toggle" 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               title="Toggle Sidebar"
+            >
+              <Menu size={20} style={{ color: 'var(--text-secondary)' }} />
+            </button>
+            <button 
+              className="icon-btn menu-toggle-btn mobile-only" 
+              onClick={() => setIsMobileDrawerOpen(true)}
+              title="Toggle Mobile Sidebar"
             >
               <Menu size={20} style={{ color: 'var(--text-secondary)' }} />
             </button>
@@ -1323,7 +1333,158 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       </>
       )}
 
-      {/* Notifications */}
+      {/* 📱 MOBILE SLIDING DRAWER (Visible only on mobile when isMobileDrawerOpen is true) */}
+      <AnimatePresence>
+        {isMobileDrawerOpen && (
+          <motion.div 
+            className="mobile-drawer-overlay mobile-only"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileDrawerOpen(false)}
+          >
+            <motion.div 
+              className="mobile-drawer-content"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Clone of Campsite Sidebar */}
+              <nav className="campsite-sidebar glass-panel-dark">
+                {campsites.map((camp) => (
+                  <div
+                    key={camp.id}
+                    className={`campsite-item ${activeCampsite?.id === camp.id ? 'active' : ''}`}
+                    onClick={() => {
+                      handleSelectCampsite(camp);
+                    }}
+                    title={camp.name}
+                  >
+                    {camp.name.substring(0, 2).toUpperCase()}
+                  </div>
+                ))}
+                <div className="campsite-separator"></div>
+                <button 
+                  className="campsite-item add-button" 
+                  onClick={() => { setIsCreateModalOpen(true); setIsMobileDrawerOpen(false); }}
+                  title="Establish New Campsite"
+                >
+                  <Plus size={24} />
+                </button>
+                <div className="campsite-separator"></div>
+                <button 
+                  className="campsite-item" 
+                  onClick={() => { setShowDiscover(true); setIsMobileDrawerOpen(false); }}
+                  title="Discover Outposts"
+                  style={{ background: showDiscover ? 'rgba(255,255,255,0.1)' : 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}
+                >
+                  <Compass size={24} />
+                </button>
+              </nav>
+
+              {/* Clone of Expedition Sidebar */}
+              <aside className="expedition-sidebar glass-panel">
+                <div className="expedition-header">
+                  <div className="expedition-header-logo">
+                    <img src={logoUrl} alt="Outpost Logo" />
+                    <span>OUTPOST</span>
+                  </div>
+                </div>
+
+                <div className="expedition-list">
+                  <div className="expedition-category">EXPEDITIONS</div>
+                  {expeditions.filter(e => e.type === 'text').map((channel) => (
+                    <div 
+                      key={channel.id}
+                      className={`expedition-item ${activeChannel === channel.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setActiveChannel(channel.id);
+                        setShowDiscover(false);
+                        setIsMobileDrawerOpen(false); // Close drawer on selection
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Hash size={18} className="exp-icon" />
+                        <span>{channel.name}</span>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button 
+                    className="expedition-item mt-4" 
+                    onClick={() => { setIsCreateChannelModalOpen(true); setIsMobileDrawerOpen(false); }}
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Plus size={18} className="exp-icon" />
+                      <span>New Expedition</span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* User Controls Mobile */}
+                <div className="user-profile">
+                  <div className="user-info" onClick={() => { setIsProfileModalOpen(true); setIsMobileDrawerOpen(false); }}>
+                    <div className="user-avatar">
+                      {currentUser.profilePictureUrl ? (
+                        <img 
+                          src={currentUser.profilePictureUrl} 
+                          alt="Profile" 
+                          style={{width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover'}}
+                        />
+                      ) : (
+                        <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:'bold', fontSize:'0.9rem'}}>
+                          {currentUser.username.substring(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="status-dot online"></div>
+                    </div>
+                    <div className="user-name">
+                      <strong>{currentUser.username}</strong>
+                      <span>Active</span>
+                    </div>
+                  </div>
+                  <div className="user-actions">
+                    <button className="icon-btn" title="AI Operations" onClick={() => { setIsAIOpen(true); setIsMobileDrawerOpen(false); }}>
+                      <Brain size={18} />
+                    </button>
+                    <button className="icon-btn" title="Camp Operations" onClick={() => { setIsCampOpsModalOpen(true); setIsMobileDrawerOpen(false); }}>
+                      <Settings size={18} />
+                    </button>
+                  </div>
+                </div>
+              </aside>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 📱 MOBILE FLOATING DOCK TOOLBAR */}
+      <nav className="mobile-bottom-dock mobile-only">
+        <button
+          onClick={() => { setActiveMobileTab("campsites"); setShowDiscover(true); setIsMobileDrawerOpen(false); }}
+          className={`dock-item ${showDiscover ? "active" : ""}`}
+        >
+          <Compass size={22} />
+          <span>Discover</span>
+        </button>
+        <button
+          onClick={() => { setActiveMobileTab("chat"); setShowDiscover(false); setIsMobileDrawerOpen(false); }}
+          className={`dock-item ${!showDiscover && activeMobileTab === "chat" ? "active" : ""}`}
+        >
+          <MessageSquare size={22} />
+          <span>Comms</span>
+        </button>
+        <button
+          onClick={() => { setActiveMobileTab("standing"); setIsCampOpsModalOpen(true); setIsMobileDrawerOpen(false); }}
+          className={`dock-item ${isCampOpsModalOpen ? "active" : ""}`}
+        >
+          <Shield size={22} />
+          <span>Standing</span>
+        </button>
+      </nav>      {/* Notifications */}
       <AnimatePresence>
         {joinNotification && (
           <motion.div 
