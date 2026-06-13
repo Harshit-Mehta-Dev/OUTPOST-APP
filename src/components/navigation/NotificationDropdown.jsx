@@ -12,11 +12,12 @@ export default function NotificationDropdown({ isOpen, alerts, onSelectAlert, on
           exit={{ opacity: 0, y: -15 }}
           style={{
             position: 'absolute',
-            top: '50px',
-            right: '-10px',
-            width: '320px',
-            backgroundColor: 'var(--bg-primary)',
-            border: '1px solid var(--border-glass)',
+            top: '60px',
+            right: '10px',
+            width: 'calc(100vw - 20px)',
+            maxWidth: '320px',
+            background: 'rgba(9, 9, 11, 0.95)',
+            border: '1px solid rgba(39, 39, 42, 1)',
             backdropFilter: 'blur(12px)',
             borderRadius: '16px',
             padding: '16px',

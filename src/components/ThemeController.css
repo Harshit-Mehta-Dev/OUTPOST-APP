@@ -192,3 +192,12 @@
   border-color: var(--text-secondary);
   color: var(--brand-primary);
 }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .theme-controller-overlay {
+    width: calc(100vw - 20px);
+    right: 10px;
+    top: 60px;
+  }
+}

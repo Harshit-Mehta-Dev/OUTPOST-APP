@@ -277,3 +277,41 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(20px);
 }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .camp-ops-content {
+    flex-direction: column;
+    height: 90vh;
+    max-height: 90vh;
+    width: calc(100vw - 20px);
+  }
+  .camp-ops-sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-glass);
+    flex-shrink: 0;
+  }
+  .camp-ops-sidebar h3 {
+    display: none;
+  }
+  .ops-tab-btn {
+    padding: 8px 12px;
+    white-space: nowrap;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+  }
+  .ops-tab-btn.active {
+    border-left: none;
+    border-bottom: 2px solid var(--primary-color);
+  }
+  .camp-ops-main {
+    padding: 15px;
+  }
+  .camp-ops-header {
+    margin-bottom: 15px;
+  }
+}

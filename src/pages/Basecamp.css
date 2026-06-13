@@ -911,6 +911,10 @@
     display: none !important; /* Hide status text on mobile to save space */
   }
 
+  .desktop-only-menu-toggle {
+    display: none !important;
+  }
+
   .top-bar-right {
     gap: 4px !important; /* Compress icons */
   }
