@@ -53,47 +53,69 @@ export default function NotificationDropdown({ isOpen, alerts, onSelectAlert, on
               </div>
             ) : (
               alerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  onClick={() => onSelectAlert(alert)}
-                  style={{
-                    padding: '10px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                    border: '1px solid var(--border-glass)',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '12px',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(var(--brand-primary), 0.5)';
-                    e.currentTarget.style.backgroundColor = 'rgba(var(--brand-primary), 0.05)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border-glass)';
-                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
-                  }}
-                >
-                  <div style={{ padding: '8px', backgroundColor: 'rgba(var(--brand-primary), 0.1)', border: '1px solid rgba(var(--brand-primary), 0.2)', color: 'rgb(var(--brand-primary))', borderRadius: '8px', marginTop: '2px' }}>
-                    <MessageSquare size={14} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <p style={{ fontSize: '10px', fontFamily: 'monospace', fontWeight: 'bold', color: 'rgb(var(--brand-primary))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%', textTransform: 'uppercase' }}>
-                        {alert.campsiteName}
-                      </p>
-                      <span style={{ fontSize: '9px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>Now</span>
+                  <div
+                    key={alert.id}
+                    onClick={() => onSelectAlert(alert)}
+                    style={{
+                      padding: '10px',
+                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                      border: '1px solid var(--border-glass)',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '12px',
+                      transition: 'all 0.2s ease',
+                      position: 'relative'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(var(--brand-primary), 0.5)';
+                      e.currentTarget.style.backgroundColor = 'rgba(var(--brand-primary), 0.05)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--border-glass)';
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+                    }}
+                  >
+                    <div style={{ padding: '8px', backgroundColor: 'rgba(var(--brand-primary), 0.1)', border: '1px solid rgba(var(--brand-primary), 0.2)', color: 'rgb(var(--brand-primary))', borderRadius: '8px', marginTop: '2px' }}>
+                      <MessageSquare size={14} />
                     </div>
-                    <p style={{ fontSize: '12px', color: 'var(--text-primary)', fontWeight: '600', marginTop: '2px', marginBottom: '2px' }}>
-                      {alert.senderName}
-                    </p>
-                    <p style={{ fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {alert.textPreview}
-                    </p>
+                    <div style={{ flex: 1, minWidth: 0, paddingRight: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <p style={{ fontSize: '10px', fontFamily: 'monospace', fontWeight: 'bold', color: 'rgb(var(--brand-primary))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%', textTransform: 'uppercase' }}>
+                          {alert.campsiteName}
+                        </p>
+                        <span style={{ fontSize: '9px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>Now</span>
+                      </div>
+                      <p style={{ fontSize: '12px', color: 'var(--text-primary)', fontWeight: '600', marginTop: '2px', marginBottom: '2px' }}>
+                        {alert.senderName}
+                      </p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {alert.textPreview}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (typeof onDismissAlert === 'function') onDismissAlert(alert.id);
+                      }}
+                      style={{
+                        position: 'absolute',
+                        right: '8px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        padding: '4px'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.color = '#ff3b30'}
+                      onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
                   </div>
-                </div>
               ))
             )}
           </div>

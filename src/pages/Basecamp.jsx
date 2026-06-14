@@ -161,6 +161,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const messages = messagesByChannel[currentChannelKey] || [];
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [selectedPopupAlert, setSelectedPopupAlert] = useState(null);
   
   const changeViewChannelCallback = (campsiteId, channelId) => {
     setCampsites(prev => prev.map(c => ({
@@ -171,7 +172,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     setActiveChannel(pureChannel);
   };
 
-  const { alerts, setAlerts, handleSelectNotification } = useSignalRadar(socket, currentChannelKey, changeViewChannelCallback, currentUser);
+  const { alerts, setAlerts, handleSelectNotification } = useSignalRadar(socket, currentChannelKey, setSelectedPopupAlert, currentUser);
 
   // Fetch messages from MongoDB when joining a new channel
   useEffect(() => {
@@ -1152,8 +1153,42 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 isOpen={isAlertOpen} 
                 alerts={alerts} 
                 onSelectAlert={handleSelectNotification} 
+                onDismissAlert={(id) => setAlerts(prev => prev.filter(a => a.id !== id))}
                 onClearAll={() => setAlerts([])} 
               />
+
+              {/* Message Read Popup Modal */}
+              <AnimatePresence>
+                {selectedPopupAlert && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)' }}>
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      style={{ background: 'var(--bg-card)', border: '1px solid var(--brand-primary)', borderRadius: '16px', padding: '24px', maxWidth: '400px', width: '90%', color: 'var(--text-primary)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '14px', fontFamily: 'monospace', color: 'var(--brand-primary)', textTransform: 'uppercase' }}>INTERCEPT: {selectedPopupAlert.campsiteName}</h3>
+                        <button onClick={() => setSelectedPopupAlert(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={18} /></button>
+                      </div>
+                      <div style={{ marginBottom: '20px' }}>
+                        <p style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--text-primary)', marginBottom: '8px' }}>From: {selectedPopupAlert.senderName}</p>
+                        <p style={{ fontSize: '14px', lineHeight: '1.5', color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)' }}>{selectedPopupAlert.textPreview}</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                        <button onClick={() => {
+                          setAlerts(prev => prev.filter(a => a.id !== selectedPopupAlert.id));
+                          setSelectedPopupAlert(null);
+                        }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid var(--border-glass)', color: 'var(--text-secondary)', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={(e) => e.target.style.color = '#ff3b30'} onMouseOut={(e) => e.target.style.color = 'var(--text-secondary)'}>Delete</button>
+                        <button onClick={() => {
+                          changeViewChannelCallback(selectedPopupAlert.campsiteId, selectedPopupAlert.channelId);
+                          setSelectedPopupAlert(null);
+                        }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--brand-primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Jump to Channel</button>
+                      </div>
+                    </motion.div>
+                  </div>
+                )}
+              </AnimatePresence>
             </div>
 
             {isCampAdmin && (

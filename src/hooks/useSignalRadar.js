@@ -77,9 +77,8 @@ export function useSignalRadar(socket, activeChannelId, changeViewChannelCallbac
     
     // 2. Flash Highlight Protocol: Cache target ID in storage matrix
     localStorage.setItem("highlight_message_trigger", "true");
-
-    // 3. Remove alert from active unread array
-    setAlerts((prev) => prev.filter((a) => a.id !== alert.id));
+    
+    // 3. (Removed) Notifications now persist until manually cleared
     
     // 4. If it's a system override alert, delete it from the backend so it doesn't return
     if (alert.senderName === "SYSTEM OVERRIDE" && currentUser?.username) {
