@@ -27,7 +27,8 @@ import {
   Zap,
   Check,
   Shield,
-  AlertOctagon
+  AlertOctagon,
+  Eye
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -94,8 +95,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     const saved = localStorage.getItem('outpost_user');
     return saved ? JSON.parse(saved) : { username: 'YourUser' };
   });
-
-  const isGlobalAdmin = currentUser?.email?.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
 
   // Keep currentUser fresh from localStorage/backend syncs
   useEffect(() => {
