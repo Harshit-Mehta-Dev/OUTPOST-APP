@@ -46,7 +46,7 @@ import AttachmentPopover from '../components/chat/AttachmentPopover';
 import AIOperations from '../components/settings/AIOperations';
 import NotificationDropdown from '../components/navigation/NotificationDropdown';
 import { useSignalRadar } from '../hooks/useSignalRadar';
-import OperatorConsole from '../components/operator/OperatorConsole';
+import OperatorTerminalTab from '../components/operator/OperatorTerminalTab';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -61,9 +61,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [activeTypers, setActiveTypers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isFetchingMessages, setIsFetchingMessages] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
-  const [activeMembersList, setActiveMembersList] = useState([]);
+  const [isOperatorOpen, setIsOperatorOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const typingTimeoutRef = useRef(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCampOpsModalOpen, setIsCampOpsModalOpen] = useState(false);
@@ -1054,11 +1056,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             
-            <OperatorConsole 
-              currentUserEmail={currentUser?.email} 
-              activeCampsite={activeCampsite} 
-              onDecommission={handleOperatorDecommissionCampsite} 
-            />
+            {isGlobalAdmin && (
+              <button
+                onClick={() => setIsOperatorOpen(true)}
+                className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
+                  isOperatorOpen 
+                    ? "active shadow-[0_0_15px_rgba(239,68,68,0.2)]" 
+                    : ""
+                }`}
+                style={{
+                  background: isOperatorOpen ? 'rgba(69, 10, 10, 0.4)' : 'var(--bg-glass)',
+                  borderColor: isOperatorOpen ? 'rgba(153, 27, 27, 0.8)' : 'var(--border-glass)',
+                  color: isOperatorOpen ? '#f87171' : 'var(--text-secondary)'
+                }}
+                title="OPERATOR COMMAND PANEL GATE"
+              >
+                <Eye size={18} className="animate-pulse" />
+              </button>
+            )}
 
             <div style={{ position: 'relative' }}>
               <button
@@ -1771,6 +1786,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           />
         )}
       </AnimatePresence>
+      
+      <OperatorTerminalTab 
+        isOpen={isOperatorOpen} 
+        onClose={() => setIsOperatorOpen(false)} 
+        campsiteName={activeCampsite?.name} 
+        currentCampsiteId={activeCampsite?.id} 
+      />
       
     </div>
   </div>
