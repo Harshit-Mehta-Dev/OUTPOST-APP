@@ -44,7 +44,7 @@ export default function OperatorConsole({ currentUserEmail, activeCampsite, onDe
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute right-0 w-80 bg-zinc-950/95 border border-red-900/40 backdrop-blur-2xl rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8),_inset_0_1px_1px_rgba(255,255,255,0.02)] z-50 font-sans text-zinc-300"
+            className="absolute w-80 bg-zinc-950 border border-red-900/30 rounded-2xl p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] z-[100] font-sans text-zinc-300"
             style={{ top: "calc(100% + 12px)", right: 0 }}
           >
             {/* Console Header */}
