@@ -158,10 +158,19 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const activeCampsite = campsites && campsites.length > 0 ? (campsites.find(c => c.active) || campsites[0]) : null;
   const expeditions = activeCampsite?.expeditions || [];
   const currentChannelKey = activeCampsite ? `${activeCampsite.id}_${activeChannel}` : 'fallback';
-  const messages = messagesByChannel[currentChannelKey] || [];
-
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [selectedPopupAlert, setSelectedPopupAlert] = useState(null);
+  const [clearedTimestamps, setClearedTimestamps] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('outpost_cleared_chats') || '{}');
+    } catch {
+      return {};
+    }
+  });
+  
+  const rawMessages = messagesByChannel[currentChannelKey] || [];
+  const clearTime = clearedTimestamps[currentChannelKey] || 0;
+  const messages = rawMessages.filter(msg => (msg.receivedAt || 0) >= clearTime);
   
   const changeViewChannelCallback = (campsiteId, channelId) => {
     setCampsites(prev => prev.map(c => ({
@@ -180,9 +189,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     fetch(`https://outpost-app.onrender.com/api/messages/${currentChannelKey}`)
       .then(res => res.json())
       .then(data => {
+        const mappedData = data.map(m => ({ ...m, receivedAt: m.createdAt ? new Date(m.createdAt).getTime() : Date.now() }));
         setMessagesByChannel(prev => ({
           ...prev,
-          [currentChannelKey]: data
+          [currentChannelKey]: mappedData
         }));
         // Artificially delay hiding the skeleton for 800ms to improve perceived UX
         setTimeout(() => setIsFetchingMessages(false), 800);
@@ -247,7 +257,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         }
         return {
           ...prev,
-          [newMessage.channelKey]: [...currentMessages, newMessage]
+          [newMessage.channelKey]: [...currentMessages, { ...newMessage, receivedAt: Date.now() }]
         };
       });
     };
@@ -1258,7 +1268,36 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <Hash size={24} className="chat-title-icon" />
             <h2>{activeChannel}</h2>
           </div>
-          <div className="chat-header-actions" style={{ position: 'relative' }}>
+          <div className="chat-header-actions" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button 
+              className="icon-btn theme-trigger-btn"
+              onClick={() => {
+                if (window.confirm("Are you sure you want to permanently clear this chat history from your dashboard? Other users will still see it.")) {
+                   const newTimestamps = { ...clearedTimestamps, [currentChannelKey]: Date.now() };
+                   setClearedTimestamps(newTimestamps);
+                   localStorage.setItem('outpost_cleared_chats', JSON.stringify(newTimestamps));
+                }
+              }}
+              style={{
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-glass)',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontFamily: 'monospace',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.color = '#ff3b30'; e.currentTarget.style.borderColor = 'rgba(255, 59, 48, 0.5)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-glass)'; }}
+              title="Clear Chat For Me"
+            >
+              <Trash2 size={14} /> Clear Chat
+            </button>
             <button 
               className={`icon-btn ${isDrawerOpen ? 'active' : ''}`}
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
