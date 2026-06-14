@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
 
 export function useSignalRadar(socket, activeChannelId, changeViewChannelCallback, currentUser) {
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, setAlerts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('outpost_radar_alerts');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('outpost_radar_alerts', JSON.stringify(alerts));
+  }, [alerts]);
 
   useEffect(() => {
     // Ask browser for hardware desktop system notification permission on bootstrap
@@ -72,7 +83,7 @@ export function useSignalRadar(socket, activeChannelId, changeViewChannelCallbac
   const handleSelectNotification = (alert) => {
     // 1. Tell your master state machine to load the target campsite and channel layout
     if (changeViewChannelCallback) {
-        changeViewChannelCallback(alert.campsiteId, alert.channelId);
+        changeViewChannelCallback(alert);
     }
     
     // 2. Flash Highlight Protocol: Cache target ID in storage matrix
