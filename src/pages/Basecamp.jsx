@@ -64,15 +64,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isOperatorOpen, setIsOperatorOpen] = useState(false);
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const typingTimeoutRef = useRef(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCampOpsModalOpen, setIsCampOpsModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState('chat'); // Mobile Bottom Dock Tab
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false); // Mobile Sliding Drawer
   const [channelToDelete, setChannelToDelete] = useState(null);
