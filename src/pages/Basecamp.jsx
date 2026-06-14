@@ -65,6 +65,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isOperatorOpen, setIsOperatorOpen] = useState(false);
+  const [activeMembersList, setActiveMembersList] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const typingTimeoutRef = useRef(null);
