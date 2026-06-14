@@ -26,7 +26,8 @@ import {
   Award,
   Zap,
   Check,
-  Shield
+  Shield,
+  AlertOctagon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -45,6 +46,7 @@ import AttachmentPopover from '../components/chat/AttachmentPopover';
 import AIOperations from '../components/settings/AIOperations';
 import NotificationDropdown from '../components/navigation/NotificationDropdown';
 import { useSignalRadar } from '../hooks/useSignalRadar';
+import OperatorConsole from '../components/operator/OperatorConsole';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -321,11 +323,36 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       });
     };
 
+    const handleOperatorErasure = (payload) => {
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[currentChannelKey] || [];
+        return {
+          ...prev,
+          [currentChannelKey]: currentMessages.map((msg) =>
+            (msg._id || msg.id) === payload.messageId
+              ? { 
+                  ...msg, 
+                  text: payload.replacementText, 
+                  isSystemDeleted: true 
+                }
+              : msg
+          )
+        };
+      });
+    };
+
+    const handleOperatorPurge = (payload) => {
+      alert(payload.message);
+      window.location.href = "/"; // Instantly route them back safely
+    };
+
     socket.on("scout-joined-list", handleScoutJoinedList);
     socket.on("campsite-admin-notification", handleAdminNotification);
     socket.on("level_up_alert", handleLevelUp);
     socket.on("broadcast-updated-vote", handleUpdatedVote);
     socket.on("message_deleted", handleMessageDeleted);
+    socket.on("operator-erasure-cascade", handleOperatorErasure);
+    socket.on("operator-basecamp-purge", handleOperatorPurge);
 
     return () => {
       socket.off('receive_message', handleReceiveMessage);
@@ -336,8 +363,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("level_up_alert", handleLevelUp);
       socket.off("broadcast-updated-vote", handleUpdatedVote);
       socket.off("message_deleted", handleMessageDeleted);
+      socket.off("operator-erasure-cascade", handleOperatorErasure);
+      socket.off("operator-basecamp-purge", handleOperatorPurge);
     };
-  }, []);
+  }, [currentChannelKey]);
 
   useEffect(() => {
     if (!currentUser || !currentUser.username || !currentUser.email) return;
@@ -689,6 +718,32 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     }));
   };
 
+  const handleOperatorEraseMessage = async (msgId) => {
+    try {
+      await fetch(`https://outpost-app.onrender.com/api/operator/erase-message/${msgId}`, {
+        method: "DELETE",
+        headers: {
+          "x-operator-email": currentUser?.email
+        }
+      });
+    } catch (err) {
+      console.error("Operator Error erasing message:", err);
+    }
+  };
+
+  const handleOperatorDecommissionCampsite = async (campId) => {
+    try {
+      await fetch(`https://outpost-app.onrender.com/api/operator/decommission-campsite/${campId}`, {
+        method: "DELETE",
+        headers: {
+          "x-operator-email": currentUser?.email
+        }
+      });
+    } catch (err) {
+      console.error("Operator Error decommissioning campsite:", err);
+    }
+  };
+
   // Determine if the current user is an admin for the active campsite
   const normalizedUserEmail = currentUser?.email?.toLowerCase()?.trim();
   const isGlobalAdmin = normalizedUserEmail === 'harshitmehta1012@gmail.com';
@@ -998,6 +1053,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <span>Outpost Status: Active</span>
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            
+            <OperatorConsole 
+              currentUserEmail={currentUser?.email} 
+              activeCampsite={activeCampsite} 
+              onDecommission={handleOperatorDecommissionCampsite} 
+            />
+
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => {
@@ -1206,9 +1268,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           </button>
                         </div>
                         <div className="message-text">
-                          {(!msg.type || msg.type === "text") && msg.text}
+                          {msg.isSystemDeleted ? (
+                            <div className="mt-1.5 px-3 py-2 bg-red-950/10 border border-red-950/40 rounded-xl flex items-center gap-2 text-red-400/80 max-w-2xl shadow-[inset_0_1px_10px_rgba(239,68,68,0.02)]" style={{ marginTop: '6px', padding: '8px 12px', backgroundColor: 'rgba(69, 10, 10, 0.1)', border: '1px solid rgba(69, 10, 10, 0.4)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(248, 113, 113, 0.8)', maxWidth: '42rem' }}>
+                              <AlertOctagon size={14} className="shrink-0" style={{ flexShrink: 0 }} />
+                              <p className="text-[11px] font-mono italic leading-normal" style={{ fontSize: '11px', fontFamily: 'monospace', fontStyle: 'italic', lineHeight: 1.5, margin: 0 }}>
+                                SYSTEM DECREE: Our Operator has decided to delete this message under community violation guidelines.
+                              </p>
+                            </div>
+                          ) : (
+                            (!msg.type || msg.type === "text") && msg.text
+                          )}
                           
-                          {msg.type === "media" && msg.mediaType === "image" && (
+                          {!msg.isSystemDeleted && msg.type === "media" && msg.mediaType === "image" && (
                             <motion.img
                               whileHover={{ scale: 1.01 }}
                               src={msg.body}
@@ -1267,10 +1338,47 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                             </div>
                           )}
                         </div>
-                </div>
-              </div>
-            );
-          })
+                      </div>
+
+                      {/* 💥 Operator Trash Can Icon: Renders on hover next to ANY chat line item line across your app */}
+                      {isGlobalAdmin && !msg.isSystemDeleted && (
+                        <button
+                          onClick={() => handleOperatorEraseMessage(msg._id || msg.id)}
+                          className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-950/50 text-zinc-600 hover:text-red-400 rounded-lg transition-all duration-150 border border-transparent hover:border-red-900/30"
+                          style={{
+                            opacity: 0,
+                            padding: '6px',
+                            color: '#52525b',
+                            borderRadius: '8px',
+                            transition: 'all 0.15s',
+                            border: '1px solid transparent',
+                            cursor: 'pointer',
+                            marginLeft: '8px',
+                            alignSelf: 'flex-start',
+                            marginTop: '4px'
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(69,10,10,0.5)'; e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = 'rgba(127,29,29,0.3)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#52525b'; e.currentTarget.style.borderColor = 'transparent'; }}
+                          title="PURGE PACKET VIA OPERATOR DECREE"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                      
+                      {/* CSS rule injection for hover state of the operator trash button */}
+                      <style dangerouslySetInnerHTML={{__html: `
+                        .message-item:hover button[title="PURGE PACKET VIA OPERATOR DECREE"] {
+                          opacity: 1 !important;
+                          transform: translateX(0) !important;
+                        }
+                        button[title="PURGE PACKET VIA OPERATOR DECREE"] {
+                          transform: translateX(8px);
+                        }
+                      `}} />
+
+                    </div>
+                  );
+                })
           )}
           <div ref={messagesEndRef} />
         </div>

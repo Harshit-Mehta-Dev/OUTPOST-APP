@@ -56,6 +56,12 @@ const io = new Server(server, {
   }
 });
 
+// Make io accessible to our router middleware
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // Setup Redis Adapter for multi-container orchestration (Only if REDIS_URL is explicitly provided)
 if (process.env.REDIS_URL) {
   const pubClient = createClient({ url: process.env.REDIS_URL });
@@ -145,6 +151,9 @@ app.use('/api/campsites', campsiteRoutes);
 
 const userRoutes = require('./routes/users');
 app.use('/api/users', userRoutes);
+
+const operatorRoutes = require('./routes/operator');
+app.use('/api/operator', operatorRoutes);
 // Health Check for Keep-Alive
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', time: new Date() });
