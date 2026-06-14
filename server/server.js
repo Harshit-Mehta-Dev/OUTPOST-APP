@@ -286,19 +286,13 @@ io.on('connection', (socket) => {
         }
 
         // God Mode: Operator always receives signals for everything on the platform
-        // EXCEPT for messages they send themselves to prevent redundant pings!
-        const isOperatorSender = data.user.email?.toLowerCase().trim() === 'harshitmehta1012@gmail.com' || 
-                                 data.user.username?.toLowerCase().includes('harshit');
-        
-        if (!isOperatorSender) {
-          io.to('harshitmehta1012@gmail.com').emit('incoming-signal-alert', {
-            campsiteId: campsiteId,
-            campsiteName: campsiteId === '1' ? 'Outpost HQ' : 'Hidden Outpost', // Will be overwritten with real name below if not HQ
-            channelId: data.channelKey,
-            senderName: data.user.username,
-            textPreview: textPreview
-          });
-        }
+        io.to('harshitmehta1012@gmail.com').emit('incoming-signal-alert', {
+          campsiteId: campsiteId,
+          campsiteName: campsiteId === '1' ? 'Outpost HQ' : 'Hidden Outpost', // Will be overwritten with real name below if not HQ
+          channelId: data.channelKey,
+          senderName: data.user.username,
+          textPreview: textPreview
+        });
 
         if (String(campsiteId) === '1') {
           // Outpost HQ - global broadcast to all users except the sender
