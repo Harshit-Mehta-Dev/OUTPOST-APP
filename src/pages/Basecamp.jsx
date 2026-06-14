@@ -95,6 +95,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     return saved ? JSON.parse(saved) : { username: 'YourUser' };
   });
 
+  const isGlobalAdmin = currentUser?.email?.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
+
   // Keep currentUser fresh from localStorage/backend syncs
   useEffect(() => {
     const interval = setInterval(() => {
