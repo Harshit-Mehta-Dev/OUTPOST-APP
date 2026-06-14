@@ -158,6 +158,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const expeditions = activeCampsite?.expeditions || [];
   const currentChannelKey = activeCampsite ? `${activeCampsite.id}_${activeChannel}` : 'fallback';
   const messages = messagesByChannel[currentChannelKey] || [];
+  const isGlobalAdmin = currentUser?.email === 'harshitmehta1012@gmail.com';
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   
@@ -726,7 +727,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         method: "DELETE",
         headers: {
           "x-operator-email": currentUser?.email,
-          "x-operator-id": currentUser?._id
+          "x-operator-id": currentUser?._id || currentUser?.id || ""
         }
       });
       // Optionally remove it from local state immediately for a snappy feel
