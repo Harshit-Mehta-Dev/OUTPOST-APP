@@ -725,8 +725,21 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       await fetch(`https://outpost-app.onrender.com/api/operator/erase-message/${msgId}`, {
         method: "DELETE",
         headers: {
-          "x-operator-email": currentUser?.email
+          "x-operator-email": currentUser?.email,
+          "x-operator-id": currentUser?._id
         }
+      });
+      // Optionally remove it from local state immediately for a snappy feel
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[currentChannelKey] || [];
+        return {
+          ...prev,
+          [currentChannelKey]: currentMessages.map(m => 
+            (m._id || m.id) === msgId 
+              ? { ...m, text: "SYSTEM DECREE: Our Operator has decided to delete this message under community violation guidelines.", isSystemDeleted: true } 
+              : m
+          )
+        };
       });
     } catch (err) {
       console.error("Operator Error erasing message:", err);
@@ -817,6 +830,19 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     }}
                   >
                     Delete for everyone
+                  </button>
+                )}
+                {messageToDelete?.isOperatorMode && (
+                  <button 
+                    className="btn-primary" 
+                    style={{ background: 'rgba(69, 10, 10, 0.8)', color: '#f87171', borderColor: '#f87171', textTransform: 'uppercase', letterSpacing: '1px' }}
+                    onClick={() => {
+                      handleOperatorEraseMessage(messageToDelete.id);
+                      setMessageToDelete(null);
+                    }}
+                  >
+                    <ShieldAlert size={14} style={{ display: 'inline', marginRight: '6px', marginBottom: '-2px' }} />
+                    Force Purge Everywhere
                   </button>
                 )}
                 <button 
@@ -1305,6 +1331,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           >
                             <Trash2 size={14} />
                           </button>
+                          {isGlobalAdmin && !msg.isSystemDeleted && (
+                            <button
+                              onClick={() => setMessageToDelete({ 
+                                  id: msg._id || msg.id, 
+                                  channelKey: currentChannelKey,
+                                  isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username,
+                                  isOperatorMode: true
+                              })}
+                              style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', opacity: 0.8, display: 'flex', alignItems: 'center', padding: '4px', marginLeft: '2px' }}
+                              title="Operator Override: Delete Content"
+                            >
+                              <ShieldAlert size={14} />
+                            </button>
+                          )}
                         </div>
                         <div className="message-text">
                           {msg.isSystemDeleted ? (
@@ -1378,42 +1418,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           )}
                         </div>
                       </div>
-
-                      {/* 💥 Operator Trash Can Icon: Renders on hover next to ANY chat line item line across your app */}
-                      {isGlobalAdmin && !msg.isSystemDeleted && (
-                        <button
-                          onClick={() => handleOperatorEraseMessage(msg._id || msg.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-950/50 text-zinc-600 hover:text-red-400 rounded-lg transition-all duration-150 border border-transparent hover:border-red-900/30"
-                          style={{
-                            opacity: 0,
-                            padding: '6px',
-                            color: '#52525b',
-                            borderRadius: '8px',
-                            transition: 'all 0.15s',
-                            border: '1px solid transparent',
-                            cursor: 'pointer',
-                            marginLeft: '8px',
-                            alignSelf: 'flex-start',
-                            marginTop: '4px'
-                          }}
-                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(69,10,10,0.5)'; e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = 'rgba(127,29,29,0.3)'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#52525b'; e.currentTarget.style.borderColor = 'transparent'; }}
-                          title="PURGE PACKET VIA OPERATOR DECREE"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                      
-                      {/* CSS rule injection for hover state of the operator trash button */}
-                      <style dangerouslySetInnerHTML={{__html: `
-                        .message-item:hover button[title="PURGE PACKET VIA OPERATOR DECREE"] {
-                          opacity: 1 !important;
-                          transform: translateX(0) !important;
-                        }
-                        button[title="PURGE PACKET VIA OPERATOR DECREE"] {
-                          transform: translateX(8px);
-                        }
-                      `}} />
 
                     </div>
                   );
