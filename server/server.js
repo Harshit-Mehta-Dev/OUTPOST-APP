@@ -362,12 +362,19 @@ io.on('connection', (socket) => {
     try {
       if (!username) return; // Silent fail if no username
 
-      const campsiteId = channelKey.split('_')[0];
-      const hasPermission = await checkScoutPermission(username, campsiteId, 'canDeleteMessages');
+      const msg = await Message.findById(messageId);
+      if (!msg) return;
 
-      if (!hasPermission) {
-        socket.emit("permission_denied", { message: "You do not have the clearance code to delete this message." });
-        return;
+      const isAuthor = msg.user && msg.user.username === username;
+
+      if (!isAuthor) {
+        const campsiteId = channelKey.split('_')[0];
+        const hasPermission = await checkScoutPermission(username, campsiteId, 'canDeleteMessages');
+
+        if (!hasPermission) {
+          socket.emit("permission_denied", { message: "You do not have the clearance code to delete this message." });
+          return;
+        }
       }
 
       await Message.findByIdAndDelete(messageId);
