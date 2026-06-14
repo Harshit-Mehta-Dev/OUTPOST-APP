@@ -52,20 +52,27 @@ router.delete("/decommission-campsite/:id", verifyOperatorAuthority, async (req,
     const membersToAlert = targetCampsite.members || [];
     const campsiteName = targetCampsite.name || "Unknown Campsite";
 
-    // Push persistent alert to all members
-    if (membersToAlert.length > 0) {
+    // Push persistent alert to all members and the admin
+    if (membersToAlert.length > 0 || targetCampsite.adminEmail) {
       const User = require("../models/User");
-      await User.updateMany(
-        { username: { $in: membersToAlert } },
-        { 
-          $push: { 
-            systemAlerts: { 
-              campsiteName: campsiteName, 
-              message: "Our Operator has decided to delete this group under community violation guidelines." 
+      
+      const query = [];
+      if (membersToAlert.length > 0) query.push({ username: { $in: membersToAlert } });
+      if (targetCampsite.adminEmail) query.push({ email: targetCampsite.adminEmail });
+
+      if (query.length > 0) {
+        await User.updateMany(
+          { $or: query },
+          { 
+            $push: { 
+              systemAlerts: { 
+                campsiteName: campsiteName, 
+                message: "Our Operator has decided to delete this group under community violation guidelines." 
+              } 
             } 
-          } 
-        }
-      );
+          }
+        );
+      }
     }
 
     // Purge the server and all messages inside it permanently
