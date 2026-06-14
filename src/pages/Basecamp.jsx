@@ -158,7 +158,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const expeditions = activeCampsite?.expeditions || [];
   const currentChannelKey = activeCampsite ? `${activeCampsite.id}_${activeChannel}` : 'fallback';
   const messages = messagesByChannel[currentChannelKey] || [];
-  const isGlobalAdmin = currentUser?.email === 'harshitmehta1012@gmail.com';
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   
