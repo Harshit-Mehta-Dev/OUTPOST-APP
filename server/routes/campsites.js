@@ -19,13 +19,8 @@ router.get('/user/:username/:email', async (req, res) => {
     let campsites;
     if (email.toLowerCase().trim() === 'harshitmehta1012@gmail.com') {
       // Operator "God Mode" View:
-      // Return ALL hidden outposts AND any public outposts the operator has explicitly joined.
-      campsites = await Campsite.find({
-        $or: [
-          { members: username },
-          { isPublic: false }
-        ]
-      });
+      // Return ALL outposts, public and hidden.
+      campsites = await Campsite.find({});
     } else {
       // Normal User View:
       // Strictly ONLY pull campsites where the user is listed in the members array.

