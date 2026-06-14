@@ -2,7 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ShieldAlert, ZapOff, Radio, Terminal, X, RefreshCw, Database } from "lucide-react";
 
-export default function OperatorTerminalTab({ isOpen, onClose, campsiteName, currentCampsiteId }) {
+export default function OperatorTerminalTab({ isOpen, onClose, campsiteName, currentCampsiteId, currentUser }) {
   
   const handleDecommission = async () => {
     const verification = prompt("⚠️ CRITICAL OVERRIDE DIRECTIVE: Type 'CONFIRM_DESTRUCT' to completely erase this campsite data footprint:");
@@ -15,7 +15,8 @@ export default function OperatorTerminalTab({ isOpen, onClose, campsiteName, cur
     await fetch(`https://outpost-app.onrender.com/api/operator/decommission-campsite/${currentCampsiteId}`, { 
       method: "DELETE",
       headers: {
-        "x-operator-email": "harshitmehta1012@gmail.com"
+        "x-operator-email": currentUser?.email || "harshitmehta1012@gmail.com",
+        "x-operator-id": currentUser?._id || ""
       }
     });
     

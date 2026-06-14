@@ -1791,7 +1791,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         isOpen={isOperatorOpen} 
         onClose={() => setIsOperatorOpen(false)} 
         campsiteName={activeCampsite?.name} 
-        currentCampsiteId={activeCampsite?.id} 
+        currentCampsiteId={activeCampsite?.id}
+        currentUser={currentUser}
       />
       
     </div>

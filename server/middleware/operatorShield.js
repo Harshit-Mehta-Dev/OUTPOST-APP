@@ -6,6 +6,7 @@ async function verifyOperatorAuthority(req, res, next) {
   try {
     // Check for the custom security header passed by the frontend
     const requestEmail = req.headers['x-operator-email'];
+    const requestId = req.headers['x-operator-id'];
 
     if (!requestEmail || requestEmail.toLowerCase().trim() !== OPERATOR_EMAIL.toLowerCase()) {
       return res.status(403).json({ 
@@ -13,8 +14,14 @@ async function verifyOperatorAuthority(req, res, next) {
       });
     }
 
-    // Secondary validation: Ensure this user actually exists in the DB
-    const user = await User.findOne({ email: requestEmail });
+    if (!requestId) {
+      return res.status(403).json({ 
+        error: "CRITICAL EXCEPTION: Missing operator identification token. Execution terminated." 
+      });
+    }
+
+    // Secondary validation: Ensure this user actually exists in the DB and the ID matches
+    const user = await User.findOne({ email: requestEmail, _id: requestId });
     
     if (!user) {
       return res.status(403).json({ 

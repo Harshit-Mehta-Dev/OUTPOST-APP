@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const Message = require("../models/Message");
 const Campsite = require("../models/Campsite");
@@ -8,6 +9,9 @@ const { verifyOperatorAuthority } = require("../middleware/operatorShield");
 router.delete("/erase-message/:id", verifyOperatorAuthority, async (req, res) => {
   try {
     const messageId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(messageId)) {
+      return res.status(400).json({ error: "Invalid signal signature." });
+    }
     const targetMessage = await Message.findById(messageId);
     
     if (!targetMessage) return res.status(404).json({ error: "Target signal data not located." });
@@ -38,6 +42,9 @@ router.delete("/decommission-campsite/:id", verifyOperatorAuthority, async (req,
     const campsiteId = req.params.id;
     
     // Purge the server and all messages inside it permanently
+    if (!mongoose.Types.ObjectId.isValid(campsiteId)) {
+      return res.status(400).json({ error: "Invalid cluster footprint." });
+    }
     await Campsite.findByIdAndDelete(campsiteId);
     // Because messages use channelKey (e.g. `campsiteId_channelId`), we delete by matching the prefix
     await Message.deleteMany({ channelKey: { $regex: `^${campsiteId}_` } });
