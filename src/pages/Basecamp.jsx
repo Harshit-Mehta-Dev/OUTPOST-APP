@@ -27,6 +27,7 @@ import {
   Zap,
   Check,
   Shield,
+  ShieldAlert,
   AlertOctagon,
   Eye
 } from 'lucide-react';
