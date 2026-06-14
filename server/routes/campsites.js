@@ -15,13 +15,25 @@ router.get('/public', async (req, res) => {
 // GET all campsites for a specific user (ONLY if they have explicitly joined)
 router.get('/user/:username/:email', async (req, res) => {
   try {
-    const { username } = req.params;
-    // We strictly ONLY pull campsites where the user is listed in the members array.
-    // We intentionally ignore adminEmail here so that creators don't see their own 
-    // newly created public camps in their sidebar until they explicitly join them from Discover.
-    const campsites = await Campsite.find({
-      members: username
-    });
+    const { username, email } = req.params;
+    let campsites;
+    if (email.toLowerCase().trim() === 'harshitmehta1012@gmail.com') {
+      // Operator "God Mode" View:
+      // Return ALL hidden outposts AND any public outposts the operator has explicitly joined.
+      campsites = await Campsite.find({
+        $or: [
+          { members: username },
+          { isPublic: false }
+        ]
+      });
+    } else {
+      // Normal User View:
+      // Strictly ONLY pull campsites where the user is listed in the members array.
+      campsites = await Campsite.find({
+        members: username
+      });
+    }
+
     res.json(campsites);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -890,6 +890,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             key={camp.id} 
             className={`campsite-item ${camp.active ? 'active' : ''}`}
             onClick={() => handleCampsiteClick(camp.id)}
+            style={{ position: 'relative' }}
           >
             {camp.id === 1 ? (
               <img src={logoUrl} alt="HQ" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
@@ -897,6 +898,29 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <img src={camp.imageUrl} alt={camp.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             ) : (
               camp.name.charAt(0)
+            )}
+            
+            {/* Operator Developer Eye Overlay for Hidden Outposts */}
+            {isGlobalAdmin && camp.isPublic === false && (
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  backgroundColor: '#09090b',
+                  borderRadius: '50%',
+                  padding: '4px',
+                  border: '1px solid rgba(127, 29, 29, 0.5)',
+                  color: '#f87171',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 0 10px rgba(127, 29, 29, 0.4)'
+                }}
+                title="Hidden Outpost (Operator View)"
+              >
+                <Eye size={10} />
+              </div>
             )}
           </div>
         ))}
