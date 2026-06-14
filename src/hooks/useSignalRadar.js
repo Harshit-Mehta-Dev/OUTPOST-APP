@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export function useSignalRadar(socket, activeChannelId, changeViewChannelCallback) {
+export function useSignalRadar(socket, activeChannelId, changeViewChannelCallback, currentUser) {
   const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
@@ -11,6 +11,33 @@ export function useSignalRadar(socket, activeChannelId, changeViewChannelCallbac
       }
     }
   }, []);
+
+  // Fetch persistent system alerts (like decommission warnings)
+  useEffect(() => {
+    if (!currentUser || !currentUser.username) return;
+
+    fetch(`https://outpost-app.onrender.com/api/users/${currentUser.username}/alerts`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          const mappedAlerts = data.map(sysAlert => ({
+            id: sysAlert._id,
+            campsiteName: sysAlert.campsiteName,
+            senderName: "SYSTEM OVERRIDE",
+            textPreview: sysAlert.message,
+            campsiteId: 1, // Fallback routing to HQ
+            channelId: '1_community-chat'
+          }));
+          setAlerts(prev => {
+            // Filter out already fetched to avoid duplicates
+            const existingIds = prev.map(a => a.id);
+            const newAlerts = mappedAlerts.filter(a => !existingIds.includes(a.id));
+            return [...newAlerts, ...prev];
+          });
+        }
+      })
+      .catch(err => console.error("Failed to load system alerts:", err));
+  }, [currentUser?.username]);
 
   useEffect(() => {
     if (!socket) return;
@@ -52,6 +79,12 @@ export function useSignalRadar(socket, activeChannelId, changeViewChannelCallbac
 
     // 3. Remove alert from active unread array
     setAlerts((prev) => prev.filter((a) => a.id !== alert.id));
+    
+    // 4. If it's a system override alert, delete it from the backend so it doesn't return
+    if (alert.senderName === "SYSTEM OVERRIDE" && currentUser?.username) {
+       fetch(`https://outpost-app.onrender.com/api/users/${currentUser.username}/alerts`, { method: 'DELETE' })
+         .catch(err => console.error("Error clearing system alerts:", err));
+    }
   };
 
   return { alerts, setAlerts, handleSelectNotification };

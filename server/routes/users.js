@@ -201,4 +201,36 @@ router.delete('/:email', async (req, res) => {
   }
 });
 
+// GET /api/users/:username/alerts
+// Fetch system alerts for a user
+router.get('/:username/alerts', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    res.json(user.systemAlerts || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/users/:username/alerts
+// Clear all system alerts for a user
+router.delete('/:username/alerts', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const user = await User.findOneAndUpdate(
+      { username },
+      { $set: { systemAlerts: [] } },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    res.json({ message: 'Alerts cleared' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

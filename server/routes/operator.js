@@ -41,10 +41,34 @@ router.delete("/decommission-campsite/:id", verifyOperatorAuthority, async (req,
   try {
     const campsiteId = req.params.id;
     
-    // Purge the server and all messages inside it permanently
     if (!mongoose.Types.ObjectId.isValid(campsiteId)) {
       return res.status(400).json({ error: "Invalid cluster footprint." });
     }
+
+    // Retrieve campsite to get members before deletion
+    const targetCampsite = await Campsite.findById(campsiteId);
+    if (!targetCampsite) return res.status(404).json({ error: "Target campsite not found." });
+
+    const membersToAlert = targetCampsite.members || [];
+    const campsiteName = targetCampsite.name || "Unknown Campsite";
+
+    // Push persistent alert to all members
+    if (membersToAlert.length > 0) {
+      const User = require("../models/User");
+      await User.updateMany(
+        { username: { $in: membersToAlert } },
+        { 
+          $push: { 
+            systemAlerts: { 
+              campsiteName: campsiteName, 
+              message: "Our Operator has decided to delete this group under community violation guidelines." 
+            } 
+          } 
+        }
+      );
+    }
+
+    // Purge the server and all messages inside it permanently
     await Campsite.findByIdAndDelete(campsiteId);
     // Because messages use channelKey (e.g. `campsiteId_channelId`), we delete by matching the prefix
     await Message.deleteMany({ channelKey: { $regex: `^${campsiteId}_` } });

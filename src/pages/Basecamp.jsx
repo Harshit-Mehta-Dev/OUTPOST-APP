@@ -170,7 +170,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     setActiveChannel(pureChannel);
   };
 
-  const { alerts, setAlerts, handleSelectNotification } = useSignalRadar(socket, currentChannelKey, changeViewChannelCallback);
+  const { alerts, setAlerts, handleSelectNotification } = useSignalRadar(socket, currentChannelKey, changeViewChannelCallback, currentUser);
 
   // Fetch messages from MongoDB when joining a new channel
   useEffect(() => {
