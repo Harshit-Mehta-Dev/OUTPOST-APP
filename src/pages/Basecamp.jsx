@@ -1270,7 +1270,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
           <div className="chat-header-actions" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button 
-              className="icon-btn theme-trigger-btn"
+              className="clear-chat-btn"
               onClick={() => {
                 if (window.confirm("Are you sure you want to permanently clear this chat history from your dashboard? Other users will still see it.")) {
                    const newTimestamps = { ...clearedTimestamps, [currentChannelKey]: Date.now() };
@@ -1282,18 +1282,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 background: 'transparent',
                 color: 'var(--text-secondary)',
                 border: '1px solid var(--border-glass)',
-                padding: '6px 12px',
+                padding: '0 12px',
+                height: '32px',
                 borderRadius: '8px',
-                fontSize: '12px',
+                fontSize: '11px',
                 fontFamily: 'monospace',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                transition: 'all 0.2s'
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s ease',
               }}
-              onMouseOver={(e) => { e.currentTarget.style.color = '#ff3b30'; e.currentTarget.style.borderColor = 'rgba(255, 59, 48, 0.5)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-glass)'; }}
+              onMouseOver={(e) => { e.currentTarget.style.color = '#ff3b30'; e.currentTarget.style.borderColor = 'rgba(255, 59, 48, 0.4)'; e.currentTarget.style.background = 'rgba(255, 59, 48, 0.05)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-glass)'; e.currentTarget.style.background = 'transparent'; }}
               title="Clear Chat For Me"
             >
               <Trash2 size={14} /> Clear Chat
