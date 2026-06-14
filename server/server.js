@@ -197,7 +197,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('join_admin_room', (email) => {
-    socket.join(email);
+    if (email) socket.join(email.toLowerCase().trim());
   });
 
   socket.on('join_user_room', (username) => {
@@ -285,6 +285,15 @@ io.on('connection', (socket) => {
           textPreview = textPreview.substring(0, 45) + '...';
         }
 
+        // God Mode: Operator always receives signals for everything on the platform
+        io.to('harshitmehta1012@gmail.com').emit('incoming-signal-alert', {
+          campsiteId: campsiteId,
+          campsiteName: campsiteId === '1' ? 'Outpost HQ' : 'Hidden Outpost', // Will be overwritten with real name below if not HQ
+          channelId: data.channelKey,
+          senderName: data.user.username,
+          textPreview: textPreview
+        });
+
         if (String(campsiteId) === '1') {
           // Outpost HQ - global broadcast to all users except the sender
           socket.broadcast.emit('incoming-signal-alert', {
@@ -298,14 +307,7 @@ io.on('connection', (socket) => {
           const campsite = await Campsite.findById(campsiteId);
           if (campsite) {
             
-            // God Mode: Operator always receives signals for everything on the platform
-            io.to('harshitmehta1012@gmail.com').emit('incoming-signal-alert', {
-              campsiteId: campsiteId,
-              campsiteName: campsite.name,
-              channelId: data.channelKey,
-              senderName: data.user.username,
-              textPreview: textPreview
-            });
+            // God Mode intercept already fired above
 
             if (campsite.members) {
               campsite.members.forEach((memberUsername) => {

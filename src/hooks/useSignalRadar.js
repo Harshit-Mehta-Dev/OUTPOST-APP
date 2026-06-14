@@ -43,8 +43,9 @@ export function useSignalRadar(socket, activeChannelId, changeViewChannelCallbac
     if (!socket) return;
 
     const handleIncomingSignal = (payload) => {
-      // Safety Intercept: Do not notify if the user is currently looking at that exact channel
-      if (payload.channelId === activeChannelId) return;
+      // Safety Intercept: Do not notify if the normal user is currently looking at that exact channel
+      const isGlobalAdmin = currentUser?.email?.toLowerCase()?.trim() === 'harshitmehta1012@gmail.com';
+      if (!isGlobalAdmin && payload.channelId === activeChannelId) return;
 
       const newAlert = { id: String(Date.now()), ...payload };
       setAlerts((prev) => [newAlert, ...prev]);
