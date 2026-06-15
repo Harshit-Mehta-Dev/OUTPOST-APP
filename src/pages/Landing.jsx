@@ -4,6 +4,7 @@ import Hero from '../components/Hero';
 import Features from '../components/Features';
 import About from '../components/About';
 import Community from '../components/Community';
+import HelpDesk from '../components/HelpDesk';
 import OutpostFooter from '../components/OutpostFooter';
 import LegalHub from '../components/LegalHub';
 import FounderSection from '../components/landing/FounderSection';
@@ -29,6 +30,7 @@ const Landing = () => {
             <Features />
             <Community />
             <About />
+            <HelpDesk />
             <FounderSection />
           </>
         )}

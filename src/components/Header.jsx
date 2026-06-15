@@ -81,6 +81,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           <a href="/#community" onClick={(e) => handleNavClick(e, '/#community')}>Community</a>
           <a href="/#about" onClick={(e) => handleNavClick(e, '/#about')}>About</a>
           <a href="/#legal" onClick={(e) => handleNavClick(e, '/#legal')}>Legal</a>
+          <a href="/#helpdesk" onClick={(e) => handleNavClick(e, '/#helpdesk')}>Help Desk</a>
           <div className="nav-actions-mobile">
             <button className="theme-toggle" onClick={toggleTheme}>
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}

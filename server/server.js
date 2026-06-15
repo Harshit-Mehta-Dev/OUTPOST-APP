@@ -155,6 +155,9 @@ app.use('/api/users', userRoutes);
 const operatorRoutes = require('./routes/operator');
 app.use('/api/operator', operatorRoutes);
 
+const helpRoutes = require('./routes/help');
+app.use('/api/help', helpRoutes);
+
 // Health Check for Keep-Alive
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', time: new Date() });
@@ -163,6 +166,7 @@ app.get('/api/health', (req, res) => {
 const Message = require('./models/Message');
 const Campsite = require('./models/Campsite');
 const User = require('./models/User');
+const HelpRequest = require('./models/HelpRequest');
 
 // Messages Route
 app.get('/api/messages/:channelKey', async (req, res) => {
@@ -203,6 +207,54 @@ io.on('connection', (socket) => {
 
   socket.on('join_user_room', (username) => {
     socket.join(`user-room-${username}`);
+  });
+
+  // Help Desk specific rooms
+  socket.on('join_help_room', (requestId) => {
+    socket.join(`help_${requestId}`);
+    console.log(`User ${socket.id} joined help room help_${requestId}`);
+  });
+
+  socket.on('send_help_message', async (data) => {
+    try {
+      const { requestId, senderType, text, mediaType, body } = data;
+      
+      let processedBody = body;
+      if (mediaType && body) {
+        processedBody = await compressMediaPayload(body, mediaType);
+      }
+
+      const newMessage = {
+        senderType,
+        text,
+        mediaType,
+        body: processedBody,
+        timestamp: new Date()
+      };
+
+      const request = await HelpRequest.findById(requestId);
+      if (request) {
+        request.messages.push(newMessage);
+        await request.save();
+        
+        io.to(`help_${requestId}`).emit('receive_help_message', {
+          requestId,
+          message: request.messages[request.messages.length - 1]
+        });
+
+        // Notify developers if the message is from a user
+        if (senderType === 'user') {
+          io.to('harshitmehta1012@gmail.com').emit('new_help_request_message', {
+            requestId,
+            userName: request.userName,
+            textPreview: text ? text.substring(0, 45) : '[Media]',
+            message: newMessage
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error sending help message:', err);
+    }
   });
 
   // Handle incoming messages
