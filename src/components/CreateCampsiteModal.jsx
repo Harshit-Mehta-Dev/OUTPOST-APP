@@ -74,7 +74,10 @@ const CreateCampsiteModal = ({ isOpen, onClose, onCampsiteCreated }) => {
   };
 
   const handleSubmit = () => {
-    if (!campsiteName.trim()) return;
+    if (!campsiteName.trim()) {
+      alert("Please type a Campsite Name in the text box before establishing!");
+      return;
+    }
     
     setIsSubmitting(true);
     
@@ -296,7 +299,7 @@ const CreateCampsiteModal = ({ isOpen, onClose, onCampsiteCreated }) => {
               <button 
                 className="submit-btn" 
                 onClick={handleSubmit}
-                disabled={!campsiteName.trim() || isSubmitting}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? 'IGNITING...' : 'ESTABLISH CAMPSITE'}
               </button>

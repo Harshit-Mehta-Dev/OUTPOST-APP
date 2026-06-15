@@ -11,6 +11,10 @@ const CreateChannelModal = ({ isOpen, onClose, onCreateChannel }) => {
   if (!isOpen) return null;
 
   const handleSubmit = () => {
+    if (!channelName.trim()) {
+      alert("Please type a Name for the expedition in the text box before igniting!");
+      return;
+    }
     if (channelName.trim()) {
       onCreateChannel({
         name: channelName.trim().replace(/\s+/g, '-').toLowerCase(),
@@ -141,7 +145,6 @@ const CreateChannelModal = ({ isOpen, onClose, onCreateChannel }) => {
           <button className="btn-retreat" onClick={onClose}>Retreat</button>
           <button 
             className="btn-ignite" 
-            disabled={!channelName.trim()}
             onClick={handleSubmit}
           >
             Ignite Expedition
