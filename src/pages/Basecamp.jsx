@@ -50,7 +50,7 @@ import AIOperations from '../components/settings/AIOperations';
 import NotificationDropdown from '../components/navigation/NotificationDropdown';
 import { useSignalRadar } from '../hooks/useSignalRadar';
 import OperatorTerminalTab from '../components/operator/OperatorTerminalTab';
-import HelpDeskNexus from '../components/helpdesk/HelpDeskNexus';
+import HelpDeskCenterView from '../components/helpdesk/HelpDeskCenterView';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -68,7 +68,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isOperatorOpen, setIsOperatorOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [showHelpDesk, setShowHelpDesk] = useState(false);
   const [activeMembersList, setActiveMembersList] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -539,6 +539,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleCampsiteClick = (id) => {
     setShowDiscover(false);
+    setShowHelpDesk(false);
     setCampsites(prev => prev.map(c => ({
       ...c,
       active: c.id === id
@@ -971,7 +972,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </div>
       </nav>
 
-        {showDiscover ? (
+        {showHelpDesk ? (
+          <div className="flex-1 w-full h-full relative z-10 p-2" style={{ height: '100%', overflow: 'hidden' }}>
+            <HelpDeskCenterView userEmail={currentUser?.email} userName={currentUser?.username} />
+          </div>
+        ) : showDiscover ? (
           <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', zIndex: 1 }}>
             <Discover 
               refreshTrigger={discoverRefreshTrigger} 
@@ -1123,12 +1128,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
             {/* 🆘 INTEGRATED HELPDESK OVERRIDE TRIGGER LINK */}
             <button
-              onClick={() => setIsHelpOpen(true)}
-              className="p-1.5 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-500 hover:text-brand rounded-lg transition-all duration-150 flex items-center gap-1 text-[10px] font-mono font-bold"
-              style={{ marginLeft: '12px', padding: '6px', borderRadius: '8px', border: '1px solid #27272a', backgroundColor: 'rgba(24, 24, 27, 0.8)', color: '#71717a', cursor: 'pointer' }}
+              onClick={() => { setShowHelpDesk(!showHelpDesk); setShowDiscover(false); }}
+              className="bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-500 hover:text-brand transition-all duration-150 flex items-center gap-2 text-sm font-mono font-bold"
+              style={{ marginLeft: '12px', padding: '8px 16px', borderRadius: '10px', border: '1px solid #27272a', backgroundColor: 'rgba(24, 24, 27, 0.8)', color: '#71717a', cursor: 'pointer' }}
               title="Open Sovereign Help Desk Portal"
             >
-              <HelpCircle size={14} style={{ color: 'var(--brand-primary, #00ffaa)' }} /> HELP
+              <HelpCircle size={16} style={{ color: 'var(--brand-primary, #00ffaa)' }} /> HELP
             </button>
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
@@ -1647,6 +1652,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                       onClick={() => {
                         setActiveChannel(channel.id);
                         setShowDiscover(false);
+                        setShowHelpDesk(false);
                         setIsMobileDrawerOpen(false); // Close drawer on selection
                       }}
                     >
@@ -1709,14 +1715,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       {/* 📱 MOBILE FLOATING DOCK TOOLBAR */}
       <nav className="mobile-bottom-dock mobile-only">
         <button
-          onClick={() => { setActiveMobileTab("campsites"); setShowDiscover(true); setIsMobileDrawerOpen(false); }}
+          onClick={() => { setActiveMobileTab("campsites"); setShowDiscover(true); setShowHelpDesk(false); setIsMobileDrawerOpen(false); }}
           className={`dock-item ${showDiscover ? "active" : ""}`}
         >
           <Compass size={22} />
           <span>Discover</span>
         </button>
         <button
-          onClick={() => { setActiveMobileTab("chat"); setShowDiscover(false); setIsMobileDrawerOpen(false); }}
+          onClick={() => { setActiveMobileTab("chat"); setShowDiscover(false); setShowHelpDesk(false); setIsMobileDrawerOpen(false); }}
           className={`dock-item ${!showDiscover && activeMobileTab === "chat" ? "active" : ""}`}
         >
           <MessageSquare size={22} />
@@ -1915,12 +1921,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         campsiteName={activeCampsite?.name} 
         currentCampsiteId={activeCampsite?.id}
         currentUser={currentUser}
-      />
-
-      <HelpDeskNexus 
-        isOpen={isHelpOpen} 
-        onClose={() => setIsHelpOpen(false)} 
-        userEmail={currentUser?.email || "Scout"} 
       />
       
     </div>
