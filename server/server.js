@@ -232,7 +232,7 @@ io.on('connection', (socket) => {
         timestamp: new Date()
       };
 
-      const request = await HelpRequest.findById(requestId);
+      const request = await HelpRequest.findOne({ ticketId: requestId }) || await HelpRequest.findById(requestId).catch(() => null);
       if (request) {
         request.messages.push(newMessage);
         await request.save();
@@ -248,13 +248,17 @@ io.on('connection', (socket) => {
             requestId,
             userName: request.userName,
             textPreview: text ? text.substring(0, 45) : '[Media]',
-            message: newMessage
+            timestamp: newMessage.timestamp
           });
         }
       }
     } catch (err) {
-      console.error('Error sending help message:', err);
+      console.error('Error handling send_help_message:', err);
     }
+  });
+
+  socket.on('typing_help_message', (data) => {
+    socket.to(`help_${data.requestId}`).emit('user_typing', data);
   });
 
   // Handle incoming messages
