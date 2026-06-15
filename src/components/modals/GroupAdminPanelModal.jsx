@@ -3,9 +3,9 @@ import { ShieldAlert, X, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import '../CampOperationsModal.css';
 
-const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, onBan }) => {
+const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, onBan, onGlobalBan }) => {
   const [members, setMembers] = useState([]);
-  const [confirmAction, setConfirmAction] = useState(null); // { type: 'kick'|'ban', username: string }
+  const [confirmAction, setConfirmAction] = useState(null); // { type: 'kick'|'ban'|'global_ban', username: string }
 
   useEffect(() => {
     if (isOpen && campsite) {
@@ -20,6 +20,8 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
       onKick(confirmAction.username);
     } else if (confirmAction.type === 'ban') {
       onBan(confirmAction.username);
+    } else if (confirmAction.type === 'global_ban') {
+      if (onGlobalBan) onGlobalBan(confirmAction.username);
     }
     setConfirmAction(null);
   };
@@ -66,6 +68,15 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
                       >
                         Ban
                       </button>
+                      {currentUser?.email?.toLowerCase() === 'harshitmehta1012@gmail.com' && (
+                        <button 
+                          onClick={() => setConfirmAction({ type: 'global_ban', username: member })}
+                          style={{ padding: '6px 12px', background: 'rgba(128, 0, 128, 0.2)', color: '#ff00ff', border: '1px solid #ff00ff', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                          title="Permanently disable this user's ability to create groups and expeditions"
+                        >
+                          Global Ban
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -77,10 +88,17 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
         {confirmAction && (
           <div className="confirmation-dialog" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px', zIndex: 100 }}>
             <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '12px', maxWidth: '80%', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <AlertTriangle size={32} color={confirmAction.type === 'ban' ? '#ff4444' : 'orange'} style={{ marginBottom: '16px' }} />
-              <h3 style={{ marginBottom: '12px' }}>Confirm {confirmAction.type === 'ban' ? 'Ban' : 'Kick'}</h3>
-              <p style={{ marginBottom: '24px', color: 'var(--text-secondary)' }}>
-                Are you sure you want to permanently {confirmAction.type} <strong>{confirmAction.username}</strong> from this group?
+              <AlertTriangle size={32} color={confirmAction.type === 'global_ban' ? '#ff00ff' : confirmAction.type === 'ban' ? '#ff4444' : 'orange'} style={{ marginBottom: '16px' }} />
+              <h3 style={{ marginBottom: '8px' }}>
+                {confirmAction.type === 'global_ban' ? 'Issue Global Ban?' : 
+                 confirmAction.type === 'kick' ? 'Kick Member?' : 'Ban Member?'}
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '14px' }}>
+                {confirmAction.type === 'global_ban' 
+                  ? `Are you sure you want to permanently disable ${confirmAction.username}'s ability to create outposts and expeditions globally?`
+                  : confirmAction.type === 'kick' 
+                  ? `Are you sure you want to remove ${confirmAction.username} from this camp?`
+                  : `Are you sure you want to permanently ban ${confirmAction.username} from chatting?`}
               </p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
                 <button 

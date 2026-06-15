@@ -233,4 +233,30 @@ router.delete('/:username/alerts', async (req, res) => {
   }
 });
 
+// PUT /api/users/global-restrict
+// Developer only: globally ban a user from creating camps or channels
+router.put('/global-restrict', async (req, res) => {
+  try {
+    const { developerEmail, targetUsername } = req.body;
+    if (!developerEmail || developerEmail.toLowerCase().trim() !== 'harshitmehta1012@gmail.com') {
+      return res.status(403).json({ error: 'Only the Developer can issue a Global Ban.' });
+    }
+    
+    const user = await User.findOneAndUpdate(
+      { username: targetUsername },
+      { $set: { isGloballyRestricted: true } },
+      { new: true }
+    );
+    
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Emit event to notify the banned user globally
+    req.io.emit('global-restricted', { targetUsername });
+
+    res.json({ message: `${targetUsername} has been globally restricted from creating outposts and expeditions.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

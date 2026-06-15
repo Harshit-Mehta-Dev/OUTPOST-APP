@@ -393,6 +393,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       }));
     };
 
+    const handleGlobalRestricted = (data) => {
+      if (currentUser?.username === data.targetUsername) {
+        alert("🚨 GLOBAL BAN ISSUED: You have been permanently restricted by the Developer from creating new outposts or expeditions.");
+        const updatedUser = { ...currentUser, isGloballyRestricted: true };
+        setCurrentUser(updatedUser);
+        localStorage.setItem('outpost_user', JSON.stringify(updatedUser));
+      }
+    };
+
     socket.on("scout-joined-list", handleScoutJoinedList);
     socket.on("campsite-admin-notification", handleAdminNotification);
     socket.on("level_up_alert", handleLevelUp);
@@ -402,6 +411,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     socket.on("operator-basecamp-purge", handleOperatorPurge);
     socket.on("user_kicked", handleKicked);
     socket.on("user_banned", handleBanned);
+    socket.on("global-restricted", handleGlobalRestricted);
 
     return () => {
       socket.off('receive_message', handleReceiveMessage);
@@ -416,6 +426,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("operator-basecamp-purge", handleOperatorPurge);
       socket.off("user_kicked", handleKicked);
       socket.off("user_banned", handleBanned);
+      socket.off("global-restricted", handleGlobalRestricted);
     };
   }, [currentChannelKey]);
 
@@ -599,6 +610,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   const handleCampsiteCreated = (data) => {
+    if (currentUser?.isGloballyRestricted) {
+      alert("🚫 You have been permanently banned by the Developer from creating new outposts and expeditions.");
+      return;
+    }
     const newCampId = Date.now().toString(); // Use a more unique ID for global simulation
     let newExpeditions = [];
 
@@ -714,6 +729,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   const handleCreateChannel = (channelData) => {
+    if (currentUser?.isGloballyRestricted) {
+      alert("🚫 You have been permanently banned by the Developer from creating new outposts and expeditions.");
+      return;
+    }
     setCampsites(prev => prev.map(c => {
       if (c.active) {
         return {
@@ -786,6 +805,26 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     } catch (err) {
       console.error(err);
       alert('Error banning user');
+    }
+  };
+
+  const handleGlobalBan = async (username) => {
+    try {
+      const response = await fetch(`https://outpost-app.onrender.com/api/users/global-restrict`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ developerEmail: currentUser.email, targetUsername: username })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.error || 'Failed to issue Global Ban');
+        return;
+      }
+      
+      alert(data.message);
+    } catch (err) {
+      console.error(err);
+      alert('Error issuing global ban');
     }
   };
 
@@ -2212,6 +2251,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         currentUser={currentUser}
         onKick={handleKickMember}
         onBan={handleBanMember}
+        onGlobalBan={handleGlobalBan}
       />
 
     </div>

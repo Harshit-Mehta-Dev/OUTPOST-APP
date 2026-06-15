@@ -49,6 +49,12 @@ router.get('/:id', async (req, res) => {
 // POST a new campsite
 router.post('/', async (req, res) => {
   try {
+    const User = require('../models/User'); // Import here to avoid circular dep if any, or just at top
+    const user = await User.findOne({ email: req.body.adminEmail });
+    if (user && user.isGloballyRestricted) {
+      return res.status(403).json({ error: 'You are permanently banned from creating new outposts.' });
+    }
+
     const newCamp = new Campsite(req.body);
     const savedCamp = await newCamp.save();
     res.status(201).json(savedCamp);
