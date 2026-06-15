@@ -50,7 +50,7 @@ import AIOperations from '../components/settings/AIOperations';
 import NotificationDropdown from '../components/navigation/NotificationDropdown';
 import { useSignalRadar } from '../hooks/useSignalRadar';
 import OperatorTerminalTab from '../components/operator/OperatorTerminalTab';
-import HelpDeskTerminal from '../components/helpdesk/HelpDeskTerminal';
+import HelpDeskSupportView from '../components/helpdesk/HelpDeskSupportView';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -974,7 +974,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
         {showHelpDesk ? (
           <div className="flex-1 w-full h-full relative z-10" style={{ height: '100%', overflow: 'hidden' }}>
-            <HelpDeskTerminal userEmail={currentUser?.email} userName={currentUser?.username} />
+            <HelpDeskSupportView userEmail={currentUser?.email} userName={currentUser?.username} isDarkMode={isDarkMode} />
           </div>
         ) : showDiscover ? (
           <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', zIndex: 1 }}>
