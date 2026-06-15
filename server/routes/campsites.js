@@ -88,10 +88,6 @@ router.post('/:id/join', async (req, res) => {
     const camp = await Campsite.findById(req.params.id);
     
     if (!camp) return res.status(404).json({ message: 'Campsite not found' });
-    
-    if (camp.bannedUsers && camp.bannedUsers.includes(username)) {
-      return res.status(403).json({ message: 'You have been permanently banned from this campsite.' });
-    }
 
     if (camp.kickedUsers && camp.kickedUsers.includes(username)) {
       return res.status(403).json({ message: 'You have been kicked from this campsite.' });
@@ -179,12 +175,7 @@ router.post('/:id/ban', async (req, res) => {
       return res.status(403).json({ message: 'Only the admin or developer can ban users' });
     }
     
-    // Remove from members
-    camp.members = camp.members.filter(m => m !== username);
-    camp.totalScouts = Math.max(1, camp.totalScouts - 1);
-    camp.activeScouts = Math.max(1, camp.activeScouts - 1);
-    
-    // Add to bannedUsers
+    // Add to bannedUsers (but DO NOT remove from members)
     if (!camp.bannedUsers) camp.bannedUsers = [];
     if (!camp.bannedUsers.includes(username)) {
       camp.bannedUsers.push(username);

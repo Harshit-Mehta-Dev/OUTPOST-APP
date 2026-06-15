@@ -384,9 +384,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     };
 
     const handleBanned = (data) => {
-      alert(`🚫 ${data.message}`);
-      setCampsites(prev => prev.filter(c => c.id !== data.campsiteId));
-      window.location.reload();
+      alert(`🚫 ${data.message} You can no longer send messages in this group.`);
+      setCampsites(prev => prev.map(c => {
+        if (c.id === data.campsiteId) {
+          return { ...c, bannedUsers: [...(c.bannedUsers || []), currentUser?.username] };
+        }
+        return c;
+      }));
     };
 
     socket.on("scout-joined-list", handleScoutJoinedList);
@@ -1740,32 +1744,40 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
         <div className="chat-input-wrapper">
           <div className="chat-input-container" style={{ position: 'relative', overflow: 'visible' }}>
-            <AttachmentPopover 
-              isOpen={isAttachmentOpen}
-              onClose={() => setIsAttachmentOpen(false)}
-              onSendMedia={handleSendMediaMessage}
-              onSendPoll={handleSendPollMessage}
-            />
-            <button 
-              className="chat-attach-btn" 
-              onClick={() => setIsAttachmentOpen(!isAttachmentOpen)}
-              style={isAttachmentOpen ? { background: 'var(--brand-primary)', color: '#fff', transform: 'rotate(45deg)', transition: 'all 0.2s' } : { transition: 'all 0.2s' }}
-            >
-              <Plus size={20} />
-            </button>
-            <input 
-              type="text" 
-              placeholder={`Message #${activeChannel}`} 
-              className="chat-input"
-              value={inputText}
-              onChange={handleInputChange}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSendMessage();
-              }}
-            />
-            <button className="chat-send-btn" onClick={handleSendMessage}>
-              <Send size={18} />
-            </button>
+            {activeCampsite?.bannedUsers?.includes(currentUser?.username) ? (
+              <div style={{ width: '100%', textAlign: 'center', padding: '12px', color: '#ff4444', fontWeight: 'bold', background: 'rgba(255,0,0,0.1)', borderRadius: '8px' }}>
+                🚫 You have been permanently banned from chatting in this group.
+              </div>
+            ) : (
+              <>
+                <AttachmentPopover 
+                  isOpen={isAttachmentOpen}
+                  onClose={() => setIsAttachmentOpen(false)}
+                  onSendMedia={handleSendMediaMessage}
+                  onSendPoll={handleSendPollMessage}
+                />
+                <button 
+                  className="chat-attach-btn" 
+                  onClick={() => setIsAttachmentOpen(!isAttachmentOpen)}
+                  style={isAttachmentOpen ? { background: 'var(--brand-primary)', color: '#fff', transform: 'rotate(45deg)', transition: 'all 0.2s' } : { transition: 'all 0.2s' }}
+                >
+                  <Plus size={20} />
+                </button>
+                <input 
+                  type="text" 
+                  placeholder={`Message #${activeChannel}`} 
+                  className="chat-input"
+                  value={inputText}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSendMessage();
+                  }}
+                />
+                <button className="chat-send-btn" onClick={handleSendMessage}>
+                  <Send size={18} />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </main>
