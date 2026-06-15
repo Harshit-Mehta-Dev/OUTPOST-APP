@@ -1409,7 +1409,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               Camp Operations
             </button>
             {isCampAdmin && (
-              <button className="camp-ops-btn" style={{ background: 'var(--brand-primary)', color: 'white', marginLeft: '8px' }} onClick={() => setIsAdminPanelOpen(true)}>
+              <button className="camp-ops-btn" style={{ marginLeft: '8px' }} onClick={() => setIsAdminPanelOpen(true)}>
                 <ShieldAlert size={18} />
                 Manage Members
               </button>
@@ -1904,7 +1904,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     </button>
                     {isCampAdmin && (
                       <button className="icon-btn" title="Manage Members" onClick={() => { setIsAdminPanelOpen(true); setIsMobileDrawerOpen(false); }}>
-                        <ShieldAlert size={18} style={{ color: 'var(--brand-primary)' }}/>
+                        <ShieldAlert size={18} />
                       </button>
                     )}
                   </div>

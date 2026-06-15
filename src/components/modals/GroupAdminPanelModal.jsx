@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, ShieldAlert, X, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, X, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import '../CampOperationsModal.css';
 
 const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, onBan }) => {
   const [members, setMembers] = useState([]);
@@ -23,18 +25,22 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-        <button className="modal-close" onClick={onClose}>
-          <X size={20} />
-        </button>
-        
-        <div className="modal-header">
-          <h2><Shield size={20} style={{ marginRight: '8px', verticalAlign: 'middle', color: 'var(--brand-primary)' }}/> Group Admin Panel</h2>
-          <p>Manage members for {campsite.name}</p>
+    <div className="camp-ops-overlay" onClick={onClose}>
+      <motion.div 
+        className="camp-ops-content" 
+        onClick={e => e.stopPropagation()} 
+        style={{ maxWidth: '500px', display: 'flex', flexDirection: 'column' }}
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -50, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 120, damping: 15 }}
+      >
+        <div className="camp-ops-header">
+          <h2><ShieldAlert size={20} style={{ marginRight: '8px', verticalAlign: 'middle', color: 'var(--brand-primary)' }}/> Manage Members</h2>
+          <button className="close-btn" onClick={onClose}><X size={20} /></button>
         </div>
 
-        <div className="modal-body" style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
+        <div className="camp-ops-main" style={{ maxHeight: '400px', overflowY: 'auto', padding: '20px' }}>
           {members.length === 0 ? (
             <p>No members found.</p>
           ) : (
@@ -69,11 +75,11 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
         </div>
 
         {confirmAction && (
-          <div className="confirmation-dialog" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px' }}>
-            <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '12px', maxWidth: '80%', textAlign: 'center' }}>
+          <div className="confirmation-dialog" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px', zIndex: 100 }}>
+            <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '12px', maxWidth: '80%', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
               <AlertTriangle size={32} color={confirmAction.type === 'ban' ? '#ff4444' : 'orange'} style={{ marginBottom: '16px' }} />
               <h3 style={{ marginBottom: '12px' }}>Confirm {confirmAction.type === 'ban' ? 'Ban' : 'Kick'}</h3>
-              <p style={{ marginBottom: '24px' }}>
+              <p style={{ marginBottom: '24px', color: 'var(--text-secondary)' }}>
                 Are you sure you want to permanently {confirmAction.type} <strong>{confirmAction.username}</strong> from this group?
               </p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
@@ -93,7 +99,7 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };
