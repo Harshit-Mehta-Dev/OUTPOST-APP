@@ -78,5 +78,15 @@ router.patch('/requests/:id/close', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+// Delete all help requests
+router.delete('/requests', async (req, res) => {
+  try {
+    await HelpRequest.deleteMany({});
+    res.json({ message: 'All tickets successfully deleted' });
+  } catch (error) {
+    console.error('Error deleting help requests:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 module.exports = router;
