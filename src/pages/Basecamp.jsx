@@ -50,7 +50,6 @@ import AIOperations from '../components/settings/AIOperations';
 import NotificationDropdown from '../components/navigation/NotificationDropdown';
 import { useSignalRadar } from '../hooks/useSignalRadar';
 import OperatorTerminalTab from '../components/operator/OperatorTerminalTab';
-import HelpDeskSupportView from '../components/helpdesk/HelpDeskSupportView';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -68,7 +67,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isOperatorOpen, setIsOperatorOpen] = useState(false);
-  const [showHelpDesk, setShowHelpDesk] = useState(false);
   const [activeMembersList, setActiveMembersList] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -539,7 +537,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleCampsiteClick = (id) => {
     setShowDiscover(false);
-    setShowHelpDesk(false);
     setCampsites(prev => prev.map(c => ({
       ...c,
       active: c.id === id
@@ -794,7 +791,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       <AnimatedMesh />
       <div 
         className="basecamp-layout" 
-        style={{ gridTemplateColumns: (showDiscover || showHelpDesk) ? '72px 1fr' : (isSidebarOpen ? '72px 280px 1fr' : '72px 1fr') }}
+        style={{ gridTemplateColumns: showDiscover ? '72px 1fr' : (isSidebarOpen ? '72px 280px 1fr' : '72px 1fr') }}
       >
       <AnimatePresence>
         {messageToDelete && (
@@ -972,11 +969,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </div>
       </nav>
 
-        {showHelpDesk ? (
-          <div className="flex-1 w-full h-full relative z-10" style={{ height: '100%', overflow: 'hidden' }}>
-            <HelpDeskSupportView userEmail={currentUser?.email} userName={currentUser?.username} isDarkMode={isDarkMode} />
-          </div>
-        ) : showDiscover ? (
+        {showDiscover ? (
           <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', zIndex: 1 }}>
             <Discover 
               refreshTrigger={discoverRefreshTrigger} 
@@ -1125,16 +1118,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <Target size={16} />
               <span>Outpost Status: Active</span>
             </div>
-
-            {/* 🆘 INTEGRATED HELPDESK OVERRIDE TRIGGER LINK */}
-            <button
-              onClick={() => { setShowHelpDesk(!showHelpDesk); setShowDiscover(false); }}
-              className="bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-500 hover:text-brand transition-all duration-150 flex items-center gap-2 text-sm font-mono font-bold"
-              style={{ marginLeft: '12px', padding: '8px 16px', borderRadius: '10px', border: '1px solid #27272a', backgroundColor: 'rgba(24, 24, 27, 0.8)', color: '#71717a', cursor: 'pointer' }}
-              title="Open Sovereign Help Desk Portal"
-            >
-              <HelpCircle size={16} style={{ color: 'var(--brand-primary, #00ffaa)' }} /> HELP
-            </button>
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             
@@ -1652,7 +1635,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                       onClick={() => {
                         setActiveChannel(channel.id);
                         setShowDiscover(false);
-                        setShowHelpDesk(false);
                         setIsMobileDrawerOpen(false); // Close drawer on selection
                       }}
                     >
@@ -1715,14 +1697,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       {/* 📱 MOBILE FLOATING DOCK TOOLBAR */}
       <nav className="mobile-bottom-dock mobile-only">
         <button
-          onClick={() => { setActiveMobileTab("campsites"); setShowDiscover(true); setShowHelpDesk(false); setIsMobileDrawerOpen(false); }}
+          onClick={() => { setActiveMobileTab("campsites"); setShowDiscover(true); setIsMobileDrawerOpen(false); }}
           className={`dock-item ${showDiscover ? "active" : ""}`}
         >
           <Compass size={22} />
           <span>Discover</span>
         </button>
         <button
-          onClick={() => { setActiveMobileTab("chat"); setShowDiscover(false); setShowHelpDesk(false); setIsMobileDrawerOpen(false); }}
+          onClick={() => { setActiveMobileTab("chat"); setShowDiscover(false); setIsMobileDrawerOpen(false); }}
           className={`dock-item ${!showDiscover && activeMobileTab === "chat" ? "active" : ""}`}
         >
           <MessageSquare size={22} />
