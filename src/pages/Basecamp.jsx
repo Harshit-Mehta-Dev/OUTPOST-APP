@@ -29,7 +29,8 @@ import {
   Shield,
   ShieldAlert,
   AlertOctagon,
-  Eye
+  Eye,
+  HelpCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -49,6 +50,7 @@ import AIOperations from '../components/settings/AIOperations';
 import NotificationDropdown from '../components/navigation/NotificationDropdown';
 import { useSignalRadar } from '../hooks/useSignalRadar';
 import OperatorTerminalTab from '../components/operator/OperatorTerminalTab';
+import HelpDeskNexus from '../components/helpdesk/HelpDeskNexus';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -66,6 +68,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isOperatorOpen, setIsOperatorOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [activeMembersList, setActiveMembersList] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -1113,8 +1116,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <span className="active-camp-name"># {activeCampsite?.name || 'Loading...'}</span>
           </div>
           <div className="top-bar-center">
-            <Target size={16} />
-            <span>Outpost Status: Active</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Target size={16} />
+              <span>Outpost Status: Active</span>
+            </div>
+
+            {/* 🆘 INTEGRATED HELPDESK OVERRIDE TRIGGER LINK */}
+            <button
+              onClick={() => setIsHelpOpen(true)}
+              className="p-1.5 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-500 hover:text-brand rounded-lg transition-all duration-150 flex items-center gap-1 text-[10px] font-mono font-bold"
+              style={{ marginLeft: '12px', padding: '6px', borderRadius: '8px', border: '1px solid #27272a', backgroundColor: 'rgba(24, 24, 27, 0.8)', color: '#71717a', cursor: 'pointer' }}
+              title="Open Sovereign Help Desk Portal"
+            >
+              <HelpCircle size={14} style={{ color: 'var(--brand-primary, #00ffaa)' }} /> HELP
+            </button>
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             
@@ -1900,6 +1915,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         campsiteName={activeCampsite?.name} 
         currentCampsiteId={activeCampsite?.id}
         currentUser={currentUser}
+      />
+
+      <HelpDeskNexus 
+        isOpen={isHelpOpen} 
+        onClose={() => setIsHelpOpen(false)} 
+        userEmail={currentUser?.email || "Scout"} 
       />
       
     </div>
