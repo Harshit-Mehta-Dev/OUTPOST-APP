@@ -259,4 +259,15 @@ router.put('/global-restrict', async (req, res) => {
   }
 });
 
+// GET /api/users
+// Fetch all users (for Outpost HQ Developer access)
+router.get('/', async (req, res) => {
+  try {
+    const users = await User.find({}, 'username email isGloballyRestricted disabled');
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

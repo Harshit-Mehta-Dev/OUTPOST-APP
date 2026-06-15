@@ -9,7 +9,19 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
 
   useEffect(() => {
     if (isOpen && campsite) {
-      setMembers(campsite.members || []);
+      if (campsite.id === 1) {
+        // Outpost HQ (Global Basecamp) - Fetch all registered users
+        fetch('https://outpost-app.onrender.com/api/users')
+          .then(res => res.json())
+          .then(data => {
+            if (Array.isArray(data)) {
+              setMembers(data.map(u => u.username));
+            }
+          })
+          .catch(err => console.error("Error fetching all users:", err));
+      } else {
+        setMembers(campsite.members || []);
+      }
     }
   }, [isOpen, campsite]);
 
@@ -56,18 +68,22 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
                   
                   {member !== currentUser.username && (
                     <div className="member-actions" style={{ display: 'flex', gap: '8px' }}>
-                      <button 
-                        onClick={() => setConfirmAction({ type: 'kick', username: member })}
-                        style={{ padding: '6px 12px', background: 'rgba(255, 165, 0, 0.2)', color: 'orange', border: '1px solid orange', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                      >
-                        Kick
-                      </button>
-                      <button 
-                        onClick={() => setConfirmAction({ type: 'ban', username: member })}
-                        style={{ padding: '6px 12px', background: 'rgba(255, 0, 0, 0.2)', color: '#ff4444', border: '1px solid #ff4444', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                      >
-                        Ban
-                      </button>
+                      {campsite.id !== 1 && (
+                        <>
+                          <button 
+                            onClick={() => setConfirmAction({ type: 'kick', username: member })}
+                            style={{ padding: '6px 12px', background: 'rgba(255, 165, 0, 0.2)', color: 'orange', border: '1px solid orange', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                          >
+                            Kick
+                          </button>
+                          <button 
+                            onClick={() => setConfirmAction({ type: 'ban', username: member })}
+                            style={{ padding: '6px 12px', background: 'rgba(255, 0, 0, 0.2)', color: '#ff4444', border: '1px solid #ff4444', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                          >
+                            Ban
+                          </button>
+                        </>
+                      )}
                       {currentUser?.email?.toLowerCase() === 'harshitmehta1012@gmail.com' && (
                         <button 
                           onClick={() => setConfirmAction({ type: 'global_ban', username: member })}

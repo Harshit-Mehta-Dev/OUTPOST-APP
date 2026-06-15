@@ -69,6 +69,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [showWelcome, setShowWelcome] = useState(true);
   const [showDiscover, setShowDiscover] = useState(false);
   const [joinNotification, setJoinNotification] = useState(null);
+  const [kickNotification, setKickNotification] = useState(null);
   const [adminNotification, setAdminNotification] = useState(null);
   const [inputText, setInputText] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
@@ -378,9 +379,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     };
 
     const handleKicked = (data) => {
-      alert(`⚠️ ${data.message}`);
-      setCampsites(prev => prev.filter(c => c.id !== data.campsiteId));
-      window.location.reload();
+      setKickNotification(`⚠️ KICKED: ${data.message}`);
+      setTimeout(() => setKickNotification(null), 8000);
+      
+      setCampsites(prev => {
+        // Remove the campsite
+        const filtered = prev.filter(c => c.id !== data.campsiteId);
+        // Make sure no campsite is active so they return to Dashboard smoothly
+        return filtered.map(c => ({ ...c, active: false }));
+      });
     };
 
     const handleBanned = (data) => {
@@ -1137,7 +1144,16 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: currentUser?.username || 'Scout' })
               })
-              .then(res => res.json())
+              .then(async res => {
+                const data = await res.json();
+                if (!res.ok) {
+                  // This handles 403 Forbidden (e.g. user was kicked)
+                  setKickNotification(`🚫 ACCESS DENIED: ${data.message}`);
+                  setTimeout(() => setKickNotification(null), 6000);
+                  throw new Error(data.message);
+                }
+                return data;
+              })
               .then(joinedCamp => {
                 setCampsites(prev => {
                   const exists = prev.find(c => c.id === camp.id);
@@ -2015,6 +2031,43 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             }}
           >
             {joinNotification}
+          </motion.div>
+        )}
+        {kickNotification && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 1.2, filter: 'blur(10px)' }}
+            transition={{ type: 'spring', bounce: 0.5 }}
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(0,0,0,0.85)',
+              zIndex: 99999,
+              backdropFilter: 'blur(15px)'
+            }}
+          >
+            <div style={{
+              background: 'rgba(255, 59, 48, 0.2)',
+              border: '2px solid #ff3b30',
+              padding: '40px 60px',
+              borderRadius: '24px',
+              color: '#fff',
+              textAlign: 'center',
+              boxShadow: '0 0 50px rgba(255, 59, 48, 0.4)',
+              maxWidth: '80%'
+            }}>
+              <AlertOctagon size={64} color="#ff3b30" style={{ marginBottom: '24px', animation: 'pulse 2s infinite' }} />
+              <h2 style={{ fontSize: '28px', margin: '0 0 16px 0', textTransform: 'uppercase', letterSpacing: '2px', color: '#ff3b30' }}>
+                Action Prohibited
+              </h2>
+              <p style={{ fontSize: '18px', margin: 0, fontWeight: '500' }}>
+                {kickNotification}
+              </p>
+            </div>
           </motion.div>
         )}
         {adminNotification && (
