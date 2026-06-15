@@ -28,9 +28,11 @@ import {
   Check,
   Shield,
   ShieldAlert,
+  Reply,
   AlertOctagon,
   Eye,
-  HelpCircle
+  HelpCircle,
+  LifeBuoy
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -49,19 +51,27 @@ import AttachmentPopover from '../components/chat/AttachmentPopover';
 import AIOperations from '../components/settings/AIOperations';
 import NotificationDropdown from '../components/navigation/NotificationDropdown';
 import { useSignalRadar } from '../hooks/useSignalRadar';
+import { useTheme } from '../context/ThemeContext';
 import OperatorTerminalTab from '../components/operator/OperatorTerminalTab';
 import DeveloperHelpDesk from '../components/operator/DeveloperHelpDesk';
+import DeveloperFeedback from '../components/operator/DeveloperFeedback';
+import GradientBars from '../components/ui/gradient-bars-background';
+import HelpDesk from '../components/HelpDesk';
+import FeedbackForm from '../components/FeedbackForm';
+import GroupAdminPanelModal from '../components/modals/GroupAdminPanelModal';
 
 const socket = io('https://outpost-app.onrender.com');
 
 const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const navigate = useNavigate();
+  const { activeTheme } = useTheme();
   const [activeChannel, setActiveChannel] = useState('community-chat');
   const [showWelcome, setShowWelcome] = useState(true);
   const [showDiscover, setShowDiscover] = useState(false);
   const [joinNotification, setJoinNotification] = useState(null);
   const [adminNotification, setAdminNotification] = useState(null);
   const [inputText, setInputText] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
   const [activeTypers, setActiveTypers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isFetchingMessages, setIsFetchingMessages] = useState(false);
@@ -69,12 +79,16 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isOperatorOpen, setIsOperatorOpen] = useState(false);
   const [isHelpDeskOpen, setIsHelpDeskOpen] = useState(false);
+  const [isDeveloperFeedbackOpen, setIsDeveloperFeedbackOpen] = useState(false);
+  const [isUserHelpDeskOpen, setIsUserHelpDeskOpen] = useState(false);
+  const [isUserFeedbackOpen, setIsUserFeedbackOpen] = useState(false);
   const [activeMembersList, setActiveMembersList] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const typingTimeoutRef = useRef(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCampOpsModalOpen, setIsCampOpsModalOpen] = useState(false);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState('chat'); // Mobile Bottom Dock Tab
@@ -156,7 +170,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const [messagesByChannel, setMessagesByChannel] = useState({});
   const [discoverRefreshTrigger, setDiscoverRefreshTrigger] = useState(0);
-  const [isDark, setIsDark] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark');
+
 
   const activeCampsite = campsites && campsites.length > 0 ? (campsites.find(c => c.active) || campsites[0]) : null;
   const expeditions = activeCampsite?.expeditions || [];
@@ -363,6 +377,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       window.location.href = "/"; // Instantly route them back safely
     };
 
+    const handleKicked = (data) => {
+      alert(`⚠️ ${data.message}`);
+      setCampsites(prev => prev.filter(c => c.id !== data.campsiteId));
+      window.location.reload();
+    };
+
+    const handleBanned = (data) => {
+      alert(`🚫 ${data.message}`);
+      setCampsites(prev => prev.filter(c => c.id !== data.campsiteId));
+      window.location.reload();
+    };
+
     socket.on("scout-joined-list", handleScoutJoinedList);
     socket.on("campsite-admin-notification", handleAdminNotification);
     socket.on("level_up_alert", handleLevelUp);
@@ -370,6 +396,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     socket.on("message_deleted", handleMessageDeleted);
     socket.on("operator-erasure-cascade", handleOperatorErasure);
     socket.on("operator-basecamp-purge", handleOperatorPurge);
+    socket.on("user_kicked", handleKicked);
+    socket.on("user_banned", handleBanned);
 
     return () => {
       socket.off('receive_message', handleReceiveMessage);
@@ -382,6 +410,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("message_deleted", handleMessageDeleted);
       socket.off("operator-erasure-cascade", handleOperatorErasure);
       socket.off("operator-basecamp-purge", handleOperatorPurge);
+      socket.off("user_kicked", handleKicked);
+      socket.off("user_banned", handleBanned);
     };
   }, [currentChannelKey]);
 
@@ -450,7 +480,17 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         },
         time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         type: 'text',
-        text: inputText.trim()
+        text: inputText.trim(),
+        body: replyingTo ? JSON.stringify({
+          username: replyingTo.user?.username || replyingTo.user || 'Unknown Scout',
+          text: replyingTo.text,
+          id: replyingTo._id || replyingTo.id
+        }) : undefined,
+        replyTo: replyingTo ? {
+          username: replyingTo.user?.username || replyingTo.user || 'Unknown Scout',
+          text: replyingTo.text,
+          id: replyingTo._id || replyingTo.id
+        } : null
       };
       
       // Emit to server
@@ -465,6 +505,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       });
 
       setInputText('');
+      setReplyingTo(null);
     }
   };
 
@@ -593,6 +634,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       activeScouts: 1,
       color: data.template === 'gaming' ? '#ff3b30' : data.template === 'dev' ? '#4facfe' : '#ffcc00',
       adminEmail: currentUser?.email,
+      adminUsername: currentUser?.username,
       isPublic: data.isPublic,
       template: data.template,
       imageUrl: data.imageUrl,
@@ -681,6 +723,66 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       return c;
     }));
     setActiveChannel(channelData.name);
+  };
+
+  const handleKickMember = async (username) => {
+    try {
+      const response = await fetch(`https://outpost-app.onrender.com/api/campsites/${activeCampsite.id}/kick`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminEmail: currentUser.email, username })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.message || 'Failed to kick user');
+        return;
+      }
+      
+      const isGlobalAdmin = currentUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
+      const actor = isGlobalAdmin ? 'Developer' : 'Admin';
+
+      socket.emit('kick_user_event', { 
+        username, 
+        campsiteId: activeCampsite.id,
+        message: `${actor} has kicked you`
+      });
+
+      setActiveMembersList(prev => prev.filter(m => m !== username && m.username !== username));
+      alert(data.message);
+    } catch (err) {
+      console.error(err);
+      alert('Error kicking user');
+    }
+  };
+
+  const handleBanMember = async (username) => {
+    try {
+      const response = await fetch(`https://outpost-app.onrender.com/api/campsites/${activeCampsite.id}/ban`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminEmail: currentUser.email, username })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.message || 'Failed to ban user');
+        return;
+      }
+      
+      const isGlobalAdmin = currentUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
+      const actor = isGlobalAdmin ? 'Developer' : 'Admin';
+
+      socket.emit('ban_user_event', { 
+        username, 
+        campsiteId: activeCampsite.id,
+        message: `${actor} has banned you`
+      });
+
+      setActiveMembersList(prev => prev.filter(m => m !== username && m.username !== username));
+      alert(data.message);
+    } catch (err) {
+      console.error(err);
+      alert('Error banning user');
+    }
   };
 
   const handleDeleteChannel = (channelId) => {
@@ -790,7 +892,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   return (
     <div className="outpost-app-wrapper">
-      <AnimatedMesh />
+      {!activeTheme?.isDynamic && <AnimatedMesh />}
+      {activeTheme?.isDynamic && activeTheme?.id.startsWith('gradient-bars') && (
+        <div style={{ opacity: 0.15, position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+          <GradientBars 
+            numBars={15}
+            gradientFrom={activeTheme.dynamicColor || "#ff3c00"}
+            gradientTo="transparent"
+            animationDuration={2}
+            className="w-full h-full"
+          />
+        </div>
+      )}
       <div 
         className="basecamp-layout" 
         style={{ gridTemplateColumns: showDiscover ? '72px 1fr' : (isSidebarOpen ? '72px 280px 1fr' : '72px 1fr') }}
@@ -1018,7 +1131,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <div className="expedition-header">
               <div className="expedition-header-logo">
                 <img src={logoUrl} alt="Logo" />
-                <span>OUTPOST</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>OUTPOST <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span></span>
               </div>
             </div>
             
@@ -1081,7 +1194,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <span className="status-dot online"></span>
             </div>
             <div className="user-name">
-              <strong>{currentUser?.username || 'YourUser'}</strong>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <strong>{currentUser?.username || 'YourUser'}</strong>
+                {isGlobalAdmin && <span className="role-tag developer">DEVELOPER</span>}
+              </div>
               <span>Level {currentUser?.level || 1}</span>
             </div>
           </div>
@@ -1132,15 +1248,30 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                       ? "active shadow-[0_0_15px_rgba(74,222,128,0.2)]" 
                       : ""
                   }`}
-                  style={{
-                    background: isHelpDeskOpen ? 'rgba(20, 83, 45, 0.4)' : 'var(--bg-glass)',
-                    borderColor: isHelpDeskOpen ? 'rgba(34, 197, 94, 0.8)' : 'var(--border-glass)',
-                    color: isHelpDeskOpen ? '#4ade80' : 'var(--text-secondary)',
-                    marginRight: '8px'
-                  }}
+                  style={isHelpDeskOpen ? {
+                    background: 'rgba(20, 83, 45, 0.4)',
+                    borderColor: 'rgba(34, 197, 94, 0.8)',
+                    color: '#4ade80'
+                  } : undefined}
                   title="DEVELOPER HELP DESK"
                 >
                   <HelpCircle size={18} className="animate-pulse" />
+                </button>
+                <button
+                  onClick={() => setIsDeveloperFeedbackOpen(true)}
+                  className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
+                    isDeveloperFeedbackOpen 
+                      ? "active shadow-[0_0_15px_rgba(255,165,0,0.2)]" 
+                      : ""
+                  }`}
+                  style={isDeveloperFeedbackOpen ? {
+                    background: 'rgba(184, 115, 51, 0.4)',
+                    borderColor: 'rgba(255, 165, 0, 0.8)',
+                    color: '#ffa500'
+                  } : undefined}
+                  title="DEVELOPER FEEDBACK DASHBOARD"
+                >
+                  <MessageSquare size={18} className="animate-pulse" />
                 </button>
                 <button
                   onClick={() => setIsOperatorOpen(true)}
@@ -1149,11 +1280,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                       ? "active shadow-[0_0_15px_rgba(239,68,68,0.2)]" 
                       : ""
                   }`}
-                  style={{
-                    background: isOperatorOpen ? 'rgba(69, 10, 10, 0.4)' : 'var(--bg-glass)',
-                    borderColor: isOperatorOpen ? 'rgba(153, 27, 27, 0.8)' : 'var(--border-glass)',
-                    color: isOperatorOpen ? '#f87171' : 'var(--text-secondary)'
-                  }}
+                  style={isOperatorOpen ? {
+                    background: 'rgba(69, 10, 10, 0.4)',
+                    borderColor: 'rgba(153, 27, 27, 0.8)',
+                    color: '#f87171'
+                  } : undefined}
                   title="OPERATOR COMMAND PANEL GATE"
                 >
                   <Eye size={18} className="animate-pulse" />
@@ -1171,10 +1302,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   }
                 }}
                 className={`theme-trigger-btn ${isAlertOpen ? 'active' : ''}`}
-                style={{
-                  background: isAlertOpen ? 'var(--bg-card)' : 'var(--bg-glass)',
-                  color: isAlertOpen ? 'var(--brand-primary)' : 'var(--text-secondary)'
-                }}
+                  style={isAlertOpen ? {
+                    background: 'var(--bg-card)',
+                    color: 'var(--brand-primary)'
+                  } : undefined}
               >
                 <Bell size={18} />
                 {alerts.length > 0 && (
@@ -1232,10 +1363,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   setIsThemeOpen(false);
                 }}
                 className={`theme-trigger-btn ${isAIOpen ? 'active' : ''}`}
-                style={{
-                  background: isAIOpen ? 'var(--bg-card)' : 'var(--bg-glass)',
-                  color: isAIOpen ? 'var(--brand-primary)' : 'var(--text-secondary)'
-                }}
+                  style={isAIOpen ? {
+                    background: 'var(--bg-card)',
+                    color: 'var(--brand-primary)'
+                  } : undefined}
                 title="Compute Intelligence Matrices"
               >
                 <Brain size={18} />
@@ -1243,21 +1374,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             )}
 
             <button
-              onClick={() => {
-                if (isDark) {
-                  document.documentElement.removeAttribute('data-theme');
-                  localStorage.setItem('outpost_theme_dark', 'false');
-                  setIsDark(false);
-                } else {
-                  document.documentElement.setAttribute('data-theme', 'dark');
-                  localStorage.setItem('outpost_theme_dark', 'true');
-                  setIsDark(true);
-                }
-              }}
-              className={`theme-trigger-btn ${!isDark ? 'active' : ''}`}
+              onClick={toggleTheme}
+              className={`theme-trigger-btn ${!isDarkMode ? 'active' : ''}`}
               title="Toggle Light/Dark Mode"
             >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
 
@@ -1272,10 +1393,27 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <Palette size={18} />
             </button>
 
+            {!isGlobalAdmin && (
+              <>
+                <button className={`theme-trigger-btn ${isUserHelpDeskOpen ? 'active' : ''}`} onClick={() => setIsUserHelpDeskOpen(true)} title="Help Desk">
+                  <LifeBuoy size={18} />
+                </button>
+                <button className={`theme-trigger-btn ${isUserFeedbackOpen ? 'active' : ''}`} onClick={() => setIsUserFeedbackOpen(true)} title="Feedback">
+                  <MessageSquare size={18} />
+                </button>
+              </>
+            )}
+
             <button className="camp-ops-btn" onClick={() => setIsCampOpsModalOpen(true)}>
               <Settings size={18} />
               Camp Operations
             </button>
+            {isCampAdmin && (
+              <button className="camp-ops-btn" style={{ background: 'var(--brand-primary)', color: 'white', marginLeft: '8px' }} onClick={() => setIsAdminPanelOpen(true)}>
+                <ShieldAlert size={18} />
+                Manage Members
+              </button>
+            )}
 
             <AnimatePresence>
               {isCampAdmin && isAIOpen && <AIOperations onClose={() => setIsAIOpen(false)} />}
@@ -1409,40 +1547,49 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                             const userRoleName = activeCampsite?.memberRoles?.[username];
                             const userRoleColor = activeCampsite?.roles?.find(r => r.name === userRoleName)?.color || 'var(--text-primary)';
                             return (
-                              <span className="message-author" style={{ color: userRoleColor, fontWeight: userRoleName ? 'bold' : 'normal' }}>
+                              <span className="message-author" style={{ color: userRoleColor, fontWeight: userRoleName ? 'bold' : 'normal', display: 'flex', alignItems: 'center' }}>
                                 {username}
+                                {username.toLowerCase() === 'harshit mehta' && <span className="role-tag developer">DEVELOPER</span>}
+                                {((activeCampsite?.adminUsername && username === activeCampsite?.adminUsername) || (activeCampsite?.adminEmail === currentUser?.email && username === currentUser?.username)) && username.toLowerCase() !== 'harshit mehta' && <span className="role-tag admin">ADMIN</span>}
                               </span>
                             );
                           })()}
                           {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
                           <span className="message-time" style={{ marginLeft: '10px', flexGrow: 1 }}>{msg.time}</span>
                           <button 
+                            className="message-action-btn"
                             onClick={() => handleCopyMessage(msg)}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.5, display: 'flex', alignItems: 'center', padding: '4px', marginRight: '4px' }}
                             title="Copy"
                           >
                             <Copy size={14} />
                           </button>
                           <button 
+                            className="message-action-btn"
+                            onClick={() => setReplyingTo(msg)}
+                            title="Reply"
+                          >
+                            <Reply size={14} />
+                          </button>
+                          <button 
+                            className="message-action-btn"
                             onClick={() => setMessageToDelete({ 
                               id: msg._id || msg.id, 
                               channelKey: currentChannelKey,
                               isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username 
                             })}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.5, display: 'flex', alignItems: 'center', padding: '4px' }}
                             title="Delete"
                           >
                             <Trash2 size={14} />
                           </button>
                           {isGlobalAdmin && !msg.isSystemDeleted && (
                             <button
+                              className="operator-action-btn"
                               onClick={() => setMessageToDelete({ 
                                   id: msg._id || msg.id, 
                                   channelKey: currentChannelKey,
                                   isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username,
                                   isOperatorMode: true
                               })}
-                              style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', opacity: 0.8, display: 'flex', alignItems: 'center', padding: '4px', marginLeft: '2px' }}
                               title="Operator Override: Delete Content"
                             >
                               <ShieldAlert size={14} />
@@ -1450,6 +1597,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           )}
                         </div>
                         <div className="message-text">
+                          {(() => {
+                            let parsedReply = msg.replyTo;
+                            if (!parsedReply && (!msg.type || msg.type === 'text') && msg.body) {
+                              try { parsedReply = JSON.parse(msg.body); } catch(e) {}
+                            }
+                            if (!parsedReply) return null;
+                            return (
+                              <div className="reply-reference" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', padding: '6px 10px', borderRadius: '6px', marginBottom: '8px', borderLeft: '3px solid var(--brand-primary)', opacity: 0.8, display: 'flex', flexDirection: 'column', gap: '2px', cursor: 'pointer' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold' }}>
+                                  <Reply size={12} />
+                                  {parsedReply.username}
+                                </div>
+                                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.8rem' }}>
+                                  {parsedReply.text}
+                                </div>
+                              </div>
+                            );
+                          })()}
                           {msg.isSystemDeleted ? (
                             <div className="mt-1.5 px-3 py-2 bg-red-950/10 border border-red-950/40 rounded-xl flex items-center gap-2 text-red-400/80 max-w-2xl shadow-[inset_0_1px_10px_rgba(239,68,68,0.02)]" style={{ marginTop: '6px', padding: '8px 12px', backgroundColor: 'rgba(69, 10, 10, 0.1)', border: '1px solid rgba(69, 10, 10, 0.4)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(248, 113, 113, 0.8)', maxWidth: '42rem' }}>
                               <AlertOctagon size={14} className="shrink-0" style={{ flexShrink: 0 }} />
@@ -1552,6 +1717,26 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </motion.div>
           )}
         </AnimatePresence>
+        <AnimatePresence>
+          {replyingTo && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: 10, height: 0 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', background: 'var(--bg-glass)', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', borderBottom: '1px solid var(--border-glass)', margin: '0 24px', position: 'relative', top: '10px', zIndex: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  <Reply size={14} />
+                  <span>Replying to <strong style={{ color: 'var(--text-primary)' }}>{replyingTo.user?.username || replyingTo.user || 'Unknown Scout'}</strong></span>
+                </div>
+                <button onClick={() => setReplyingTo(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                  <X size={16} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="chat-input-wrapper">
           <div className="chat-input-container" style={{ position: 'relative', overflow: 'visible' }}>
@@ -1643,7 +1828,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 <div className="expedition-header">
                   <div className="expedition-header-logo">
                     <img src={logoUrl} alt="Outpost Logo" />
-                    <span>OUTPOST</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>OUTPOST <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span></span>
                   </div>
                 </div>
 
@@ -1704,9 +1889,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     <button className="icon-btn" title="AI Operations" onClick={() => { setIsAIOpen(true); setIsMobileDrawerOpen(false); }}>
                       <Brain size={18} />
                     </button>
+                    {!isGlobalAdmin && (
+                      <>
+                        <button className="icon-btn" title="Help Desk" onClick={() => { setIsUserHelpDeskOpen(true); setIsMobileDrawerOpen(false); }}>
+                          <LifeBuoy size={18} />
+                        </button>
+                        <button className="icon-btn" title="Feedback" onClick={() => { setIsUserFeedbackOpen(true); setIsMobileDrawerOpen(false); }}>
+                          <MessageSquare size={18} />
+                        </button>
+                      </>
+                    )}
                     <button className="icon-btn" title="Camp Operations" onClick={() => { setIsCampOpsModalOpen(true); setIsMobileDrawerOpen(false); }}>
                       <Settings size={18} />
                     </button>
+                    {isCampAdmin && (
+                      <button className="icon-btn" title="Manage Members" onClick={() => { setIsAdminPanelOpen(true); setIsMobileDrawerOpen(false); }}>
+                        <ShieldAlert size={18} style={{ color: 'var(--brand-primary)' }}/>
+                      </button>
+                    )}
                   </div>
                 </div>
               </aside>
@@ -1934,6 +2134,73 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           />
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {isDeveloperFeedbackOpen && (
+          <DeveloperFeedback 
+            onClose={() => setIsDeveloperFeedbackOpen(false)} 
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isUserHelpDeskOpen && (
+          <motion.div 
+            key="user-helpdesk-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="user-feature-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+            <motion.div 
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="user-feature-modal-content relative" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', background: 'var(--bg-primary)', borderRadius: '16px', overflowY: 'auto', border: '1px solid var(--border-color)', position: 'relative' }}>
+               <button 
+                 style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 50, background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                 onClick={() => setIsUserHelpDeskOpen(false)}
+               ><X size={20} /></button>
+               <div style={{ padding: '32px 16px', minHeight: '100%' }}>
+                 <HelpDesk />
+               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isUserFeedbackOpen && (
+          <motion.div 
+            key="user-feedback-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="user-feature-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+            <motion.div 
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="user-feature-modal-content relative" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', background: 'var(--bg-primary)', borderRadius: '16px', overflowY: 'auto', border: '1px solid var(--border-color)', position: 'relative' }}>
+               <button 
+                 style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 50, background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                 onClick={() => setIsUserFeedbackOpen(false)}
+               ><X size={20} /></button>
+               <div style={{ padding: '32px 16px', minHeight: '100%' }}>
+                 <FeedbackForm />
+               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <GroupAdminPanelModal
+        isOpen={isAdminPanelOpen}
+        onClose={() => setIsAdminPanelOpen(false)}
+        campsite={activeCampsite}
+        currentUser={currentUser}
+        onKick={handleKickMember}
+        onBan={handleBanMember}
+      />
 
     </div>
   </div>

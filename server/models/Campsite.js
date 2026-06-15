@@ -21,6 +21,7 @@ const campsiteSchema = new mongoose.Schema({
   icon: { type: String, default: '🏕️' },
   imageUrl: { type: String },
   adminEmail: { type: String }, // Used to check if user is the creator
+  adminUsername: { type: String }, // Store creator's username for chat tags
   isPublic: { type: Boolean, default: true },
   active: { type: Boolean, default: true },
   color: { type: String, default: '#ffcc00' },
@@ -33,6 +34,8 @@ const campsiteSchema = new mongoose.Schema({
   roles: [roleSchema],
   memberRoles: { type: Map, of: String, default: {} }, // Maps username to roleName
   members: [{ type: String }], // Array of usernames
+  bannedUsers: [{ type: String }], // Array of usernames permanently banned
+  kickedUsers: [{ type: String }], // Array of usernames permanently kicked
   
   totalScouts: { type: Number, default: 1 },
   activeScouts: { type: Number, default: 1 }

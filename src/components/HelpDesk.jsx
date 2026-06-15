@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { UploadCloud, CheckCircle, Send, Image as ImageIcon, X, Clock, Lock, MessageSquare, ArrowLeft, User, Paperclip } from 'lucide-react';
+import { UploadCloud, CheckCircle, Send, Image as ImageIcon, X, Clock, Lock, MessageSquare, ArrowLeft, User, Paperclip, LifeBuoy, Headset } from 'lucide-react';
 import { io } from 'socket.io-client';
 import './HelpDesk.css';
 
@@ -24,6 +24,9 @@ const HelpDesk = () => {
   const [chatImage, setChatImage] = useState(null);
   const [messages, setMessages] = useState([]);
   const [ticketStatus, setTicketStatus] = useState('Open');
+  const [originalRequestDescription, setOriginalRequestDescription] = useState('');
+  const [isDeveloperTyping, setIsDeveloperTyping] = useState(false);
+  const typingTimeout = useRef(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -46,6 +49,7 @@ const HelpDesk = () => {
             setMessages(data.messages);
             setTicketStatus(data.status);
             if (data.userName) setUserName(data.userName);
+            if (data.description) setOriginalRequestDescription(data.description);
           }
         })
         .catch(err => console.error("Error fetching request details:", err));
@@ -56,13 +60,25 @@ const HelpDesk = () => {
     const handleReceiveHelpMessage = (data) => {
       if (data.requestId === requestId) {
         setMessages(prev => [...prev, data.message]);
+        if (data.message.senderType === 'developer') setIsDeveloperTyping(false);
+      }
+    };
+
+    const handleUserTyping = (data) => {
+      if (data.requestId === requestId && data.senderType === 'developer') {
+        setIsDeveloperTyping(true);
+        if (typingTimeout.current) clearTimeout(typingTimeout.current);
+        typingTimeout.current = setTimeout(() => setIsDeveloperTyping(false), 3000);
       }
     };
 
     socket.on('receive_help_message', handleReceiveHelpMessage);
+    socket.on('user_typing', handleUserTyping);
 
     return () => {
       socket.off('receive_help_message', handleReceiveHelpMessage);
+      socket.off('user_typing', handleUserTyping);
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
     };
   }, [requestId]);
 
@@ -156,6 +172,11 @@ const HelpDesk = () => {
     }
   };
 
+  const handleTyping = (e) => {
+    setChatMessage(e.target.value);
+    socket.emit('typing_help_message', { requestId, senderType: 'user' });
+  };
+
   const activeUserName = localStorage.getItem('outpost_help_userName') || userName || 'User';
 
   return (
@@ -171,7 +192,9 @@ const HelpDesk = () => {
         <p className="helpdesk-subtitle">Outpost Community Support - We're here to help you navigate.</p>
       </motion.div>
 
-      <div className="helpdesk-form-container glass-panel">
+      <div className="helpdesk-form-container glass-panel sticker-container">
+        <div className="sticker sticker-left"><Headset size={24} /></div>
+        <div className="sticker sticker-right"><LifeBuoy size={24} /></div>
         <AnimatePresence mode="wait">
           {viewMode === 'submit' ? (
             <motion.div
@@ -319,10 +342,11 @@ const HelpDesk = () => {
             >
               <div className="status-header">
                 <button 
-                  className="icon-btn back-btn"
+                  className="back-btn"
                   onClick={() => setViewMode('submit')}
+                  style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
-                  <ArrowLeft size={20} />
+                  <ArrowLeft size={24} /> <span style={{ fontSize: '1.1rem' }}>Back</span>
                 </button>
                 <div className="status-title">
                   <h3>Request Status</h3>
@@ -352,20 +376,27 @@ const HelpDesk = () => {
                 </div>
               ) : (
                 <div className="chat-interface">
-                  <div className="chat-status-bar">
-                    <div className="ticket-info">
-                      <span className="ticket-id">Ticket #{requestId.substring(0, 8)}...</span>
-                      <span className={`ticket-badge ${ticketStatus.toLowerCase()}`}>{ticketStatus}</span>
+                  <div className="chat-status-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div className="ticket-info" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span className="ticket-title" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Ticket #{requestId}</span>
+                      <span className={`ticket-status-badge ${ticketStatus.toLowerCase()}`}>{ticketStatus}</span>
                     </div>
-                    <div className="helper-info">
-                      <div className="helper-avatar">
-                        <User size={16} />
+                    <div className="helper-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div className="helper-avatar" style={{ background: 'rgba(255,255,255,0.1)', padding: '8px', borderRadius: '50%' }}>
+                        <User size={18} />
                       </div>
-                      <span>Chatting with <strong>Outpost Community Helper</strong></span>
+                      <span className="text-sm">Chatting with <strong>Outpost Community Helper</strong></span>
                     </div>
                   </div>
 
-                  <div className="chat-messages">
+                  {originalRequestDescription && (
+                    <div className="bg-dark-glass p-3 rounded mb-4 border border-gray-700">
+                      <p className="text-sm font-semibold text-brand-primary">{activeUserName}'s Request:</p>
+                      <p className="text-sm text-gray-300 mt-1">{originalRequestDescription}</p>
+                    </div>
+                  )}
+
+                  <div className="chat-messages flex-grow overflow-y-auto pr-2 flex flex-col gap-4">
                     {messages.map((msg, index) => {
                       const isUser = msg.senderType === 'user';
                       return (
@@ -383,6 +414,26 @@ const HelpDesk = () => {
                         </div>
                       );
                     })}
+                    
+                    {isDeveloperTyping && (
+                      <div className="chat-message received">
+                        <div className="helper-avatar">
+                          <User size={20} />
+                        </div>
+                        <div className="message-content" style={{ padding: '8px 16px' }}>
+                          <span className="sender-name">Developer is typing</span>
+                          <motion.div 
+                            className="flex gap-1 mt-1"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                          >
+                            <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                            <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                            <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                          </motion.div>
+                        </div>
+                      </div>
+                    )}
                     <div ref={messagesEndRef} />
                   </div>
 
@@ -413,7 +464,7 @@ const HelpDesk = () => {
                           className="chat-input"
                           placeholder="Type your message..."
                           value={chatMessage}
-                          onChange={(e) => setChatMessage(e.target.value)}
+                          onChange={handleTyping}
                           onKeyPress={(e) => e.key === 'Enter' && handleSendChatMessage()}
                         />
                         <button 

@@ -13,6 +13,7 @@ const messageSchema = new mongoose.Schema({
   mediaType: { type: String },
   body: { type: String },
   pollData: { type: mongoose.Schema.Types.Mixed },
+  replyTo: { type: mongoose.Schema.Types.Mixed },
   createdAt: { type: Date, default: Date.now }
 });
 

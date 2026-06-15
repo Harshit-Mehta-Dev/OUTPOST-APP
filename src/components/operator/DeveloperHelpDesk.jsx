@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, Paperclip, MessageSquare, Clock, User, CheckCircle } from 'lucide-react';
+import { X, Send, Image as ImageIcon, CheckCircle, MessageSquare, Paperclip, User, Trash2, Clock } from 'lucide-react';
 import { io } from 'socket.io-client';
 import './DeveloperHelpDesk.css';
 
@@ -13,6 +13,8 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
   const [chatMessage, setChatMessage] = useState('');
   const [chatImage, setChatImage] = useState(null);
   const [ticketStatus, setTicketStatus] = useState('Open');
+  const [isUserTyping, setIsUserTyping] = useState(false);
+  const typingTimeout = useRef(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -59,15 +61,27 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
 
   useEffect(() => {
     const handleReceiveHelpMessage = (data) => {
-      if (activeRequest && data.requestId === activeRequest._id) {
+      if (activeRequest && (data.requestId === activeRequest._id || data.requestId === activeRequest.ticketId)) {
         setMessages(prev => [...prev, data.message]);
+        if (data.message.senderType === 'user') setIsUserTyping(false);
+      }
+    };
+
+    const handleUserTyping = (data) => {
+      if (activeRequest && (data.requestId === activeRequest._id || data.requestId === activeRequest.ticketId) && data.senderType === 'user') {
+        setIsUserTyping(true);
+        if (typingTimeout.current) clearTimeout(typingTimeout.current);
+        typingTimeout.current = setTimeout(() => setIsUserTyping(false), 3000);
       }
     };
 
     socket.on('receive_help_message', handleReceiveHelpMessage);
+    socket.on('user_typing', handleUserTyping);
 
     return () => {
       socket.off('receive_help_message', handleReceiveHelpMessage);
+      socket.off('user_typing', handleUserTyping);
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
     };
   }, [activeRequest]);
 
@@ -90,7 +104,7 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
     if (!chatMessage.trim() && !chatImage) return;
 
     const payload = {
-      requestId: activeRequest._id,
+      requestId: activeRequest.ticketId || activeRequest._id,
       senderType: 'developer',
       text: chatMessage.trim(),
       mediaType: chatImage ? chatImage.type : null,
@@ -114,6 +128,20 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
       .catch(err => console.error("Error closing ticket:", err));
   };
 
+  const handleClearAllTickets = () => {
+    if (window.confirm("Are you sure you want to completely erase ALL tickets? This action cannot be undone.")) {
+      fetch('https://outpost-app.onrender.com/api/help/requests', {
+        method: 'DELETE'
+      })
+      .then(res => res.json())
+      .then(() => {
+        setRequests([]);
+        setActiveRequest(null);
+      })
+      .catch(err => console.error("Error clearing tickets:", err));
+    }
+  };
+
   return (
     <motion.div 
       className="dev-helpdesk-overlay"
@@ -132,9 +160,20 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
             <MessageSquare size={24} className="text-brand-primary" />
             <h2 className="text-xl font-bold">Support Operations Center</h2>
           </div>
-          <button className="icon-btn" onClick={onClose}>
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={handleClearAllTickets}
+              className="flex items-center gap-2"
+              style={{ background: 'rgba(231, 76, 60, 0.1)', color: '#e74c3c', border: '1px solid rgba(231, 76, 60, 0.3)', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease', fontWeight: '500', fontSize: '0.9rem' }}
+              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(231, 76, 60, 0.2)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'rgba(231, 76, 60, 0.1)'}
+            >
+              <Trash2 size={16} /> Clear All Tickets
+            </button>
+            <button className="icon-btn" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         <div className="dev-helpdesk-body">
@@ -220,6 +259,23 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
                       </div>
                     );
                   })}
+                  
+                  {isUserTyping && (
+                    <div className="chat-message received">
+                      <div className="message-content" style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}>
+                        <span className="sender-name">{activeRequest.userName} is typing</span>
+                        <motion.div 
+                          className="flex gap-1 mt-1"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                        >
+                          <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                          <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                          <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                        </motion.div>
+                      </div>
+                    </div>
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 
@@ -250,7 +306,13 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
                         className="chat-input"
                         placeholder="Type your response to the scout..."
                         value={chatMessage}
-                        onChange={(e) => setChatMessage(e.target.value)}
+                        onChange={(e) => {
+                          setChatMessage(e.target.value);
+                          socket.emit('typing_help_message', { 
+                            requestId: activeRequest.ticketId || activeRequest._id, 
+                            senderType: 'developer' 
+                          });
+                        }}
                         onKeyPress={(e) => e.key === 'Enter' && handleSendChatMessage()}
                       />
                       <button 

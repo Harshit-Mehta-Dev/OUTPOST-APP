@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Palette, Check, RotateCcw } from "lucide-react";
+import { Check, Palette, RotateCcw } from "lucide-react";
 import { useTheme, AVAILABLE_THEMES } from "../context/ThemeContext";
 import "./ThemeController.css";
 
@@ -27,6 +27,8 @@ export default function ThemeController({ onClose }) {
         <button 
           onClick={() => {
             localStorage.removeItem("outpost-theme-id");
+            localStorage.removeItem("outpost-dynamic-bars");
+            localStorage.removeItem("outpost-dynamic-color");
             window.location.reload();
           }}
           className="theme-reset-btn"
@@ -36,7 +38,6 @@ export default function ThemeController({ onClose }) {
         </button>
       </div>
 
-      {/* Grid Display Grid System */}
       <div className="theme-controller-body">
         <div>
           <p className="theme-grid-label">Available Frequencies</p>
@@ -59,13 +60,11 @@ export default function ThemeController({ onClose }) {
           </div>
         </div>
 
-        {/* Informative Status Preview String Box */}
         <div className="theme-status-box">
           <div className="theme-status-label">Target Channel Configuration:</div>
           <div className="theme-status-value">{selectedTheme.name}</div>
         </div>
 
-        {/* Actions Button Footprint Row */}
         <div className="theme-actions">
           <button 
             onClick={onClose}

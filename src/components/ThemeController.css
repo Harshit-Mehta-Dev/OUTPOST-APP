@@ -170,14 +170,16 @@
 
 /* Basecamp Top Bar adjustments */
 .theme-trigger-btn {
-  padding: 0.5rem;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border-radius: 0.75rem;
   border: 1px solid transparent;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-primary);
+  background-color: var(--bg-glass);
   color: var(--text-secondary);
   border-color: var(--border-glass);
 }
@@ -185,6 +187,8 @@
 .theme-trigger-btn:hover {
   color: var(--text-primary);
   border-color: var(--text-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .theme-trigger-btn.active {

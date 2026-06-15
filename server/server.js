@@ -212,6 +212,14 @@ io.on('connection', (socket) => {
     socket.join(`user-room-${username}`);
   });
 
+  socket.on('kick_user_event', (data) => {
+    io.to(`user-room-${data.username}`).emit('user_kicked', data);
+  });
+
+  socket.on('ban_user_event', (data) => {
+    io.to(`user-room-${data.username}`).emit('user_banned', data);
+  });
+
   // Help Desk specific rooms
   socket.on('join_help_room', (requestId) => {
     socket.join(`help_${requestId}`);
@@ -281,7 +289,8 @@ io.on('connection', (socket) => {
         text: data.text,
         mediaType: data.mediaType,
         body: data.body,
-        pollData: data.pollData
+        pollData: data.pollData,
+        replyTo: data.replyTo
       });
       await newMessage.save();
       syncMessageToSupabase(newMessage);

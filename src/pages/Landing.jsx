@@ -8,6 +8,7 @@ import HelpDesk from '../components/HelpDesk';
 import OutpostFooter from '../components/OutpostFooter';
 import LegalHub from '../components/LegalHub';
 import FounderSection from '../components/landing/FounderSection';
+import FeedbackForm from '../components/FeedbackForm';
 
 const Landing = () => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const Landing = () => {
             <Community />
             <About />
             <HelpDesk />
+            <FeedbackForm />
             <FounderSection />
           </>
         )}

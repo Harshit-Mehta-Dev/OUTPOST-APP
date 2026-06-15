@@ -89,6 +89,14 @@ router.post('/:id/join', async (req, res) => {
     
     if (!camp) return res.status(404).json({ message: 'Campsite not found' });
     
+    if (camp.bannedUsers && camp.bannedUsers.includes(username)) {
+      return res.status(403).json({ message: 'You have been permanently banned from this campsite.' });
+    }
+
+    if (camp.kickedUsers && camp.kickedUsers.includes(username)) {
+      return res.status(403).json({ message: 'You have been kicked from this campsite.' });
+    }
+    
     if (!camp.members.includes(username)) {
       camp.members.push(username);
       camp.totalScouts += 1;
@@ -116,6 +124,74 @@ router.post('/:id/leave', async (req, res) => {
     
     await camp.save();
     res.json({ message: 'Successfully left the bootcamp' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST kick a member from a campsite
+router.post('/:id/kick', async (req, res) => {
+  try {
+    const { adminEmail, username } = req.body;
+    const camp = await Campsite.findById(req.params.id);
+    
+    if (!camp) return res.status(404).json({ message: 'Campsite not found' });
+    
+    // Check if the requester is the admin or the developer
+    const isGlobalAdmin = adminEmail && adminEmail.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
+    const isCampAdmin = camp.adminEmail && camp.adminEmail === adminEmail;
+    
+    if (!isGlobalAdmin && !isCampAdmin) {
+      return res.status(403).json({ message: 'Only the admin or developer can kick users' });
+    }
+    
+    // Remove from members
+    camp.members = camp.members.filter(m => m !== username);
+    camp.totalScouts = Math.max(1, camp.totalScouts - 1);
+    camp.activeScouts = Math.max(1, camp.activeScouts - 1);
+    
+    // Add to kickedUsers
+    if (!camp.kickedUsers) camp.kickedUsers = [];
+    if (!camp.kickedUsers.includes(username)) {
+      camp.kickedUsers.push(username);
+    }
+    
+    await camp.save();
+    res.json({ message: `${username} has been kicked from the campsite`, camp });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST ban a member from a campsite
+router.post('/:id/ban', async (req, res) => {
+  try {
+    const { adminEmail, username } = req.body;
+    const camp = await Campsite.findById(req.params.id);
+    
+    if (!camp) return res.status(404).json({ message: 'Campsite not found' });
+    
+    // Check if the requester is the admin or the developer
+    const isGlobalAdmin = adminEmail && adminEmail.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
+    const isCampAdmin = camp.adminEmail && camp.adminEmail === adminEmail;
+    
+    if (!isGlobalAdmin && !isCampAdmin) {
+      return res.status(403).json({ message: 'Only the admin or developer can ban users' });
+    }
+    
+    // Remove from members
+    camp.members = camp.members.filter(m => m !== username);
+    camp.totalScouts = Math.max(1, camp.totalScouts - 1);
+    camp.activeScouts = Math.max(1, camp.activeScouts - 1);
+    
+    // Add to bannedUsers
+    if (!camp.bannedUsers) camp.bannedUsers = [];
+    if (!camp.bannedUsers.includes(username)) {
+      camp.bannedUsers.push(username);
+    }
+    
+    await camp.save();
+    res.json({ message: `${username} has been permanently banned`, camp });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

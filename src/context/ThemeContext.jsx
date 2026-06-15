@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export const AVAILABLE_THEMES = [
+  // --- Dynamic Spectrums ---
+  { id: "gradient-bars-orange", name: "Dynamic Orange Bars", isDynamic: true, dynamicColor: "#ff3c00", primaryRGB: "255, 60, 0", previewStyle: { background: "linear-gradient(to top, #ff3c00, transparent)" } },
+  { id: "gradient-bars-rose", name: "Dynamic Rose Bars", isDynamic: true, dynamicColor: "#e11d48", primaryRGB: "225, 29, 72", previewStyle: { background: "linear-gradient(to top, #e11d48, transparent)" } },
+  { id: "gradient-bars-blue", name: "Dynamic Sea Bars", isDynamic: true, dynamicColor: "#1d4ed8", primaryRGB: "29, 78, 216", previewStyle: { background: "linear-gradient(to top, #1d4ed8, transparent)" } },
+  { id: "gradient-bars-green", name: "Dynamic Toxic Bars", isDynamic: true, dynamicColor: "#15803d", primaryRGB: "22, 163, 74", previewStyle: { background: "linear-gradient(to top, #15803d, transparent)" } },
+  
   // --- Single Solid Profiles ---
   { id: "orange-solid", name: "Typical Orange", isGradient: false, primaryRGB: "234, 88, 12", previewStyle: { backgroundColor: "rgb(234, 88, 12)" } },
   { id: "rose-solid", name: "Crimson Rose", isGradient: false, primaryRGB: "225, 29, 72", previewStyle: { backgroundColor: "rgb(225, 29, 72)" } },
@@ -25,11 +31,20 @@ export const AVAILABLE_THEMES = [
 
 const ThemeContext = createContext();
 
+// Convert hex to RGB helper
+const hexToRgb = (hex) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+    : "255, 60, 0";
+};
+
 export function ThemeProvider({ children }) {
-  const [activeTheme, setActiveTheme] = useState(AVAILABLE_THEMES[0]);
+  const [activeTheme, setActiveTheme] = useState(AVAILABLE_THEMES[4]); // Default to first solid theme if none
 
   useEffect(() => {
     let savedThemeId = localStorage.getItem("outpost-theme-id");
+
     const userStr = localStorage.getItem("outpost_user");
     if (userStr) {
       try {
@@ -46,13 +61,18 @@ export function ThemeProvider({ children }) {
       if (match) {
         setActiveTheme(match);
         const root = document.documentElement;
-        root.style.setProperty("--brand-primary", match.primaryRGB);
-        if (match.isGradient) {
-          root.style.setProperty("--brand-gradient-start", match.gradStart);
-          root.style.setProperty("--brand-gradient-end", match.gradEnd);
+        if (match.isDynamic) {
+          const rgb = hexToRgb(match.dynamicColor || "#ff3c00");
+          root.style.setProperty("--brand-primary", rgb);
         } else {
-          root.style.setProperty("--brand-gradient-start", `rgb(${match.primaryRGB})`);
-          root.style.setProperty("--brand-gradient-end", `rgb(${match.primaryRGB})`);
+          root.style.setProperty("--brand-primary", match.primaryRGB);
+          if (match.isGradient) {
+            root.style.setProperty("--brand-gradient-start", match.gradStart);
+            root.style.setProperty("--brand-gradient-end", match.gradEnd);
+          } else {
+            root.style.setProperty("--brand-gradient-start", `rgb(${match.primaryRGB})`);
+            root.style.setProperty("--brand-gradient-end", `rgb(${match.primaryRGB})`);
+          }
         }
       }
     }
@@ -61,14 +81,19 @@ export function ThemeProvider({ children }) {
   const updateTheme = (theme) => {
     setActiveTheme(theme);
     const root = document.documentElement;
-    root.style.setProperty("--brand-primary", theme.primaryRGB);
     
-    if (theme.isGradient) {
-      root.style.setProperty("--brand-gradient-start", theme.gradStart);
-      root.style.setProperty("--brand-gradient-end", theme.gradEnd);
+    if (theme.isDynamic) {
+      const rgb = hexToRgb(theme.dynamicColor || "#ff3c00");
+      root.style.setProperty("--brand-primary", rgb);
     } else {
-      root.style.setProperty("--brand-gradient-start", `rgb(${theme.primaryRGB})`);
-      root.style.setProperty("--brand-gradient-end", `rgb(${theme.primaryRGB})`);
+      root.style.setProperty("--brand-primary", theme.primaryRGB);
+      if (theme.isGradient) {
+        root.style.setProperty("--brand-gradient-start", theme.gradStart);
+        root.style.setProperty("--brand-gradient-end", theme.gradEnd);
+      } else {
+        root.style.setProperty("--brand-gradient-start", `rgb(${theme.primaryRGB})`);
+        root.style.setProperty("--brand-gradient-end", `rgb(${theme.primaryRGB})`);
+      }
     }
 
     const userStr = localStorage.getItem("outpost_user");
@@ -88,13 +113,33 @@ export function ThemeProvider({ children }) {
     }
   };
 
+  useEffect(() => {
+    localStorage.setItem("outpost-theme-id", activeTheme.id);
+    const userStr = localStorage.getItem("outpost_user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user && user.username) {
+          localStorage.setItem("outpost-theme-id-" + user.username, activeTheme.id);
+        }
+      } catch(e) {}
+    }
+  }, [activeTheme]);
+
   return (
-    <ThemeContext.Provider value={{ activeTheme, updateTheme }}>
+    <ThemeContext.Provider value={{ 
+      activeTheme, 
+      updateTheme
+    }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
 export function useTheme() {
-  return useContext(ThemeContext);
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
 }

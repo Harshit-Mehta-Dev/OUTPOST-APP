@@ -71,8 +71,10 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             className="logo-text"
             animate={isRefreshing ? { opacity: 0, filter: 'blur(10px)', x: 50 } : {}}
             transition={{ duration: 0.8 }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
             OUTPOST
+            <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', WebkitTextFillColor: '#ffffff', borderRadius: '4px', fontWeight: 'bold', alignSelf: 'center', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span>
           </motion.span>
         </div>
 
@@ -82,6 +84,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           <a href="/#about" onClick={(e) => handleNavClick(e, '/#about')}>About</a>
           <a href="/#legal" onClick={(e) => handleNavClick(e, '/#legal')}>Legal</a>
           <a href="/#helpdesk" onClick={(e) => handleNavClick(e, '/#helpdesk')}>Help Desk</a>
+          <a href="/#feedback" onClick={(e) => handleNavClick(e, '/#feedback')}>Feedback</a>
           <div className="nav-actions-mobile">
             <button className="theme-toggle" onClick={toggleTheme}>
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}

@@ -208,3 +208,82 @@ button {
 .animate-signal-glow {
   animation: dynamicSignalGlow 2.5s ease-in-out forwards;
 }
+
+/* Role Tags */
+.role-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin-left: 8px;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+}
+
+.role-tag.developer {
+  background: rgba(184, 115, 51, 0.2);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.5);
+  box-shadow: 0 0 8px rgba(255, 165, 0, 0.2);
+}
+
+.role-tag.developer:hover {
+  background: rgba(184, 115, 51, 0.4);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.4);
+}
+
+.role-tag.admin {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+}
+
+.role-tag.admin:hover {
+  background: rgba(239, 68, 68, 0.4);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.message-action-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  margin-right: 4px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.message-action-btn:hover {
+  opacity: 1;
+  color: var(--brand-primary);
+  transform: scale(1.2) translateY(-2px);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.operator-action-btn {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  margin-left: 2px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.operator-action-btn:hover {
+  opacity: 1;
+  transform: scale(1.2) translateY(-2px);
+  filter: drop-shadow(0 2px 4px rgba(248, 113, 113, 0.4));
+}
