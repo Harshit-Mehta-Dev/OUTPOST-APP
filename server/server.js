@@ -154,6 +154,10 @@ app.use('/api/users', userRoutes);
 
 const operatorRoutes = require('./routes/operator');
 app.use('/api/operator', operatorRoutes);
+
+const helpdeskRoutes = require('./routes/helpdesk');
+app.use('/api/helpdesk', helpdeskRoutes);
+
 // Health Check for Keep-Alive
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', time: new Date() });

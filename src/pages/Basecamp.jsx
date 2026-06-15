@@ -50,7 +50,7 @@ import AIOperations from '../components/settings/AIOperations';
 import NotificationDropdown from '../components/navigation/NotificationDropdown';
 import { useSignalRadar } from '../hooks/useSignalRadar';
 import OperatorTerminalTab from '../components/operator/OperatorTerminalTab';
-import HelpDeskCenterView from '../components/helpdesk/HelpDeskCenterView';
+import HelpDeskTerminal from '../components/helpdesk/HelpDeskTerminal';
 
 const socket = io('https://outpost-app.onrender.com');
 
@@ -794,7 +794,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       <AnimatedMesh />
       <div 
         className="basecamp-layout" 
-        style={{ gridTemplateColumns: showDiscover ? '72px 1fr' : (isSidebarOpen ? '72px 280px 1fr' : '72px 1fr') }}
+        style={{ gridTemplateColumns: (showDiscover || showHelpDesk) ? '72px 1fr' : (isSidebarOpen ? '72px 280px 1fr' : '72px 1fr') }}
       >
       <AnimatePresence>
         {messageToDelete && (
@@ -973,8 +973,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       </nav>
 
         {showHelpDesk ? (
-          <div className="flex-1 w-full h-full relative z-10 p-2" style={{ height: '100%', overflow: 'hidden' }}>
-            <HelpDeskCenterView userEmail={currentUser?.email} userName={currentUser?.username} />
+          <div className="flex-1 w-full h-full relative z-10" style={{ height: '100%', overflow: 'hidden' }}>
+            <HelpDeskTerminal userEmail={currentUser?.email} userName={currentUser?.username} />
           </div>
         ) : showDiscover ? (
           <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', zIndex: 1 }}>
