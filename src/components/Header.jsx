@@ -64,8 +64,16 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             alt="Outpost Logo" 
             className="logo-image" 
             style={{ height: '40px', width: 'auto' }} 
-            animate={isRefreshing ? { rotate: 360, scale: 0, opacity: 0 } : {}}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
+            animate={
+              isRefreshing 
+                ? { rotate: 360, scale: 0, opacity: 0 } 
+                : (location.pathname === '/' ? { scale: [1, 1.1, 1], filter: ['drop-shadow(0 0 0px rgba(234,88,12,0))', 'drop-shadow(0 0 8px rgba(234,88,12,0.6))', 'drop-shadow(0 0 0px rgba(234,88,12,0))'] } : {})
+            }
+            transition={
+              isRefreshing 
+                ? { duration: 0.8, ease: "easeInOut" }
+                : (location.pathname === '/' ? { duration: 2, repeat: Infinity, ease: "easeInOut" } : {})
+            }
           />
           <motion.span 
             className="logo-text"
@@ -89,7 +97,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             <button className="theme-toggle" onClick={toggleTheme}>
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            <button className="btn-secondary" onClick={() => { setMobileMenuOpen(false); navigate(isLoggedIn ? '/app' : '/auth'); }}>
+            <button className="btn-secondary" onClick={() => { setMobileMenuOpen(false); navigate('/auth'); }}>
               {isLoggedIn ? 'Open App' : 'Sign In'}
             </button>
           </div>
@@ -99,7 +107,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           <button className="theme-toggle" onClick={toggleTheme} style={{ display: 'flex', alignItems: 'center', padding: '0 12px', color: 'var(--text-primary)' }}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <button className="btn-secondary" onClick={() => navigate(isLoggedIn ? '/app' : '/auth')}>
+          <button className="btn-secondary" onClick={() => navigate('/auth')}>
             {isLoggedIn ? 'Open App' : 'Sign In'}
           </button>
         </div>

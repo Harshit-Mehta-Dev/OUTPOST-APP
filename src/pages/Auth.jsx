@@ -15,9 +15,12 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // If user is already logged in, redirect them directly to the app
+    // If user is already logged in, show loading screen briefly then redirect
     if (localStorage.getItem('outpost_user')) {
-      navigate('/app');
+      setIsLoading(true);
+      setTimeout(() => {
+        navigate('/app');
+      }, 1500);
     }
   }, [navigate]);
 
