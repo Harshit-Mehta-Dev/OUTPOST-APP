@@ -17,6 +17,10 @@ const LoadingScreen = () => {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -30,40 +34,33 @@ const LoadingScreen = () => {
             height: '180px',
             objectFit: 'contain',
             borderRadius: '24px',
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            filter: 'drop-shadow(0 0 15px rgba(255, 255, 255, 0.4))'
+            backgroundColor: 'rgba(255, 255, 255, 1)'
           }}
           animate={{
             scale: [1, 1.05, 1],
-            boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 30px rgba(255,255,255,0.2)', '0 0 0px rgba(255,255,255,0)']
+            boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 30px rgba(255,255,255,0.4)', '0 0 0px rgba(255,255,255,0)']
           }}
           transition={{
-            duration: 2,
+            duration: 1.5,
             repeat: Infinity,
             ease: "easeInOut"
           }}
         />
-      </motion.div>
-
-      {/* Connecting Text - positioned absolutely below center */}
-      <motion.div 
-        style={{
-          position: 'absolute',
-          top: 'calc(50% + 120px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          color: 'white',
-          fontSize: '1.25rem',
-          fontWeight: '600',
-          letterSpacing: '0.3em',
-          textShadow: '0 0 10px rgba(255, 255, 255, 0.5)',
-          fontFamily: 'monospace',
-          zIndex: 10
-        }}
-        animate={{ opacity: [0.4, 1, 0.4] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-      >
-        CONNECTING
+        <motion.div 
+          style={{
+            marginTop: '24px',
+            color: 'white',
+            fontSize: '1.25rem',
+            fontWeight: '600',
+            letterSpacing: '0.3em',
+            textShadow: '0 0 10px rgba(255, 255, 255, 0.5)',
+            fontFamily: 'monospace'
+          }}
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          CONNECTING
+        </motion.div>
       </motion.div>
     </div>
   );

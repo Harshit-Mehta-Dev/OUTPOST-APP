@@ -64,16 +64,8 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             alt="Outpost Logo" 
             className="logo-image" 
             style={{ height: '40px', width: 'auto' }} 
-            animate={
-              isRefreshing 
-                ? { rotate: 360, scale: 0, opacity: 0 } 
-                : (location.pathname === '/' ? { scale: [1, 1.1, 1], filter: ['drop-shadow(0 0 0px rgba(234,88,12,0))', 'drop-shadow(0 0 8px rgba(234,88,12,0.6))', 'drop-shadow(0 0 0px rgba(234,88,12,0))'] } : {})
-            }
-            transition={
-              isRefreshing 
-                ? { duration: 0.8, ease: "easeInOut" }
-                : (location.pathname === '/' ? { duration: 2, repeat: Infinity, ease: "easeInOut" } : {})
-            }
+            animate={isRefreshing ? { rotate: 360, scale: 0, opacity: 0 } : {}}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
           />
           <motion.span 
             className="logo-text"
