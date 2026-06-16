@@ -3,6 +3,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Malinton';
+  src: url('/MalintonTrialVersion-Bold.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+.font-malinton {
+  font-family: 'Malinton', serif;
+}
+
 :root {
   /* Color Palette - Light Mode (Default) */
   --bg-primary: #FFFFFF;

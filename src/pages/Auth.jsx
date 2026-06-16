@@ -179,7 +179,7 @@ const Auth = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <div className="auth-header">
-          <h1 className="auth-title">Welcome to <span className="text-gradient">OUTPOST</span></h1>
+          <h1 className="auth-title">Welcome to <span className="text-gradient font-malinton" style={{ fontWeight: 'normal', letterSpacing: 'normal' }}>OUTPOST</span></h1>
           <p className="auth-subtitle">
             {isLogin ? 'Sign in to sync your comms.' : 'Create an account to join the nexus.'}
           </p>

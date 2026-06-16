@@ -1277,7 +1277,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <div className="expedition-header">
               <div className="expedition-header-logo">
                 <img src={logoUrl} alt="Logo" />
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>OUTPOST <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span></span>
+                <span className="font-malinton" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.25em', fontWeight: 'normal', letterSpacing: 'normal' }}>OUTPOST <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span></span>
               </div>
             </div>
             
@@ -1982,7 +1982,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 <div className="expedition-header">
                   <div className="expedition-header-logo">
                     <img src={logoUrl} alt="Outpost Logo" />
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>OUTPOST <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span></span>
+                    <span className="font-malinton" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.25em', fontWeight: 'normal', letterSpacing: 'normal' }}>OUTPOST <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span></span>
                   </div>
                 </div>
 
