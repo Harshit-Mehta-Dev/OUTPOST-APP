@@ -28,7 +28,8 @@
     "react-router": "^6.30.4",
     "react-router-dom": "^6.30.4",
     "serve-static": "^2.2.1",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

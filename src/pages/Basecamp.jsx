@@ -110,6 +110,28 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     navigator.clipboard.writeText(textToCopy).catch(err => console.error("Failed to copy", err));
   };
 
+  // User identity  // Validate session on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('outpost_user');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Fetch latest restriction status from backend
+      fetch('https://outpost-app.onrender.com/api/users')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const serverUser = data.find(u => u.username === parsed.username);
+            if (serverUser && serverUser.isGloballyRestricted !== parsed.isGloballyRestricted) {
+              const updatedUser = { ...parsed, isGloballyRestricted: serverUser.isGloballyRestricted };
+              setCurrentUser(updatedUser);
+              localStorage.setItem('outpost_user', JSON.stringify(updatedUser));
+            }
+          }
+        })
+        .catch(err => console.error("Error fetching user status:", err));
+    }
+  }, []);
+
   // User identity
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('outpost_user');
@@ -616,6 +638,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     }
   };
 
+  const handleOpenCreateCampsite = () => {
+    if (currentUser?.isGloballyRestricted) {
+      alert("🚫 ACCESS DENIED: You have been permanently banned by the Developer from creating new outposts.");
+      return;
+    }
+    setIsCreateModalOpen(true);
+  };
+
+  const handleOpenCreateChannel = () => {
+    if (currentUser?.isGloballyRestricted) {
+      alert("🚫 ACCESS DENIED: You have been permanently banned by the Developer from initiating expeditions.");
+      return;
+    }
+    setIsCreateChannelModalOpen(true);
+  };
+
   const handleCampsiteCreated = (data) => {
     if (currentUser?.isGloballyRestricted) {
       alert("🚫 You have been permanently banned by the Developer from creating new outposts and expeditions.");
@@ -675,7 +713,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       },
       body: JSON.stringify(newCampData)
     })
-    .then(res => res.json())
+    .then(async res => {
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to create campsite on server');
+      }
+      return res.json();
+    })
     .then(savedData => {
       console.log("Campsite successfully built:", savedData);
       
@@ -701,7 +745,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     })
     .catch(err => {
       console.error("Error creating campsite in API:", err);
-      // Fallback: still add it locally if backend fails
+      
+      if (err.message && err.message.toLowerCase().includes('globally restricted')) {
+        setJoinNotification(`🚫 ACCESS DENIED: ${err.message}`);
+        setTimeout(() => setJoinNotification(null), 6000);
+        // Force update the local user state
+        const updatedUser = { ...currentUser, isGloballyRestricted: true };
+        setCurrentUser(updatedUser);
+        localStorage.setItem('outpost_user', JSON.stringify(updatedUser));
+        return; // DO NOT create locally
+      }
+      
+      // Fallback: still add it locally if backend fails for other reasons (like timeout)
       setCampsites(prev => {
         const disabledPrev = prev.map(c => ({...c, active: false}));
         return [...disabledPrev, { ...newCampData, active: true }];
@@ -709,7 +764,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       const firstTextChannel = newCampData.expeditions?.find(e => e.type === 'text');
       if (firstTextChannel) setActiveChannel(firstTextChannel.id);
       
-      setJoinNotification(`⚠️ Established locally, but failed to sync to server.`);
+      setJoinNotification(`⚠️ Established locally, but failed to sync to server: ${err.message}`);
       setTimeout(() => setJoinNotification(null), 4000);
     });
     
@@ -757,6 +812,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleKickMember = async (username) => {
     try {
+      if (activeCampsite.id === 1) {
+        // Outpost HQ special kick -> Global Restrict
+        const response = await fetch(`https://outpost-app.onrender.com/api/users/global-restrict`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ developerEmail: currentUser.email, targetUsername: username })
+        });
+        const data = await response.json();
+        if (!response.ok) { alert(data.error || 'Failed to kick user from HQ'); return; }
+        
+        socket.emit('kick_user_event', { username, campsiteId: 1, message: 'Developer has kicked you from Outpost HQ' });
+        setActiveMembersList(prev => prev.filter(m => m !== username && m.username !== username));
+        alert(`${username} kicked from Outpost HQ`);
+        return;
+      }
+
       const response = await fetch(`https://outpost-app.onrender.com/api/campsites/${activeCampsite.id}/kick`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -787,6 +858,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleBanMember = async (username) => {
     try {
+      if (activeCampsite.id === 1) {
+        // Outpost HQ special ban -> Global Restrict
+        const response = await fetch(`https://outpost-app.onrender.com/api/users/global-restrict`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ developerEmail: currentUser.email, targetUsername: username })
+        });
+        const data = await response.json();
+        if (!response.ok) { alert(data.error || 'Failed to ban user from HQ'); return; }
+        
+        socket.emit('ban_user_event', { username, campsiteId: 1, message: 'Developer has globally banned you from Outpost HQ' });
+        setActiveMembersList(prev => prev.filter(m => m !== username && m.username !== username));
+        alert(`${username} banned from Outpost HQ`);
+        return;
+      }
+
       const response = await fetch(`https://outpost-app.onrender.com/api/campsites/${activeCampsite.id}/ban`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1129,7 +1216,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
         ))}
 
-        <div className="campsite-item add-button" onClick={() => setIsCreateModalOpen(true)}>
+        <div className="campsite-item add-button" onClick={handleOpenCreateCampsite}>
           <Plus size={24} />
         </div>
       </nav>
@@ -1197,7 +1284,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <div className="expedition-list">
               <div className="expedition-category" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>CAMPSITES</span>
-                <button className="icon-btn" onClick={() => setIsCreateChannelModalOpen(true)} style={{ padding: '2px', background: 'transparent' }}>
+                <button className="icon-btn" onClick={handleOpenCreateChannel} style={{ padding: '2px', background: 'transparent' }}>
                   <Plus size={14} />
                 </button>
               </div>
@@ -1874,7 +1961,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 <div className="campsite-separator"></div>
                 <button 
                   className="campsite-item add-button" 
-                  onClick={() => { setIsCreateModalOpen(true); setIsMobileDrawerOpen(false); }}
+                  onClick={() => { handleOpenCreateCampsite(); setIsMobileDrawerOpen(false); }}
                   title="Establish New Campsite"
                 >
                   <Plus size={24} />
@@ -1920,7 +2007,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
                   <button 
                     className="expedition-item mt-4" 
-                    onClick={() => { setIsCreateChannelModalOpen(true); setIsMobileDrawerOpen(false); }}
+                    onClick={() => { handleOpenCreateChannel(); setIsMobileDrawerOpen(false); }}
                     style={{ color: 'var(--text-secondary)' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center' }}>

@@ -68,7 +68,6 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
                   
                   {member !== currentUser.username && (
                     <div className="member-actions" style={{ display: 'flex', gap: '8px' }}>
-                      {campsite.id !== 1 && (
                         <>
                           <button 
                             onClick={() => setConfirmAction({ type: 'kick', username: member })}
@@ -83,7 +82,6 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
                             Ban
                           </button>
                         </>
-                      )}
                       {currentUser?.email?.toLowerCase() === 'harshitmehta1012@gmail.com' && (
                         <button 
                           onClick={() => setConfirmAction({ type: 'global_ban', username: member })}
