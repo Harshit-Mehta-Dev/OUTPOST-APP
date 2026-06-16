@@ -9,6 +9,7 @@ import OutpostFooter from '../components/OutpostFooter';
 import LegalHub from '../components/LegalHub';
 import FounderSection from '../components/landing/FounderSection';
 import FeedbackForm from '../components/FeedbackForm';
+import { GeometricBorder } from '../components/ui/GeometricBorder';
 
 const Landing = () => {
   const location = useLocation();
@@ -27,10 +28,14 @@ const Landing = () => {
           <LegalHub />
         ) : (
           <>
-            <Hero />
-            <Features />
-            <Community />
-            <About />
+            <div style={{ position: 'relative' }}>
+              <GeometricBorder side="left" opacity={0.35} />
+              <GeometricBorder side="right" opacity={0.35} />
+              <Hero />
+              <Features />
+              <Community />
+              <About />
+            </div>
             <HelpDesk />
             <FeedbackForm />
             <FounderSection />
