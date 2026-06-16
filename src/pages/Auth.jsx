@@ -75,13 +75,37 @@ const Auth = () => {
     }, 5000); // 5 seconds loading screen
   };
 
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState(null);
+
+  const sanitizeInput = (input) => {
+    return input ? input.replace(/[$<>{}]/g, '') : ''; // Basic NoSQL & HTML sanitation
+  };
+
   const handleAuthSubmit = (e) => {
     e.preventDefault();
     setError(null);
 
+    // Brute force lockout check
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      const remainingSeconds = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      setError(`Too many failed attempts. Try again in ${remainingSeconds} seconds.`);
+      return;
+    } else if (lockoutUntil && Date.now() >= lockoutUntil) {
+      setLockoutUntil(null);
+      setFailedAttempts(0);
+    }
+
     // Validation
     if (!email || !password) {
       setError("Please fill in all required fields.");
+      return;
+    }
+
+    // Safe Regex for ReDoS mitigation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Invalid email format.");
       return;
     }
     
@@ -94,12 +118,18 @@ const Auth = () => {
       setError("Password must be at least 6 characters.");
       return;
     }
+    
+    if (password.length > 128) {
+      setError("Password exceeds maximum allowed length.");
+      return;
+    }
 
-    const userEmail = email.toLowerCase().trim();
-    const userUsername = isLogin ? email.split('@')[0] : username;
+    // Frontend Input Sanitization (Defense in Depth)
+    const sanitizedEmail = sanitizeInput(email.toLowerCase().trim());
+    const sanitizedUsername = sanitizeInput(isLogin ? sanitizedEmail.split('@')[0] : username);
 
     const endpoint = isLogin ? '/api/users/login' : '/api/users/register';
-    const payload = isLogin ? { email: userEmail, password } : { email: userEmail, username: userUsername, password };
+    const payload = isLogin ? { email: sanitizedEmail, password } : { email: sanitizedEmail, username: sanitizedUsername, password };
 
     // Communicate with backend
     setIsLoading(true);
@@ -110,19 +140,26 @@ const Auth = () => {
     })
     .then(async res => {
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Authentication failed');
+        throw new Error('Authentication failed');
       }
       return res.json();
     })
     .then(syncedUser => {
+      setFailedAttempts(0);
       localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
       setTimeout(() => { navigate('/app'); }, 4000);
     })
     .catch(err => {
       console.error("Authentication error:", err);
-      setError(err.message || "Failed to authenticate.");
+      // Secure error handling (Info Leakage Mitigation)
+      setError("Invalid credentials or service unavailable.");
       setIsLoading(false);
+      
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+      if (newAttempts >= 5) {
+        setLockoutUntil(Date.now() + 30000); // Lock out for 30 seconds
+      }
     });
   };
 
@@ -179,6 +216,9 @@ const Auth = () => {
                   placeholder="GlitchHunter99" 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  maxLength={32}
+                  spellCheck="false"
+                  autoComplete="username"
                 />
               </div>
             )}
@@ -189,6 +229,9 @@ const Auth = () => {
                 placeholder="dev@example.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                maxLength={64}
+                spellCheck="false"
+                autoComplete="email"
               />
             </div>
             <div className="form-group">
@@ -198,6 +241,9 @@ const Auth = () => {
                 placeholder="••••••••" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                maxLength={128}
+                spellCheck="false"
+                autoComplete={isLogin ? "current-password" : "new-password"}
               />
             </div>
 
