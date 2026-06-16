@@ -71,7 +71,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
             className="logo-text font-malinton"
             animate={isRefreshing ? { opacity: 0, filter: 'blur(10px)', x: 50 } : {}}
             transition={{ duration: 0.8 }}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.25em', fontWeight: 'normal', letterSpacing: 'normal' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.8rem', fontWeight: 'bold', letterSpacing: 'normal', lineHeight: 1 }}
           >
             OUTPOST
             <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', WebkitTextFillColor: '#ffffff', borderRadius: '4px', fontWeight: 'bold', alignSelf: 'center', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span>
