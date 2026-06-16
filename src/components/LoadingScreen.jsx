@@ -6,16 +6,12 @@ import { ShaderAnimation } from './ui/shader-animation';
 
 const LoadingScreen = () => {
   return (
-    <div className="loading-screen" style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+    <div className="loading-screen">
       <ShaderAnimation />
       
       {/* Centered Logo with pulsing animation */}
       <motion.div
         style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
           zIndex: 10,
           display: 'flex',
           flexDirection: 'column',
