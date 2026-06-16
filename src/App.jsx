@@ -5,6 +5,7 @@ import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Basecamp from './pages/Basecamp';
 import Invite from './pages/Invite';
+import { NotFoundPage } from './components/ui/404-page-not-found';
 import { BeamsBackground } from './components/BeamsBackground';
 import { useSoundEngine } from './hooks/useSoundEngine';
 
@@ -86,6 +87,7 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/app" element={<Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />} />
           <Route path="/invite/:id" element={<Invite />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
     </>
