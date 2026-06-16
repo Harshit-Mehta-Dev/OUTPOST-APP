@@ -3,6 +3,7 @@ import { Menu, X, Sun, Moon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logoUrl from '../assets/logo.png'; // Make sure to save your image here!
+import { NotificationPopover } from './ui/notification-popover';
 import './Header.css';
 
 const Header = ({ isDarkMode, toggleTheme }) => {
@@ -86,6 +87,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           <a href="/#helpdesk" onClick={(e) => handleNavClick(e, '/#helpdesk')}>Help Desk</a>
           <a href="/#feedback" onClick={(e) => handleNavClick(e, '/#feedback')}>Feedback</a>
           <div className="nav-actions-mobile">
+            <NotificationPopover />
             <button className="theme-toggle" onClick={toggleTheme}>
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -95,7 +97,8 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           </div>
         </nav>
 
-        <div className="nav-actions-desktop">
+        <div className="nav-actions-desktop" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <NotificationPopover />
           <button className="theme-toggle" onClick={toggleTheme} style={{ display: 'flex', alignItems: 'center', padding: '0 12px', color: 'var(--text-primary)' }}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
