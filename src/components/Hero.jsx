@@ -1,6 +1,7 @@
 import React from 'react';
 import { Terminal, Gamepad2, ArrowRight, Rocket, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { GeometricBorder } from './ui/GeometricBorder';
 import './Hero.css';
 
 const Hero = () => {
@@ -8,6 +9,8 @@ const Hero = () => {
   return (
     <section className="hero">
       <div className="hero-background">
+        <GeometricBorder side="left" />
+        <GeometricBorder side="right" />
       </div>
       
       <div className="container hero-content">
