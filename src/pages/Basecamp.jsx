@@ -135,7 +135,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // User identity
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('outpost_user');
-    return saved ? JSON.parse(saved) : { username: 'YourUser' };
+    return saved ? JSON.parse(saved) : null;
   });
 
   // Keep currentUser fresh from localStorage/backend syncs

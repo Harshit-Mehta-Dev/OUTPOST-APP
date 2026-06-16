@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Landing from './pages/Landing';
 import Auth from './pages/Auth';
@@ -8,6 +8,16 @@ import Invite from './pages/Invite';
 import { NotFoundPage } from './components/ui/404-page-not-found';
 import { BeamsBackground } from './components/BeamsBackground';
 import { useSoundEngine } from './hooks/useSoundEngine';
+
+const RequireAuth = ({ children }) => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('outpost_user');
+    if (!saved) {
+      return <Navigate to="/auth" replace />;
+    }
+  }
+  return children;
+};
 
 function App() {
   // Initialize Global Sound Engine
@@ -85,7 +95,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/app" element={<Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />} />
+          <Route path="/app" element={
+            <RequireAuth>
+              <Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+            </RequireAuth>
+          } />
           <Route path="/invite/:id" element={<Invite />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
