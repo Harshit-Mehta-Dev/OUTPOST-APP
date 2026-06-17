@@ -10,7 +10,21 @@ const swaggerDocument = require('./swagger_output.json');
 require('dotenv').config();
 
 const app = express();
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Secure the API Docs so only the developer can access it
+app.use('/api-docs', (req, res, next) => {
+  // If running locally, allow access
+  if (req.hostname === 'localhost' || req.hostname === '127.0.0.1') {
+    return next();
+  }
+  
+  // If in production, require a secret query key
+  const devKey = req.query.key;
+  if (devKey !== 'harshit_admin_secure') {
+    return res.status(403).send('<h2>403 Forbidden: API Documentation is locked.</h2>');
+  }
+  next();
+}, swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const server = http.createServer(app);
 
