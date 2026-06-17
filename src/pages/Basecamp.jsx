@@ -816,8 +816,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         // Outpost HQ special kick -> Global Restrict
         const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/global-restrict`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ developerEmail: currentUser.email, targetUsername: username })
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
+          body: JSON.stringify({ targetUsername: username })
         });
         const data = await response.json();
         if (!response.ok) { alert(data.error || 'Failed to kick user from HQ'); return; }
@@ -830,12 +830,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
       const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/${activeCampsite.id}/kick`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminEmail: currentUser.email, username })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
+        body: JSON.stringify({ username })
       });
       const data = await response.json();
       if (!response.ok) {
-        alert(data.message || 'Failed to kick user');
+        alert(data.message || data.error || 'Failed to kick user');
         return;
       }
       
@@ -862,8 +862,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         // Outpost HQ special ban -> Global Restrict
         const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/global-restrict`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ developerEmail: currentUser.email, targetUsername: username })
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
+          body: JSON.stringify({ targetUsername: username })
         });
         const data = await response.json();
         if (!response.ok) { alert(data.error || 'Failed to ban user from HQ'); return; }
@@ -876,12 +876,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
       const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/${activeCampsite.id}/ban`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminEmail: currentUser.email, username })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
+        body: JSON.stringify({ username })
       });
       const data = await response.json();
       if (!response.ok) {
-        alert(data.message || 'Failed to ban user');
+        alert(data.message || data.error || 'Failed to ban user');
         return;
       }
       
@@ -906,8 +906,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     try {
       const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/global-restrict`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ developerEmail: currentUser.email, targetUsername: username })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
+        body: JSON.stringify({ targetUsername: username })
       });
       const data = await response.json();
       if (!response.ok) {

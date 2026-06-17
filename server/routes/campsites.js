@@ -165,8 +165,8 @@ router.post('/:id/kick', requireAuth, async (req, res) => {
     
     // Remove from members
     camp.members = camp.members.filter(m => m !== username);
-    camp.totalScouts = Math.max(1, camp.totalScouts - 1);
-    camp.activeScouts = Math.max(1, camp.activeScouts - 1);
+    camp.totalScouts = Math.max(1, (camp.totalScouts || 1) - 1);
+    camp.activeScouts = Math.max(1, (camp.activeScouts || 1) - 1);
     
     // Add to kickedUsers
     if (!camp.kickedUsers) camp.kickedUsers = [];
