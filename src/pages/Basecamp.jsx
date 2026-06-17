@@ -1022,6 +1022,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('outpost_user'); 
+    localStorage.removeItem('outpost_token');
     localStorage.removeItem('outpost_campsites');
     localStorage.removeItem('outpost_messages');
     navigate('/'); 
@@ -2292,6 +2293,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             if (didChangePassword) {
               // Log the user out immediately
               localStorage.removeItem('outpost_user');
+              localStorage.removeItem('outpost_token');
               navigate('/');
             } else {
               setCurrentUser(updatedUser);
