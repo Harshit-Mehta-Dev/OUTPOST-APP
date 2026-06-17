@@ -28,4 +28,11 @@ COPY --from=builder /app/index.html ./
 
 EXPOSE 8080
 
+# Create a dedicated low-privilege system user group (Alpine syntax)
+RUN addgroup -S outpostuser && adduser -S outpostuser -G outpostuser
+RUN chown -R outpostuser:outpostuser /app
+
+# Switch context entirely away from root authorization
+USER outpostuser
+
 CMD ["npm", "run", "start"]

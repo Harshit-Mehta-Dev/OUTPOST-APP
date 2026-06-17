@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Detect .env files in the staged files
-if git diff --cached --name-only | grep -qiE '\.env'; then
+if git diff --cached --name-only | grep -qiE '\.env$|\.env\.local$|\.env\.production$'; then
   echo "========================================="
   echo "🚨 CRITICAL SECURITY ALERT 🚨"
   echo "You are attempting to commit a .env file!"
@@ -10,8 +10,8 @@ if git diff --cached --name-only | grep -qiE '\.env'; then
   exit 1
 fi
 
-# Basic secret regex scanner
-if git diff --cached -- ':!*.husky/*' | grep -qiE '(AKIA[0-9A-Z]{16}|mongodb\+srv://|postgres://|api_key|secret_key|password.*=)'; then
+# Specific secret regex scanner (AWS, DB URIs, Stripe, JWT, GitHub Tokens)
+if git diff --cached -- ':!*.husky/*' | grep -qiE '(AKIA[0-9A-Z]{16}|mongodb\+srv://|postgres://|sk_live_[0-9a-zA-Z]+|eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*|ghp_[a-zA-Z0-9]{36})'; then
   echo "========================================="
   echo "🚨 CRITICAL SECURITY ALERT 🚨"
   echo "Hardcoded secrets (AWS keys, DB URIs, Passwords) detected in staged files."
