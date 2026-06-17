@@ -1,4 +1,4 @@
-const axios = require('axios'); // We'll use axios since it might already be in the project, but we can also use native fetch. Let's use native fetch for zero dependencies.
+// Jira integration utility using native fetch
 
 const createJiraIssue = async ({ summary, description, issueType = 'Task' }) => {
   const { JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN, JIRA_PROJECT_KEY } = process.env;
