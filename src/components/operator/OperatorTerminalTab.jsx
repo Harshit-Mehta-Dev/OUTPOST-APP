@@ -12,7 +12,7 @@ export default function OperatorTerminalTab({ isOpen, onClose, campsiteName, cur
     }
     
     // Execute backend drop sequence call
-    await fetch(`https://outpost-app.onrender.com/api/operator/decommission-campsite/${currentCampsiteId}`, { 
+    await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/operator/decommission-campsite/${currentCampsiteId}`, { 
       method: "DELETE",
       headers: {
         "x-operator-email": currentUser?.email || "harshitmehta1012@gmail.com",

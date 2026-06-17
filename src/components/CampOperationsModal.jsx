@@ -40,7 +40,7 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
   const handleForgeRole = async () => {
     if (newRoleName.trim()) {
       try {
-        const response = await fetch(`https://outpost-app.onrender.com/api/campsites/${campsite.id}/roles`, {
+        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/${campsite.id}/roles`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: newRoleName.trim(), color: newRoleColor })
@@ -60,7 +60,7 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
 
   const handleAssignRole = async (username, roleName) => {
     try {
-      const response = await fetch(`https://outpost-app.onrender.com/api/campsites/${campsite.id}/roles/assign`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/${campsite.id}/roles/assign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, roleName })
