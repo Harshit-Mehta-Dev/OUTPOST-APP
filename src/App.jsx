@@ -1,13 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Header from './components/Header';
-import Landing from './pages/Landing';
-import Auth from './pages/Auth';
-import Basecamp from './pages/Basecamp';
-import Invite from './pages/Invite';
-import { NotFoundPage } from './components/ui/404-page-not-found';
 import { BeamsBackground } from './components/BeamsBackground';
 import { useSoundEngine } from './hooks/useSoundEngine';
+import { GeometricBorder } from './components/ui/GeometricBorder'; // Loading indicator placeholder
+
+// Lazy-loaded routes
+const Landing = lazy(() => import('./pages/Landing'));
+const Auth = lazy(() => import('./pages/Auth'));
+const Basecamp = lazy(() => import('./pages/Basecamp'));
+const Invite = lazy(() => import('./pages/Invite'));
+const NotFoundPageModule = lazy(() => import('./components/ui/404-page-not-found'));
+
+// Fallback loader
+const PageLoader = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--brand-primary)' }}>
+    <div style={{ color: 'white', fontFamily: 'monospace', fontSize: '1.2rem' }}>INITIALIZING OUTPOST...</div>
+  </div>
+);
+
+// Wrapper for named exports like NotFoundPage
+const NotFoundPage = (props) => {
+  const Component = lazy(() => import('./components/ui/404-page-not-found').then(module => ({ default: module.NotFoundPage })));
+  return <Component {...props} />;
+};
 
 const RequireAuth = ({ children }) => {
   if (typeof window !== 'undefined') {
@@ -92,17 +108,19 @@ function App() {
       <BeamsBackground fixed={true} intensity="medium" />
       {!hideHeaderFooter && <Header isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
       <main className={isAppRoute ? 'app-main' : ''}>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/app" element={
-            <RequireAuth>
-              <Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-            </RequireAuth>
-          } />
-          <Route path="/invite/:id" element={<Invite />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/app" element={
+              <RequireAuth>
+                <Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+              </RequireAuth>
+            } />
+            <Route path="/invite/:id" element={<Invite />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
       </main>
     </>
   );
