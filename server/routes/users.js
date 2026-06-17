@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const supabase = require('../supabaseClient');
+const requireAuth = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
 
 // Helper to push user backups to Supabase
 const syncToSupabase = async (userDoc) => {
@@ -37,7 +39,14 @@ router.post('/sync', async (req, res) => {
       syncToSupabase(user);
     }
 
-    res.json(user);
+    const userToReturn = user.toObject ? user.toObject() : user;
+    const token = jwt.sign(
+      { id: userToReturn._id, email: userToReturn.email, username: userToReturn.username, isGloballyRestricted: userToReturn.isGloballyRestricted },
+      process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here',
+      { expiresIn: '7d' }
+    );
+    
+    res.json({ ...userToReturn, token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -66,7 +75,12 @@ router.post('/register', async (req, res) => {
     
     const userToReturn = user.toObject();
     delete userToReturn.password;
-    res.json(userToReturn);
+    const token = jwt.sign(
+      { id: userToReturn._id, email: userToReturn.email, username: userToReturn.username, isGloballyRestricted: userToReturn.isGloballyRestricted },
+      process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here',
+      { expiresIn: '7d' }
+    );
+    res.json({ ...userToReturn, token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -97,7 +111,12 @@ router.post('/login', async (req, res) => {
 
     const userToReturn = user.toObject();
     delete userToReturn.password;
-    res.json(userToReturn);
+    const token = jwt.sign(
+      { id: userToReturn._id, email: userToReturn.email, username: userToReturn.username, isGloballyRestricted: userToReturn.isGloballyRestricted },
+      process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here',
+      { expiresIn: '7d' }
+    );
+    res.json({ ...userToReturn, token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -235,10 +254,10 @@ router.delete('/:username/alerts', async (req, res) => {
 
 // PUT /api/users/global-restrict
 // Developer only: globally ban a user from creating camps or channels
-router.put('/global-restrict', async (req, res) => {
+router.put('/global-restrict', requireAuth, async (req, res) => {
   try {
-    const { developerEmail, targetUsername } = req.body;
-    if (!developerEmail || developerEmail.toLowerCase().trim() !== 'harshitmehta1012@gmail.com') {
+    const { targetUsername } = req.body;
+    if (!req.user || !req.user.email || req.user.email.toLowerCase().trim() !== 'harshitmehta1012@gmail.com') {
       return res.status(403).json({ error: 'Only the Developer can issue a Global Ban.' });
     }
     

@@ -48,6 +48,7 @@ const Auth = () => {
           });
           const syncedUser = await syncRes.json();
           localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
+          if (syncedUser.token) localStorage.setItem('outpost_token', syncedUser.token);
         } catch (syncErr) {
           console.error("Failed to sync user with backend", syncErr);
           localStorage.setItem('outpost_user', JSON.stringify({ 
@@ -149,6 +150,7 @@ const Auth = () => {
     .then(syncedUser => {
       setFailedAttempts(0);
       localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
+      if (syncedUser.token) localStorage.setItem('outpost_token', syncedUser.token);
       setTimeout(() => { navigate('/app'); }, 4000);
     })
     .catch(err => {
