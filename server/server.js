@@ -9,10 +9,19 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger_output.json');
 require('dotenv').config();
 
+const basicAuth = require('express-basic-auth');
+
 const app = express();
 
+// Secure the API Docs with a native browser login prompt
+const docsAuth = basicAuth({
+  users: { 'admin': 'outpost2026' },
+  challenge: true,
+  realm: 'Outpost API Docs',
+});
+
 // Mount Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-docs', docsAuth, swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const server = http.createServer(app);
 
