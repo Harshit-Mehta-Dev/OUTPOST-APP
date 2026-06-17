@@ -66,7 +66,7 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
                     {member === campsite.adminUsername && <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--brand-primary)' }}>(Creator)</span>}
                   </div>
                   
-                  {member !== currentUser.username && (
+                  {member !== currentUser.username ? (
                     <div className="member-actions" style={{ display: 'flex', gap: '8px' }}>
                         <>
                           <button 
@@ -91,6 +91,15 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
                           Global Ban
                         </button>
                       )}
+                    </div>
+                  ) : (
+                    <div className="member-actions" style={{ display: 'flex', gap: '8px', opacity: 0.5 }}>
+                        <button disabled style={{ padding: '6px 12px', background: 'rgba(128, 128, 128, 0.1)', color: 'gray', border: '1px solid gray', borderRadius: '4px', cursor: 'not-allowed', fontSize: '12px' }}>
+                          Kick
+                        </button>
+                        <button disabled style={{ padding: '6px 12px', background: 'rgba(128, 128, 128, 0.1)', color: 'gray', border: '1px solid gray', borderRadius: '4px', cursor: 'not-allowed', fontSize: '12px' }}>
+                          Ban
+                        </button>
                     </div>
                   )}
                 </div>
