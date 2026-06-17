@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Campsite = require('../models/Campsite');
+const User = require('../models/User');
+const requireAuth = require('../middleware/auth');
 
 // GET all public campsites (For Discover page)
 router.get('/public', async (req, res) => {
@@ -132,19 +134,28 @@ router.post('/:id/leave', async (req, res) => {
 });
 
 // POST kick a member from a campsite
-router.post('/:id/kick', async (req, res) => {
+router.post('/:id/kick', requireAuth, async (req, res) => {
   try {
-    const { adminEmail, username } = req.body;
+    const { username } = req.body;
+    const adminEmail = req.user.email;
     const camp = await Campsite.findById(req.params.id);
     
     if (!camp) return res.status(404).json({ message: 'Campsite not found' });
     
     // Check if the requester is the admin or the developer
     const isGlobalAdmin = adminEmail && adminEmail.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
-    const isCampAdmin = camp.adminEmail && camp.adminEmail === adminEmail;
+    const isCampAdmin = camp.adminEmail && adminEmail && camp.adminEmail.toLowerCase().trim() === adminEmail.toLowerCase().trim();
     
     if (!isGlobalAdmin && !isCampAdmin) {
       return res.status(403).json({ message: 'Only the admin or developer can kick users' });
+    }
+    
+    // Prevent kicking the Developer
+    const targetUser = await User.findOne({ username });
+    if (targetUser && targetUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com') {
+      if (!isGlobalAdmin) {
+        return res.status(403).json({ message: 'You cannot kick the platform Developer.' });
+      }
     }
     
     // Remove from members
@@ -166,19 +177,28 @@ router.post('/:id/kick', async (req, res) => {
 });
 
 // POST ban a member from a campsite
-router.post('/:id/ban', async (req, res) => {
+router.post('/:id/ban', requireAuth, async (req, res) => {
   try {
-    const { adminEmail, username } = req.body;
+    const { username } = req.body;
+    const adminEmail = req.user.email;
     const camp = await Campsite.findById(req.params.id);
     
     if (!camp) return res.status(404).json({ message: 'Campsite not found' });
     
     // Check if the requester is the admin or the developer
     const isGlobalAdmin = adminEmail && adminEmail.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
-    const isCampAdmin = camp.adminEmail && camp.adminEmail === adminEmail;
+    const isCampAdmin = camp.adminEmail && adminEmail && camp.adminEmail.toLowerCase().trim() === adminEmail.toLowerCase().trim();
     
     if (!isGlobalAdmin && !isCampAdmin) {
       return res.status(403).json({ message: 'Only the admin or developer can ban users' });
+    }
+    
+    // Prevent banning the Developer
+    const targetUser = await User.findOne({ username });
+    if (targetUser && targetUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com') {
+      if (!isGlobalAdmin) {
+        return res.status(403).json({ message: 'You cannot ban the platform Developer.' });
+      }
     }
     
     // Add to bannedUsers (but DO NOT remove from members)
