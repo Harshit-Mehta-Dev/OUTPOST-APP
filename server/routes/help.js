@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const HelpRequest = require('../models/HelpRequest');
+const { createJiraIssue } = require('../utils/jira');
 
 // Create a new help request
 router.post('/requests', async (req, res) => {
@@ -22,6 +23,13 @@ router.post('/requests', async (req, res) => {
     });
 
     await newRequest.save();
+
+    // Create Jira Ticket in the background
+    createJiraIssue({
+      summary: `Help Request: ${ticketId} from ${userName}`,
+      description: `User: ${userName}\nEmail: ${email}\n\nDescription:\n${description}\n\nScreenshot: ${initialScreenshotUrl || 'None'}`,
+      issueType: 'Bug' // Or 'Task'
+    });
 
     res.status(201).json({ 
       message: 'Help request submitted successfully',

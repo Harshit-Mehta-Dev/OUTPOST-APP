@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Feedback = require('../models/Feedback');
+const { createJiraIssue } = require('../utils/jira');
 
 // POST a new feedback
 router.post('/', async (req, res) => {
@@ -14,6 +15,13 @@ router.post('/', async (req, res) => {
     });
     
     await newFeedback.save();
+
+    // Create Jira Ticket in the background
+    createJiraIssue({
+      summary: `Feedback from ${userName}`,
+      description: `User: ${userName}\nEmail: ${email}\n\nFeedback:\n${message}`,
+      issueType: 'Task' // Or 'Story'
+    });
     
     // Emit real-time event to developers
     if (req.io) {
