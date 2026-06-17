@@ -13,7 +13,7 @@
     "start": "NODE_ENV=production node ssr-server.js",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "npm run build && npx wrangler pages deploy dist",
+    "deploy": "npm run build && npx wrangler pages deploy dist --branch main",
     "prepare": "husky"
   },
   "dependencies": {
