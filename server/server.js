@@ -5,9 +5,13 @@ const http = require('http');
 const { Server } = require('socket.io');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger_output.json');
 require('dotenv').config();
 
 const app = express();
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 const server = http.createServer(app);
 
 const { createAdapter } = require('@socket.io/redis-adapter');
