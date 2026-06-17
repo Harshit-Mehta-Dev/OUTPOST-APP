@@ -157,7 +157,7 @@ router.post('/:id/kick', requireAuth, async (req, res) => {
     
     // Prevent kicking the Developer
     const targetUser = await User.findOne({ username });
-    if (targetUser && targetUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com') {
+    if (targetUser && targetUser.email && targetUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com') {
       if (!isGlobalAdmin) {
         return res.status(403).json({ message: 'You cannot kick the platform Developer.' });
       }
@@ -205,7 +205,7 @@ router.post('/:id/ban', requireAuth, async (req, res) => {
     
     // Prevent banning the Developer
     const targetUser = await User.findOne({ username });
-    if (targetUser && targetUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com') {
+    if (targetUser && targetUser.email && targetUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com') {
       if (!isGlobalAdmin) {
         return res.status(403).json({ message: 'You cannot ban the platform Developer.' });
       }
