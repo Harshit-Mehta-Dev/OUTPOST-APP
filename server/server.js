@@ -15,7 +15,9 @@ const app = express();
 
 // Secure the API Docs with a native browser login prompt
 const docsAuth = basicAuth({
-  users: { 'outpost_developer1012': 'outpostQQwhoa1012' },
+  users: { 
+    [process.env.SWAGGER_USER || 'admin']: process.env.SWAGGER_PASS || 'admin'
+  },
   challenge: true,
   realm: 'Outpost API Docs',
 });
