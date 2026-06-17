@@ -137,14 +137,19 @@ router.post('/:id/leave', async (req, res) => {
 router.post('/:id/kick', requireAuth, async (req, res) => {
   try {
     const { username } = req.body;
-    const adminEmail = req.user.email;
+    let adminEmail = req.user.email;
+    if (!adminEmail && req.user.id) {
+      const u = await User.findById(req.user.id);
+      if (u) adminEmail = u.email;
+    }
     const camp = await Campsite.findById(req.params.id);
     
     if (!camp) return res.status(404).json({ message: 'Campsite not found' });
     
     // Check if the requester is the admin or the developer
     const isGlobalAdmin = adminEmail && adminEmail.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
-    const isCampAdmin = camp.adminEmail && adminEmail && camp.adminEmail.toLowerCase().trim() === adminEmail.toLowerCase().trim();
+    const isCampAdmin = (camp.adminEmail && adminEmail && camp.adminEmail.toLowerCase().trim() === adminEmail.toLowerCase().trim()) || 
+                        (camp.adminUsername && req.user.username && camp.adminUsername === req.user.username);
     
     if (!isGlobalAdmin && !isCampAdmin) {
       return res.status(403).json({ message: 'Only the admin or developer can kick users' });
@@ -180,14 +185,19 @@ router.post('/:id/kick', requireAuth, async (req, res) => {
 router.post('/:id/ban', requireAuth, async (req, res) => {
   try {
     const { username } = req.body;
-    const adminEmail = req.user.email;
+    let adminEmail = req.user.email;
+    if (!adminEmail && req.user.id) {
+      const u = await User.findById(req.user.id);
+      if (u) adminEmail = u.email;
+    }
     const camp = await Campsite.findById(req.params.id);
     
     if (!camp) return res.status(404).json({ message: 'Campsite not found' });
     
     // Check if the requester is the admin or the developer
     const isGlobalAdmin = adminEmail && adminEmail.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
-    const isCampAdmin = camp.adminEmail && adminEmail && camp.adminEmail.toLowerCase().trim() === adminEmail.toLowerCase().trim();
+    const isCampAdmin = (camp.adminEmail && adminEmail && camp.adminEmail.toLowerCase().trim() === adminEmail.toLowerCase().trim()) || 
+                        (camp.adminUsername && req.user.username && camp.adminUsername === req.user.username);
     
     if (!isGlobalAdmin && !isCampAdmin) {
       return res.status(403).json({ message: 'Only the admin or developer can ban users' });
