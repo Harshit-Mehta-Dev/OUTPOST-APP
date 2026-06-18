@@ -196,7 +196,7 @@ const CreateCampsiteModal = ({ isOpen, onClose, onCampsiteCreated }) => {
 
               {/* 2. Templates */}
               <div className="templates-section">
-                <div className="section-title">Select Your Camp Layout</div>
+                <div className="modal-section-title">Select Your Camp Layout</div>
                 <div className="templates-grid">
                   <div 
                     className={`template-card ${selectedTemplate === 'gaming' ? 'active' : ''}`}
@@ -224,7 +224,7 @@ const CreateCampsiteModal = ({ isOpen, onClose, onCampsiteCreated }) => {
 
               {/* 3. Visibility */}
               <div className="visibility-section">
-                <div className="section-title">Camp Visibility</div>
+                <div className="modal-section-title">Camp Visibility</div>
                 <div className="visibility-options">
                   <div 
                     className={`radio-card ${isPublic ? 'active' : ''}`}
