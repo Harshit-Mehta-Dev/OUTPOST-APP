@@ -1389,104 +1389,95 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             
             {isGlobalAdmin && (
-              <div 
-                className="dev-menu-container"
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: isDevMenuOpen ? '8px' : '0', 
-                  background: isDevMenuOpen ? 'var(--bg-card)' : 'transparent',
-                  padding: isDevMenuOpen ? '4px 12px 4px 4px' : '0',
-                  borderRadius: '24px',
-                  border: isDevMenuOpen ? '1px solid var(--border-glass)' : 'none',
-                  transition: 'all 0.3s ease'
-                }}
-              >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
-                  onClick={() => setIsDevMenuOpen(!isDevMenuOpen)}
-                  className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${isDevMenuOpen ? 'active' : ''}`}
-                  style={isDevMenuOpen ? { background: 'var(--brand-primary)', color: 'white', borderColor: 'var(--brand-primary)' } : undefined}
-                  title="Developer Tools"
+                  onClick={() => window.open('/admin', '_blank')}
+                  className="camp-ops-btn whitespace-nowrap"
+                  style={{
+                    background: 'var(--brand-primary)',
+                    color: 'white',
+                    borderColor: 'var(--brand-primary)',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    height: '32px'
+                  }}
+                  title="Open Admin Dashboard"
                 >
-                  <Cpu size={18} className={isDevMenuOpen ? '' : 'animate-pulse'} />
+                  <ShieldAlert size={16} />
+                  GOD MODE
                 </button>
 
-                <AnimatePresence>
-                  {isDevMenuOpen && (
-                    <motion.div
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: 'auto', opacity: 1 }}
-                      exit={{ width: 0, opacity: 0 }}
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}
-                    >
-                      <button
-                        onClick={() => window.open('/admin', '_blank')}
-                        className="camp-ops-btn whitespace-nowrap"
-                        style={{
-                          background: 'var(--brand-primary)',
-                          color: 'white',
-                          borderColor: 'var(--brand-primary)',
-                          fontWeight: 'bold',
-                          fontSize: '0.85rem',
-                          height: '32px'
-                        }}
-                        title="Open Admin Dashboard"
-                      >
-                        <ShieldAlert size={16} />
-                        GOD MODE
-                      </button>
+                <div 
+                  className="dev-menu-container"
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: isDevMenuOpen ? '8px' : '0', 
+                    background: isDevMenuOpen ? 'var(--bg-card)' : 'transparent',
+                    padding: isDevMenuOpen ? '4px 12px 4px 4px' : '0',
+                    borderRadius: '24px',
+                    border: isDevMenuOpen ? '1px solid var(--border-glass)' : 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
+                  <button
+                    onClick={() => setIsDevMenuOpen(!isDevMenuOpen)}
+                    className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${isDevMenuOpen ? 'active' : ''}`}
+                    style={isDevMenuOpen ? { background: 'var(--brand-primary)', color: 'white', borderColor: 'var(--brand-primary)' } : undefined}
+                    title="Developer Tools"
+                  >
+                    <Cpu size={18} className={isDevMenuOpen ? '' : 'animate-pulse'} />
+                  </button>
 
-                      <button
-                        onClick={() => setIsHelpDeskOpen(true)}
-                        className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
-                          isHelpDeskOpen 
-                            ? "active shadow-[0_0_15px_rgba(74,222,128,0.2)]" 
-                            : ""
-                        }`}
-                        style={isHelpDeskOpen ? {
-                          background: 'rgba(20, 83, 45, 0.4)',
-                          borderColor: 'rgba(34, 197, 94, 0.8)',
-                          color: '#4ade80'
-                        } : undefined}
-                        title="DEVELOPER HELP DESK"
+                  <AnimatePresence>
+                    {isDevMenuOpen && (
+                      <motion.div
+                        initial={{ width: 0, opacity: 0, scale: 0.8 }}
+                        animate={{ width: 'auto', opacity: 1, scale: 1 }}
+                        exit={{ width: 0, opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}
                       >
-                        <HelpCircle size={16} className="animate-pulse" />
-                      </button>
-                      <button
-                        onClick={() => setIsDeveloperFeedbackOpen(true)}
-                        className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
-                          isDeveloperFeedbackOpen 
-                            ? "active shadow-[0_0_15px_rgba(255,165,0,0.2)]" 
-                            : ""
-                        }`}
-                        style={isDeveloperFeedbackOpen ? {
-                          background: 'rgba(184, 115, 51, 0.4)',
-                          borderColor: 'rgba(255, 165, 0, 0.8)',
-                          color: '#ffa500'
-                        } : undefined}
-                        title="DEVELOPER FEEDBACK DASHBOARD"
-                      >
-                        <MessageSquare size={16} className="animate-pulse" />
-                      </button>
-                      <button
-                        onClick={() => setIsOperatorOpen(true)}
-                        className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
-                          isOperatorOpen 
-                            ? "active shadow-[0_0_15px_rgba(239,68,68,0.2)]" 
-                            : ""
-                        }`}
-                        style={isOperatorOpen ? {
-                          background: 'rgba(69, 10, 10, 0.4)',
-                          borderColor: 'rgba(153, 27, 27, 0.8)',
-                          color: '#f87171'
-                        } : undefined}
-                        title="OPERATOR COMMAND PANEL GATE"
-                      >
-                        <Eye size={16} className="animate-pulse" />
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        <button
+                          onClick={() => setIsHelpDeskOpen(true)}
+                          className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
+                            isHelpDeskOpen ? "active shadow-[0_0_15px_rgba(74,222,128,0.2)]" : ""
+                          }`}
+                          style={isHelpDeskOpen ? {
+                            background: 'rgba(20, 83, 45, 0.4)', borderColor: 'rgba(34, 197, 94, 0.8)', color: '#4ade80'
+                          } : undefined}
+                          title="DEVELOPER HELP DESK"
+                        >
+                          <HelpCircle size={16} className="animate-pulse" />
+                        </button>
+                        <button
+                          onClick={() => setIsDeveloperFeedbackOpen(true)}
+                          className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
+                            isDeveloperFeedbackOpen ? "active shadow-[0_0_15px_rgba(255,165,0,0.2)]" : ""
+                          }`}
+                          style={isDeveloperFeedbackOpen ? {
+                            background: 'rgba(184, 115, 51, 0.4)', borderColor: 'rgba(255, 165, 0, 0.8)', color: '#ffa500'
+                          } : undefined}
+                          title="DEVELOPER FEEDBACK DASHBOARD"
+                        >
+                          <MessageSquare size={16} className="animate-pulse" />
+                        </button>
+                        <button
+                          onClick={() => setIsOperatorOpen(true)}
+                          className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
+                            isOperatorOpen ? "active shadow-[0_0_15px_rgba(239,68,68,0.2)]" : ""
+                          }`}
+                          style={isOperatorOpen ? {
+                            background: 'rgba(69, 10, 10, 0.4)', borderColor: 'rgba(153, 27, 27, 0.8)', color: '#f87171'
+                          } : undefined}
+                          title="OPERATOR COMMAND PANEL GATE"
+                        >
+                          <Eye size={16} className="animate-pulse" />
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             )}
 

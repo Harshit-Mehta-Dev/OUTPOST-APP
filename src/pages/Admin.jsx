@@ -27,12 +27,12 @@ export default function Admin() {
     setLoading(true);
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com';
 
       const [usersRes, campsRes, msgRes] = await Promise.all([
-        fetch(`${baseUrl}/admin/users`, { headers }),
-        fetch(`${baseUrl}/admin/campsites`, { headers }),
-        fetch(`${baseUrl}/admin/messages`, { headers })
+        fetch(`${baseUrl}/api/admin/users`, { headers }),
+        fetch(`${baseUrl}/api/admin/campsites`, { headers }),
+        fetch(`${baseUrl}/api/admin/messages`, { headers })
       ]);
 
       if (!usersRes.ok) throw new Error('Access Denied or Failed to fetch');
@@ -51,8 +51,8 @@ export default function Admin() {
 
   const handleBanUser = async (userId, currentStatus) => {
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const res = await fetch(`${baseUrl}/admin/users/${userId}/ban`, {
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com';
+      const res = await fetch(`${baseUrl}/api/admin/users/${userId}/ban`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -69,8 +69,8 @@ export default function Admin() {
   const handleDelete = async (type, id) => {
     if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const res = await fetch(`${baseUrl}/admin/${type}s/${id}`, {
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com';
+      const res = await fetch(`${baseUrl}/api/admin/${type}s/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
