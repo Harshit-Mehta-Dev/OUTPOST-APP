@@ -106,7 +106,7 @@
   width: 100%;
   height: 100%;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgb(var(--brand-primary)), rgb(var(--brand-secondary)));
+  background: var(--accent-primary);
   color: #fff;
   display: flex;
   align-items: center;
@@ -123,11 +123,11 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid #121212; /* Match background roughly */
+  border: 2px solid var(--bg-primary); /* Match background roughly */
 }
 
 .member-status-dot.online {
-  background-color: rgb(var(--brand-primary));
+  background-color: var(--accent-primary);
 }
 
 .member-info {

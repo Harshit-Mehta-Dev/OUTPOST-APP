@@ -40,9 +40,6 @@
   margin: 0;
   letter-spacing: 1px;
   text-transform: uppercase;
-  background: linear-gradient(90deg, #fff, #aaa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .close-btn {
@@ -154,12 +151,12 @@
 
 .name-input {
   width: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   border-radius: 8px;
   padding: 12px 16px;
   color: var(--text-primary);
-  font-size: 1.1rem;
+  font-size: 1rem;
   transition: all 0.2s ease;
 }
 
@@ -332,8 +329,8 @@
 
 .advanced-item select, .advanced-item input[type="text"] {
   width: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   border-radius: 8px;
   padding: 10px 12px;
   color: var(--text-primary);
@@ -351,7 +348,7 @@
 .toggle-bg {
   width: 44px;
   height: 24px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-glass);
   border-radius: 12px;
   position: relative;
   transition: all 0.2s ease;
@@ -364,7 +361,7 @@
 .toggle-knob {
   width: 18px;
   height: 18px;
-  background: white;
+  background: var(--text-primary);
   border-radius: 50%;
   position: absolute;
   top: 3px;
@@ -374,6 +371,7 @@
 
 .toggle-bg.active .toggle-knob {
   transform: translateX(20px);
+  background: #fff;
 }
 
 .toggle-switch span {
@@ -381,11 +379,10 @@
   color: var(--text-primary);
 }
 
-/* Footer & Buttons */
 .modal-footer {
   padding: 24px 32px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border-glass);
+  background: var(--bg-secondary);
   display: flex;
   justify-content: space-between;
   align-items: center;

@@ -154,7 +154,7 @@
 .theme-btn-deploy {
   flex: 1;
   padding: 0.5rem 0;
-  background-color: var(--brand-primary);
+  background-color: var(--accent-primary);
   color: white;
   font-weight: 700;
   border-radius: 0.75rem;
@@ -194,7 +194,7 @@
 .theme-trigger-btn.active {
   background-color: var(--bg-secondary);
   border-color: var(--text-secondary);
-  color: var(--brand-primary);
+  color: var(--accent-primary);
 }
 
 /* Mobile Optimizations */

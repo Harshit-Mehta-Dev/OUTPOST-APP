@@ -1065,7 +1065,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               exit={{ scale: 0.8, y: -20, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
-              <h3 style={{ color: 'var(--brand-primary)', marginBottom: '16px' }}>Delete Content?</h3>
+              <h3 style={{ color: 'var(--accent-primary)', marginBottom: '16px' }}>Delete Content?</h3>
               <p style={{ marginBottom: '24px', opacity: 0.8 }}>Choose how you want to delete this content.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <button 
@@ -1405,7 +1405,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <button
                 onClick={() => setIsDevMenuOpen(!isDevMenuOpen)}
                 className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${isDevMenuOpen ? 'active' : ''}`}
-                style={isDevMenuOpen ? { background: 'var(--brand-primary)', color: 'white', borderColor: 'var(--brand-primary)' } : undefined}
+                style={isDevMenuOpen ? { background: 'var(--accent-primary)', color: 'white', borderColor: 'var(--accent-primary)' } : undefined}
                 title="System Tools"
               >
                 <Target size={18} className={isDevMenuOpen ? '' : 'animate-pulse'} />
@@ -1431,7 +1431,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           }
                         }}
                         className={`theme-trigger-btn ${isAlertOpen ? 'active shadow-[0_0_15px_rgba(var(--brand-primary),0.2)]' : ''}`}
-                        style={isAlertOpen ? { background: 'var(--bg-card)', color: 'var(--brand-primary)' } : undefined}
+                        style={isAlertOpen ? { background: 'var(--bg-card)', color: 'var(--accent-primary)' } : undefined}
                         title="Alerts"
                       >
                         <Bell size={16} />
@@ -1449,7 +1449,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           setIsThemeOpen(false);
                         }}
                         className={`theme-trigger-btn ${isAIOpen ? 'active shadow-[0_0_15px_rgba(var(--brand-primary),0.2)]' : ''}`}
-                        style={isAIOpen ? { background: 'var(--bg-card)', color: 'var(--brand-primary)' } : undefined}
+                        style={isAIOpen ? { background: 'var(--bg-card)', color: 'var(--accent-primary)' } : undefined}
                         title="Compute Intelligence Matrices"
                       >
                         <Brain size={16} />
@@ -1541,10 +1541,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    style={{ background: 'var(--bg-card)', border: '1px solid var(--brand-primary)', borderRadius: '16px', padding: '24px', maxWidth: '400px', width: '90%', color: 'var(--text-primary)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--accent-primary)', borderRadius: '16px', padding: '24px', maxWidth: '400px', width: '90%', color: 'var(--text-primary)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                      <h3 style={{ fontSize: '14px', fontFamily: 'monospace', color: 'var(--brand-primary)', textTransform: 'uppercase' }}>INTERCEPT: {selectedPopupAlert.campsiteName}</h3>
+                      <h3 style={{ fontSize: '14px', fontFamily: 'monospace', color: 'var(--accent-primary)', textTransform: 'uppercase' }}>INTERCEPT: {selectedPopupAlert.campsiteName}</h3>
                       <button onClick={() => setSelectedPopupAlert(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={18} /></button>
                     </div>
                     <div style={{ marginBottom: '20px' }}>
@@ -1559,7 +1559,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                       <button onClick={() => {
                         changeViewChannelCallback(selectedPopupAlert.campsiteId, selectedPopupAlert.channelId);
                         setSelectedPopupAlert(null);
-                      }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--brand-primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Jump to Channel</button>
+                      }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--accent-primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Jump to Channel</button>
                     </div>
                   </motion.div>
                 </div>
@@ -1631,7 +1631,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
               style={{
                 background: isDrawerOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                color: isDrawerOpen ? 'rgb(var(--brand-primary))' : 'var(--text-secondary)'
+                color: isDrawerOpen ? 'var(--accent-primary)' : 'var(--text-secondary)'
               }}
             >
               <Users size={20} className="header-icon" />
@@ -1654,8 +1654,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <h1>Welcome to #{activeChannel}!</h1>
             <p>This is the start of the #{activeChannel} expedition. Please review the community guidelines before participating.</p>
             
-            <div className="community-guidelines" style={{ marginTop: '20px', padding: '20px', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', borderLeft: '4px solid var(--brand-primary)' }}>
-              <h3 style={{ marginBottom: '15px', color: 'var(--brand-primary)' }}>🏕️ Outpost Community Guidelines</h3>
+            <div className="community-guidelines" style={{ marginTop: '20px', padding: '20px', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', borderLeft: '4px solid var(--accent-primary)' }}>
+              <h3 style={{ marginBottom: '15px', color: 'var(--accent-primary)' }}>🏕️ Outpost Community Guidelines</h3>
               <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <li><strong>1. Respect Everyone:</strong> Treat all scouts and commanders with respect. No harassment, hate speech, or toxicity.</li>
                 <li><strong>2. Stay on Mission:</strong> Keep conversations relevant to the channel topic.</li>
@@ -1766,7 +1766,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                             }
                             if (!parsedReply) return null;
                             return (
-                              <div className="reply-reference" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', padding: '6px 10px', borderRadius: '6px', marginBottom: '8px', borderLeft: '3px solid var(--brand-primary)', opacity: 0.8, display: 'flex', flexDirection: 'column', gap: '2px', cursor: 'pointer' }}>
+                              <div className="reply-reference" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', padding: '6px 10px', borderRadius: '6px', marginBottom: '8px', borderLeft: '3px solid var(--accent-primary)', opacity: 0.8, display: 'flex', flexDirection: 'column', gap: '2px', cursor: 'pointer' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold' }}>
                                   <Reply size={12} />
                                   {parsedReply.username}
@@ -1809,7 +1809,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
                           {msg.type === "poll" && (
                             <div className="mt-3 p-4 rounded-xl font-sans" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-glass)', padding: '16px', borderRadius: '12px', marginTop: '12px', width: '100%', maxWidth: '350px' }}>
-                              <p className="font-bold font-mono tracking-wide text-xs uppercase mb-3" style={{ color: 'var(--brand-primary)', marginBottom: '12px', fontWeight: 'bold' }}>📊 {msg.pollData.question}</p>
+                              <p className="font-bold font-mono tracking-wide text-xs uppercase mb-3" style={{ color: 'var(--accent-primary)', marginBottom: '12px', fontWeight: 'bold' }}>📊 {msg.pollData.question}</p>
                               <div className="space-y-2.5" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {msg.pollData.options.map((option, idx) => {
                                   const totalVotes = msg.pollData.votesArray?.length || 0;
@@ -1825,17 +1825,17 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                                       key={idx}
                                       disabled={hasVotedInPoll}
                                       onClick={() => { if (!hasVotedInPoll) handleVoteSubmission(msg._id || msg.id, idx); }}
-                                      style={{ position: 'relative', overflow: 'hidden', background: votedForThisOption ? 'var(--accent-glow)' : 'var(--bg-glass)', border: votedForThisOption ? '1px solid var(--brand-primary)' : '1px solid var(--border-glass)', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', color: 'var(--text-primary)', cursor: hasVotedInPoll ? 'default' : 'pointer', outline: 'none', transition: 'all 0.2s ease', opacity: hasVotedInPoll && !votedForThisOption ? 0.6 : 1 }}
+                                      style={{ position: 'relative', overflow: 'hidden', background: votedForThisOption ? 'var(--accent-glow)' : 'var(--bg-glass)', border: votedForThisOption ? '1px solid var(--accent-primary)' : '1px solid var(--border-glass)', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', color: 'var(--text-primary)', cursor: hasVotedInPoll ? 'default' : 'pointer', outline: 'none', transition: 'all 0.2s ease', opacity: hasVotedInPoll && !votedForThisOption ? 0.6 : 1 }}
                                     >
                                       <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${percentage}%` }}
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
-                                        style={{ position: 'absolute', top: 0, left: 0, bottom: 0, background: 'var(--brand-primary)', opacity: votedForThisOption ? 0.4 : 0.2, pointerEvents: 'none' }}
+                                        style={{ position: 'absolute', top: 0, left: 0, bottom: 0, background: 'var(--accent-primary)', opacity: votedForThisOption ? 0.4 : 0.2, pointerEvents: 'none' }}
                                       />
                                       <span style={{ position: 'relative', zIndex: 10, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                         {option}
-                                        {votedForThisOption && <Check size={14} style={{ color: 'var(--brand-primary)' }} />}
+                                        {votedForThisOption && <Check size={14} style={{ color: 'var(--accent-primary)' }} />}
                                       </span>
                                       <span style={{ position: 'relative', zIndex: 10, fontSize: '0.75rem', opacity: 0.9, fontWeight: votedForThisOption ? 'bold' : 'normal' }}>
                                         {percentage}% ({optionVotes})
@@ -1863,7 +1863,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 5 }}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px', marginBottom: '10px', color: 'var(--brand-primary)', fontStyle: 'italic', fontSize: '0.85rem' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px', marginBottom: '10px', color: 'var(--accent-primary)', fontStyle: 'italic', fontSize: '0.85rem' }}
             >
               <Bot size={16} />
               <div className="flex gap-1 items-center justify-center" style={{ display: 'flex', gap: '4px', marginRight: '4px' }}>
@@ -1917,7 +1917,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 <button 
                   className="chat-attach-btn" 
                   onClick={() => setIsAttachmentOpen(!isAttachmentOpen)}
-                  style={isAttachmentOpen ? { background: 'var(--brand-primary)', color: '#fff', transform: 'rotate(45deg)', transition: 'all 0.2s' } : { transition: 'all 0.2s' }}
+                  style={isAttachmentOpen ? { background: 'var(--accent-primary)', color: '#fff', transform: 'rotate(45deg)', transition: 'all 0.2s' } : { transition: 'all 0.2s' }}
                 >
                   <Plus size={20} />
                 </button>
