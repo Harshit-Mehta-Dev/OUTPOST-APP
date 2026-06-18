@@ -50,7 +50,8 @@ function App() {
   const location = useLocation();
   const isAppRoute = location.pathname.startsWith('/app');
   const isInviteRoute = location.pathname.startsWith('/invite');
-  const hideHeaderFooter = isAppRoute || isInviteRoute;
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const hideHeaderFooter = isAppRoute || isInviteRoute || isAdminRoute;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

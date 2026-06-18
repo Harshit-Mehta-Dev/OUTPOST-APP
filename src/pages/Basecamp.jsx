@@ -1571,17 +1571,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <button
                 onClick={() => window.open('/admin', '_blank')}
                 className="camp-ops-btn whitespace-nowrap"
-                style={{
-                  background: 'var(--brand-primary)',
-                  color: 'white',
-                  borderColor: 'var(--brand-primary)',
-                  fontWeight: 'bold',
-                  fontSize: '0.85rem',
-                  height: '32px'
-                }}
                 title="Open Admin Dashboard"
               >
-                <ShieldAlert size={16} />
+                <ShieldAlert size={18} />
                 GOD MODE
               </button>
             )}
