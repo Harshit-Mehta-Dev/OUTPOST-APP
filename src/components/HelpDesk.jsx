@@ -180,7 +180,42 @@ const HelpDesk = () => {
   const activeUserName = localStorage.getItem('outpost_help_userName') || userName || 'User';
 
   return (
-    <section id="helpdesk" className="helpdesk-section container">
+    <section id="helpdesk" className="helpdesk-section">
+      {/* Waterfall Animation Overlay */}
+      <div className="waterfall-overlay">
+        <div className="waterfall-side left">
+          {[...Array(12)].map((_, i) => (
+            <div 
+              key={`left-${i}`} 
+              className="waterfall-drop"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 4}s`,
+                animationDuration: `${2.5 + Math.random() * 3}s`,
+                height: `${80 + Math.random() * 150}px`,
+                opacity: 0.1 + Math.random() * 0.5
+              }}
+            />
+          ))}
+        </div>
+        <div className="waterfall-side right">
+          {[...Array(12)].map((_, i) => (
+            <div 
+              key={`right-${i}`} 
+              className="waterfall-drop"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 4}s`,
+                animationDuration: `${2.5 + Math.random() * 3}s`,
+                height: `${80 + Math.random() * 150}px`,
+                opacity: 0.1 + Math.random() * 0.5
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="container relative-z">
       <motion.div 
         className="helpdesk-header text-center"
         initial={{ opacity: 0, y: 20 }}
@@ -486,6 +521,7 @@ const HelpDesk = () => {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
       </div>
     </section>
   );

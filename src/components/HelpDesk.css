@@ -595,3 +595,58 @@
   background: rgba(0,0,0,0.2);
   border-top: 1px solid var(--border-glass);
 }
+
+/* Waterfall Animation Styles */
+.waterfall-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.waterfall-side {
+  position: relative;
+  width: 15%; /* Take up the blank edges of the screen */
+  height: 100%;
+}
+
+@media (max-width: 1024px) {
+  .waterfall-side {
+    width: 8%;
+  }
+}
+
+@media (max-width: 768px) {
+  .waterfall-side {
+    display: none; /* Hide on mobile to prevent clutter */
+  }
+}
+
+.waterfall-drop {
+  position: absolute;
+  top: -200px;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--brand-primary), transparent);
+  box-shadow: 0 0 15px var(--brand-primary);
+  animation: waterfall-fall linear infinite;
+}
+
+@keyframes waterfall-fall {
+  0% {
+    top: -200px;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+.relative-z {
+  position: relative;
+  z-index: 10;
+}
