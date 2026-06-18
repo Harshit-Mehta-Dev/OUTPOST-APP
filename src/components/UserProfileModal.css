@@ -54,7 +54,7 @@
 .profile-header h2 {
   font-size: 1.4rem;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, #fff, rgb(var(--brand-primary)));
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: 1px;
@@ -203,8 +203,8 @@
 }
 
 .preset-btn {
-  background: rgba(0,0,0,0.2);
-  border: 2px solid transparent;
+  background: var(--bg-glass);
+  border: 2px solid var(--border-glass);
   border-radius: 12px;
   padding: 6px;
   cursor: pointer;
@@ -222,7 +222,8 @@
 }
 
 .preset-btn:hover {
-  background: rgba(255,255,255,0.05);
+  background: var(--bg-primary);
+  border-color: var(--primary-color);
   transform: translateY(-2px);
 }
 

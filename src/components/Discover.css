@@ -46,7 +46,7 @@
   font-family: 'Space Grotesk', sans-serif;
   font-size: 2.5rem;
   margin-bottom: 10px;
-  background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.6));
+  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -61,8 +61,8 @@
   width: 100%;
   max-width: 600px;
   position: relative;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   border-radius: 12px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -93,7 +93,7 @@
   outline: none;
 }
 .radar-search-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
 }
 
 /* Terrain Filters */
@@ -111,8 +111,8 @@
 .filter-pill {
   padding: 10px 20px;
   border-radius: 30px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   color: var(--text-secondary);
   font-weight: 500;
   cursor: pointer;
@@ -124,7 +124,7 @@
 }
 
 .filter-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
   color: var(--text-primary);
 }
 
@@ -143,8 +143,8 @@
 
 /* Signal Card */
 .signal-card {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   border-radius: 16px;
   padding: 24px;
   display: flex;
@@ -179,7 +179,7 @@
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
 }
 
 .card-metrics {
@@ -194,7 +194,7 @@
   align-items: center;
   gap: 6px;
   font-size: 0.75rem;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--bg-primary);
   padding: 4px 8px;
   border-radius: 12px;
   color: var(--text-secondary);
@@ -247,8 +247,8 @@
 .btn-venture {
   width: 100%;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   color: var(--text-primary);
   border-radius: 8px;
   font-weight: 600;
@@ -259,8 +259,8 @@
 }
 
 .btn-venture:hover {
-  background: var(--text-primary);
-  color: black;
+  background: var(--accent-primary);
+  color: white;
 }
 
 .btn-venture.loading {
