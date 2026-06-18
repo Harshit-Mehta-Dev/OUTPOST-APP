@@ -11,6 +11,19 @@ import FounderSection from '../components/landing/FounderSection';
 import FeedbackForm from '../components/FeedbackForm';
 import { GeometricBorder } from '../components/ui/GeometricBorder';
 
+const SectionBlendDivider = () => (
+  <div style={{
+    width: '100%',
+    height: '2px',
+    background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
+    boxShadow: '0 0 30px rgba(255, 255, 255, 0.05)',
+    margin: '0 auto',
+    position: 'relative',
+    zIndex: 10
+  }} />
+);
+
+
 const Landing = () => {
   const location = useLocation();
   const isLegalView = location.hash === '#legal';
@@ -32,12 +45,18 @@ const Landing = () => {
               <GeometricBorder side="left" opacity={0.35} />
               <GeometricBorder side="right" opacity={0.35} />
               <Hero />
+              <SectionBlendDivider />
               <Features />
+              <SectionBlendDivider />
               <Community />
+              <SectionBlendDivider />
               <About />
             </div>
+            <SectionBlendDivider />
             <HelpDesk />
+            <SectionBlendDivider />
             <FeedbackForm />
+            <SectionBlendDivider />
             <FounderSection />
           </>
         )}

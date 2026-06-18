@@ -25,7 +25,7 @@
 
 .tabs-header {
   display: flex;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-glass);
 }
 

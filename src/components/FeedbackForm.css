@@ -50,7 +50,7 @@
 
 .form-group input,
 .form-group textarea {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-glass);
   padding: 14px 16px;
   border-radius: 12px;
