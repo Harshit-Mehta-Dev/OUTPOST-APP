@@ -14,12 +14,13 @@ import { GeometricBorder } from '../components/ui/GeometricBorder';
 const SectionBlendDivider = () => (
   <div style={{
     width: '100%',
-    height: '2px',
-    background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
-    boxShadow: '0 0 30px rgba(255, 255, 255, 0.05)',
-    margin: '0 auto',
+    height: '100px',
+    background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.2) 50%, transparent)',
+    marginTop: '-50px',
+    marginBottom: '-50px',
     position: 'relative',
-    zIndex: 10
+    zIndex: 10,
+    pointerEvents: 'none'
   }} />
 );
 
