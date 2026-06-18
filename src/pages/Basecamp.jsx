@@ -1389,6 +1389,23 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             {isGlobalAdmin && (
               <>
                 <button
+                  onClick={() => window.open('/admin', '_blank')}
+                  className="theme-trigger-btn flex items-center justify-center transition-all duration-200"
+                  style={{
+                    background: 'var(--brand-primary)',
+                    color: 'white',
+                    borderColor: 'var(--brand-primary)',
+                    padding: '0 12px',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem'
+                  }}
+                  title="Open Admin Dashboard"
+                >
+                  <ShieldAlert size={16} className="mr-2" />
+                  GOD MODE
+                </button>
+
+                <button
                   onClick={() => setIsHelpDeskOpen(true)}
                   className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
                     isHelpDeskOpen 
