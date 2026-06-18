@@ -18,6 +18,7 @@ import {
   Target,
   Menu,
   Trash2,
+  Lock,
   X,
   Copy,
   Palette,
@@ -1936,6 +1937,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 </button>
               </>
             )}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '6px', fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', opacity: 0.8 }}>
+            <Lock size={12} /> <span>End-to-End Encrypted Chat</span>
           </div>
         </div>
       </main>
