@@ -1,7 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap');
 
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/utilities";
+@source "./pages";
+@source "./components";
 
 @font-face {
   font-family: 'Malinton';
