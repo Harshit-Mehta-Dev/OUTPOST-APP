@@ -124,3 +124,46 @@
   line-height: 1.6;
   margin: 0;
 }
+
+/* Sideways Animation Overlay */
+.sideways-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.sideways-particle {
+  position: absolute;
+  left: -200px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--brand-primary), #fff, transparent);
+  box-shadow: 0 0 15px var(--brand-primary);
+  border-radius: 50%;
+  animation: sideways-flow linear infinite;
+}
+
+@keyframes sideways-flow {
+  0% {
+    left: -200px;
+    opacity: 0;
+    transform: scaleX(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  80% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+    transform: scaleX(0.5);
+  }
+}

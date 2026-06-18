@@ -33,8 +33,25 @@ const FeedbackForm = () => {
   };
 
   return (
-    <section className="feedback-section" id="feedback">
-      <div className="container">
+    <section className="feedback-section" id="feedback" style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Sideways Animation Overlay */}
+      <div className="sideways-overlay">
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={`sideways-${i}`}
+            className="sideways-particle"
+            style={{
+              top: `${Math.random() * 100}%`,
+              width: `${50 + Math.random() * 150}px`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${3 + Math.random() * 4}s`,
+              opacity: 0.2 + Math.random() * 0.8
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="container" style={{ position: 'relative', zIndex: 10 }}>
         <div className="feedback-header">
           <h2>We Value Your <span className="gradient-text">Feedback</span></h2>
           <p>Help us improve Outpost by sharing your thoughts, ideas, or reporting any issues.</p>
