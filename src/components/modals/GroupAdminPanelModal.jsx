@@ -60,7 +60,7 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
           ) : (
             <div className="members-list-admin">
               {members.map(member => (
-                <div key={member} className="member-item-admin" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <div key={member} className="member-item-admin" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid var(--border-glass)' }}>
                   <div className="member-info">
                     <span style={{ fontWeight: 'bold' }}>{member}</span>
                     {member === campsite.adminUsername && <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--brand-primary)' }}>(Creator)</span>}
@@ -110,7 +110,7 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
 
         {confirmAction && (
           <div className="confirmation-dialog" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px', zIndex: 100 }}>
-            <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '12px', maxWidth: '80%', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '12px', maxWidth: '80%', textAlign: 'center', border: '1px solid var(--border-glass)' }}>
               <AlertTriangle size={32} color={confirmAction.type === 'global_ban' ? '#ff00ff' : confirmAction.type === 'ban' ? '#ff4444' : 'orange'} style={{ marginBottom: '16px' }} />
               <h3 style={{ marginBottom: '8px' }}>
                 {confirmAction.type === 'global_ban' ? 'Issue Global Ban?' : 
@@ -126,7 +126,7 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
                 <button 
                   onClick={() => setConfirmAction(null)}
-                  style={{ padding: '8px 16px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', borderRadius: '6px', cursor: 'pointer' }}
+                  style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-glass)', color: 'var(--text-primary)', borderRadius: '6px', cursor: 'pointer' }}
                 >
                   Cancel
                 </button>

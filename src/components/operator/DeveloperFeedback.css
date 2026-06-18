@@ -21,11 +21,12 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  background: var(--bg-secondary) !important;
 }
 
 .dev-feedback-header {
   padding: 20px 24px;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-glass);
   display: flex;
   justify-content: space-between;
@@ -41,7 +42,7 @@
   flex: 1;
   padding: 24px;
   overflow-y: auto;
-  background: rgba(0,0,0,0.1);
+  background: var(--bg-primary);
 }
 
 .feedback-loading, .feedback-empty {
@@ -61,7 +62,7 @@
 }
 
 .feedback-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-glass);
   border-radius: 12px;
   padding: 20px;
@@ -69,8 +70,7 @@
 }
 
 .feedback-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--primary-color);
 }
 
 .feedback-card-header {
@@ -79,7 +79,7 @@
   align-items: flex-start;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .feedback-user-info {

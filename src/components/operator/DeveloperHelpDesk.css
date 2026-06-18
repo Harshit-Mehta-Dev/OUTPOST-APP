@@ -17,7 +17,7 @@
   width: 100%;
   max-width: 1200px;
   height: 90vh;
-  background: var(--bg-card);
+  background: var(--bg-secondary) !important;
   border-radius: 20px;
   border: 1px solid var(--border-glass);
   display: flex;
@@ -31,7 +31,7 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-glass);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-secondary);
 }
 
 .dev-helpdesk-body {
@@ -46,7 +46,7 @@
   border-right: 1px solid var(--border-glass);
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--bg-primary);
 }
 
 .ticket-list-header {
@@ -65,7 +65,7 @@
 }
 
 .ticket-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-glass);
   border-radius: 12px;
   padding: 16px;
@@ -74,7 +74,7 @@
 }
 
 .ticket-card:hover {
-  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary-color);
 }
 
 .ticket-card.active {
@@ -122,7 +122,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-secondary);
 }
 
 .no-ticket-selected {
@@ -146,7 +146,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-secondary);
 }
 
 .active-ticket-info h3 {
@@ -183,6 +183,6 @@
 
 .dev-chat-input-area {
   padding: 16px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-primary);
   border-top: 1px solid var(--border-glass);
 }
