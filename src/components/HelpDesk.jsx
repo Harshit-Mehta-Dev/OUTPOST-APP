@@ -179,6 +179,8 @@ const HelpDesk = () => {
 
   const activeUserName = localStorage.getItem('outpost_help_userName') || userName || 'User';
 
+  const waterfallIcons = [LifeBuoy, Headset, MessageSquare, Send, Clock, CheckCircle];
+
   return (
     <section id="helpdesk" className="helpdesk-section">
       {/* Waterfall Animation Overlay */}
@@ -198,6 +200,22 @@ const HelpDesk = () => {
               }}
             />
           ))}
+          {[...Array(5)].map((_, i) => {
+            const Icon = waterfallIcons[i % waterfallIcons.length];
+            return (
+              <div
+                key={`sticker-left-${i}`}
+                className="waterfall-sticker-drop"
+                style={{
+                  left: `${10 + Math.random() * 80}%`,
+                  animationDelay: `${Math.random() * 5}s`,
+                  animationDuration: `${5 + Math.random() * 5}s`
+                }}
+              >
+                <Icon size={24 + Math.random() * 16} />
+              </div>
+            );
+          })}
         </div>
         <div className="waterfall-side right">
           {[...Array(20)].map((_, i) => (
@@ -214,6 +232,22 @@ const HelpDesk = () => {
               }}
             />
           ))}
+          {[...Array(5)].map((_, i) => {
+            const Icon = waterfallIcons[(i + 3) % waterfallIcons.length];
+            return (
+              <div
+                key={`sticker-right-${i}`}
+                className="waterfall-sticker-drop"
+                style={{
+                  left: `${10 + Math.random() * 80}%`,
+                  animationDelay: `${Math.random() * 5}s`,
+                  animationDuration: `${5 + Math.random() * 5}s`
+                }}
+              >
+                <Icon size={24 + Math.random() * 16} />
+              </div>
+            );
+          })}
         </div>
       </div>
 

@@ -660,6 +660,39 @@
   }
 }
 
+.waterfall-sticker-drop {
+  position: absolute;
+  top: -100px;
+  color: var(--brand-primary);
+  opacity: 0;
+  animation: sticker-fall linear infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 8px rgba(193, 95, 60, 0.6));
+}
+
+@keyframes sticker-fall {
+  0% {
+    top: -100px;
+    opacity: 0;
+    transform: rotate(0deg) scale(0.8);
+  }
+  20% {
+    opacity: 0.8;
+    transform: rotate(15deg) scale(1);
+  }
+  80% {
+    opacity: 0.8;
+    transform: rotate(-15deg) scale(1);
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+    transform: rotate(0deg) scale(0.8);
+  }
+}
+
 .relative-z {
   position: relative;
   z-index: 10;
