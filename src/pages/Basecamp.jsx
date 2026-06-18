@@ -1408,7 +1408,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 style={isDevMenuOpen ? { background: 'var(--brand-primary)', color: 'white', borderColor: 'var(--brand-primary)' } : undefined}
                 title="System Tools"
               >
-                <Cpu size={18} className={isDevMenuOpen ? '' : 'animate-pulse'} />
+                <Target size={18} className={isDevMenuOpen ? '' : 'animate-pulse'} />
               </button>
 
               <AnimatePresence>
