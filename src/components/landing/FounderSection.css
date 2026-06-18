@@ -68,8 +68,8 @@
 
 .founder-photo-card {
   position: relative;
-  background-color: #09090b;
-  border: 1px solid #18181b;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   border-radius: 1rem;
   overflow: hidden;
   aspect-ratio: 4 / 5;
@@ -95,8 +95,8 @@
   bottom: 1rem;
   left: 1rem;
   right: 1rem;
-  background-color: rgba(9, 9, 11, 0.8);
-  border: 1px solid rgba(39, 39, 42, 0.6);
+  background-color: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 0.75rem;
@@ -150,8 +150,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0.75rem;
-  background-color: rgba(24, 24, 27, 0.6);
-  border: 1px solid #27272a;
+  background-color: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   border-radius: 0.5rem;
   font-size: 0.75rem;
   font-family: monospace;
@@ -189,7 +189,7 @@
   top: -1.5rem;
   left: -1rem;
   font-size: 3.75rem;
-  color: #27272a;
+  color: var(--border-glass);
   font-family: serif;
   user-select: none;
   pointer-events: none;
@@ -234,7 +234,7 @@
 
 .founder-divider {
   border: 0;
-  border-top: 1px solid #27272a;
+  border-top: 1px solid var(--border-glass);
   margin: 1rem 0;
 }
 
@@ -254,8 +254,8 @@
 
 .founder-spec-card {
   padding: 0.75rem;
-  background-color: rgba(9, 9, 11, 0.4);
-  border: 1px solid #18181b;
+  background-color: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   border-radius: 0.75rem;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -263,7 +263,7 @@
 }
 
 .founder-spec-card:hover {
-  border-color: #27272a;
+  border-color: var(--text-secondary);
 }
 
 .founder-spec-label {

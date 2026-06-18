@@ -42,7 +42,7 @@
 }
 
 .form-control {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-glass);
   border: 1px solid var(--border-glass);
   border-radius: 12px;
   padding: 16px;
@@ -57,11 +57,12 @@
 .form-control:focus {
   outline: none;
   border-color: var(--accent-primary);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-secondary);
 }
 
 .form-control::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--text-secondary);
+  opacity: 0.6;
 }
 
 .upload-area {
@@ -84,7 +85,7 @@
   border-radius: 12px;
   padding: 30px;
   cursor: pointer;
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--bg-glass);
   transition: all 0.3s ease;
 }
 
@@ -171,7 +172,7 @@
   position: relative;
   min-width: 20px;
   height: 20px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-glass);
   border: 1px solid var(--border-glass);
   border-radius: 6px;
   transition: all 0.2s ease;
