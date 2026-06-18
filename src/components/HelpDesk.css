@@ -614,6 +614,20 @@
   position: relative;
   width: 15%; /* Take up the blank edges of the screen */
   height: 100%;
+  background: 
+    linear-gradient(to bottom, transparent 20%, rgba(255, 255, 255, 0.02) 50%, transparent 80%),
+    linear-gradient(to bottom, transparent 30%, rgba(193, 95, 60, 0.03) 50%, transparent 70%);
+  background-size: 100% 200%, 100% 300%;
+  animation: waterfall-ambient 5s infinite linear;
+}
+
+@keyframes waterfall-ambient {
+  0% {
+    background-position: 0 -200%, 0 -300%;
+  }
+  100% {
+    background-position: 0 200%, 0 300%;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -630,16 +644,16 @@
 
 .waterfall-drop {
   position: absolute;
-  top: -200px;
-  width: 2px;
-  background: linear-gradient(to bottom, transparent, var(--brand-primary), transparent);
-  box-shadow: 0 0 15px var(--brand-primary);
+  top: -300px;
+  background: linear-gradient(to bottom, transparent, var(--brand-primary), #fff, transparent);
+  box-shadow: 0 0 20px var(--brand-primary);
+  border-radius: 50px;
   animation: waterfall-fall linear infinite;
 }
 
 @keyframes waterfall-fall {
   0% {
-    top: -200px;
+    top: -300px;
   }
   100% {
     top: 100%;

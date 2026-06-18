@@ -184,31 +184,33 @@ const HelpDesk = () => {
       {/* Waterfall Animation Overlay */}
       <div className="waterfall-overlay">
         <div className="waterfall-side left">
-          {[...Array(12)].map((_, i) => (
+          {[...Array(20)].map((_, i) => (
             <div 
               key={`left-${i}`} 
               className="waterfall-drop"
               style={{
                 left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 4}s`,
-                animationDuration: `${2.5 + Math.random() * 3}s`,
-                height: `${80 + Math.random() * 150}px`,
-                opacity: 0.1 + Math.random() * 0.5
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${1.5 + Math.random() * 2.5}s`,
+                height: `${100 + Math.random() * 200}px`,
+                width: `${1 + Math.random() * 6}px`,
+                opacity: 0.2 + Math.random() * 0.8
               }}
             />
           ))}
         </div>
         <div className="waterfall-side right">
-          {[...Array(12)].map((_, i) => (
+          {[...Array(20)].map((_, i) => (
             <div 
               key={`right-${i}`} 
               className="waterfall-drop"
               style={{
                 left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 4}s`,
-                animationDuration: `${2.5 + Math.random() * 3}s`,
-                height: `${80 + Math.random() * 150}px`,
-                opacity: 0.1 + Math.random() * 0.5
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${1.5 + Math.random() * 2.5}s`,
+                height: `${100 + Math.random() * 200}px`,
+                width: `${1 + Math.random() * 6}px`,
+                opacity: 0.2 + Math.random() * 0.8
               }}
             />
           ))}
