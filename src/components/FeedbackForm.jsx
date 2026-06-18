@@ -4,6 +4,7 @@ import { Send, CheckCircle, MessageSquare, Lightbulb, Megaphone } from 'lucide-r
 import './FeedbackForm.css';
 
 const FeedbackForm = () => {
+  const feedbackIcons = [MessageSquare, Lightbulb, Megaphone, Send, CheckCircle];
   const [formData, setFormData] = useState({ userName: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -36,19 +37,22 @@ const FeedbackForm = () => {
     <section className="feedback-section" id="feedback" style={{ position: 'relative', overflow: 'hidden' }}>
       {/* Sideways Animation Overlay */}
       <div className="sideways-overlay">
-        {[...Array(15)].map((_, i) => (
-          <div
-            key={`sideways-${i}`}
-            className="sideways-particle"
-            style={{
-              top: `${Math.random() * 100}%`,
-              width: `${50 + Math.random() * 150}px`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`,
-              opacity: 0.2 + Math.random() * 0.8
-            }}
-          />
-        ))}
+        {[...Array(15)].map((_, i) => {
+          const Icon = feedbackIcons[i % feedbackIcons.length];
+          return (
+            <div
+              key={`sideways-sticker-${i}`}
+              className="sideways-sticker"
+              style={{
+                top: `${10 + Math.random() * 80}%`,
+                animationDelay: `${Math.random() * 10}s`,
+                animationDuration: `${10 + Math.random() * 15}s`
+              }}
+            >
+              <Icon size={24 + Math.random() * 32} />
+            </div>
+          );
+        })}
       </div>
 
       <div className="container" style={{ position: 'relative', zIndex: 10 }}>

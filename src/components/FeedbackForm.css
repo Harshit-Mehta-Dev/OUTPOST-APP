@@ -137,33 +137,39 @@
   overflow: hidden;
 }
 
-.sideways-particle {
+.sideways-sticker {
   position: absolute;
-  left: -200px;
-  height: 2px;
-  background: linear-gradient(to right, transparent, var(--brand-primary), #fff, transparent);
-  box-shadow: 0 0 15px var(--brand-primary);
-  border-radius: 50%;
-  animation: sideways-flow linear infinite;
+  left: -100px;
+  color: var(--brand-primary);
+  opacity: 0;
+  animation: sideways-sticker-flow linear infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 10px rgba(193, 95, 60, 0.4));
 }
 
-@keyframes sideways-flow {
+@keyframes sideways-sticker-flow {
   0% {
-    left: -200px;
+    left: -100px;
     opacity: 0;
-    transform: scaleX(0.5);
+    transform: rotate(0deg) scale(0.8);
   }
-  20% {
-    opacity: 1;
-    transform: scaleX(1);
+  15% {
+    opacity: 0.5;
+    transform: rotate(15deg) scale(1);
   }
-  80% {
-    opacity: 1;
-    transform: scaleX(1);
+  50% {
+    opacity: 0.5;
+    transform: rotate(45deg) scale(1.1);
+  }
+  85% {
+    opacity: 0.5;
+    transform: rotate(15deg) scale(1);
   }
   100% {
     left: 100%;
     opacity: 0;
-    transform: scaleX(0.5);
+    transform: rotate(0deg) scale(0.8);
   }
 }
