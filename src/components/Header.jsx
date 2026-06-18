@@ -99,25 +99,6 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           <button className="theme-toggle" onClick={toggleTheme} style={{ display: 'flex', alignItems: 'center', padding: '0 12px', color: 'var(--text-primary)' }}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          
-          {(() => {
-            if (!isLoggedIn) return null;
-            try {
-              const user = JSON.parse(localStorage.getItem('outpost_user'));
-              if (user && (user.email === 'harshitmehta1012@gmail.com' || user.level >= 99)) {
-                return (
-                  <button 
-                    onClick={() => navigate('/admin')}
-                    style={{ background: 'var(--brand-primary)', color: 'white', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.9rem' }}
-                  >
-                    GOD MODE
-                  </button>
-                );
-              }
-            } catch (e) {}
-            return null;
-          })()}
-
           <button className="btn-secondary" onClick={() => navigate('/auth')}>
             {isLoggedIn ? 'Open App' : 'Sign In'}
           </button>
