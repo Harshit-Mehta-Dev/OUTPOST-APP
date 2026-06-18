@@ -88,7 +88,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border: 2px dashed var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,11 +97,13 @@
   overflow: hidden;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  color: var(--text-secondary);
 }
 
 .emblem-upload:hover {
   border-color: var(--accent-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
+  color: var(--accent-primary);
 }
 
 .emblem-fallback {
@@ -196,7 +198,7 @@
 }
 
 .template-card:hover {
-  background: var(--bg-glass);
+  background: var(--bg-secondary);
   border-color: var(--border-glass);
   transform: translateY(-2px);
 }
@@ -250,7 +252,7 @@
 }
 
 .radio-card:hover {
-  background: var(--bg-glass);
+  background: var(--bg-secondary);
 }
 
 .radio-card.active {
