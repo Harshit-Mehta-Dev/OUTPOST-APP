@@ -1566,18 +1566,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               )}
             </AnimatePresence>
 
-            {/* GOD MODE BUTTON FOR ADMINS */}
-            {isGlobalAdmin && (
-              <button
-                onClick={() => window.open('/admin', '_blank')}
-                className="camp-ops-btn whitespace-nowrap"
-                title="Open Admin Dashboard"
-              >
-                <ShieldAlert size={18} />
-                GOD MODE
-              </button>
-            )}
-
             <button className="camp-ops-btn" onClick={() => setIsCampOpsModalOpen(true)}>
               <Settings size={18} />
               Camp Operations
@@ -2362,6 +2350,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           />
         )}
       </AnimatePresence>
+
 
       <AnimatePresence>
         {isUserHelpDeskOpen && (
