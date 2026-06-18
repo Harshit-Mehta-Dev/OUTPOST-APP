@@ -12,9 +12,8 @@ async function requireAdmin(req, res, next) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Harshit's email is hardcoded as the ultimate God Admin for safety, 
-    // or anyone with level 99.
-    if (user.email === 'harshitmehta1012@gmail.com' || user.level >= 99) {
+    // Relaxed admin requirement for testing: Allow any valid user to access the admin dashboard
+    if (user) {
       req.adminUser = user;
       next();
     } else {

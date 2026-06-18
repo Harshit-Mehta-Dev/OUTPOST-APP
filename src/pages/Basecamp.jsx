@@ -1388,209 +1388,202 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             
-            {isGlobalAdmin && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  onClick={() => window.open('/admin', '_blank')}
-                  className="camp-ops-btn whitespace-nowrap"
-                  style={{
-                    background: 'var(--brand-primary)',
-                    color: 'white',
-                    borderColor: 'var(--brand-primary)',
-                    fontWeight: 'bold',
-                    fontSize: '0.85rem',
-                    height: '32px'
-                  }}
-                  title="Open Admin Dashboard"
-                >
-                  <ShieldAlert size={16} />
-                  GOD MODE
-                </button>
-
-                <div 
-                  className="dev-menu-container"
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: isDevMenuOpen ? '8px' : '0', 
-                    background: isDevMenuOpen ? 'var(--bg-card)' : 'transparent',
-                    padding: isDevMenuOpen ? '4px 12px 4px 4px' : '0',
-                    borderRadius: '24px',
-                    border: isDevMenuOpen ? '1px solid var(--border-glass)' : 'none',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                >
-                  <button
-                    onClick={() => setIsDevMenuOpen(!isDevMenuOpen)}
-                    className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${isDevMenuOpen ? 'active' : ''}`}
-                    style={isDevMenuOpen ? { background: 'var(--brand-primary)', color: 'white', borderColor: 'var(--brand-primary)' } : undefined}
-                    title="Developer Tools"
-                  >
-                    <Cpu size={18} className={isDevMenuOpen ? '' : 'animate-pulse'} />
-                  </button>
-
-                  <AnimatePresence>
-                    {isDevMenuOpen && (
-                      <motion.div
-                        initial={{ width: 0, opacity: 0, scale: 0.8 }}
-                        animate={{ width: 'auto', opacity: 1, scale: 1 }}
-                        exit={{ width: 0, opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.3, ease: 'easeOut' }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}
-                      >
-                        <button
-                          onClick={() => setIsHelpDeskOpen(true)}
-                          className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
-                            isHelpDeskOpen ? "active shadow-[0_0_15px_rgba(74,222,128,0.2)]" : ""
-                          }`}
-                          style={isHelpDeskOpen ? {
-                            background: 'rgba(20, 83, 45, 0.4)', borderColor: 'rgba(34, 197, 94, 0.8)', color: '#4ade80'
-                          } : undefined}
-                          title="DEVELOPER HELP DESK"
-                        >
-                          <HelpCircle size={16} className="animate-pulse" />
-                        </button>
-                        <button
-                          onClick={() => setIsDeveloperFeedbackOpen(true)}
-                          className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
-                            isDeveloperFeedbackOpen ? "active shadow-[0_0_15px_rgba(255,165,0,0.2)]" : ""
-                          }`}
-                          style={isDeveloperFeedbackOpen ? {
-                            background: 'rgba(184, 115, 51, 0.4)', borderColor: 'rgba(255, 165, 0, 0.8)', color: '#ffa500'
-                          } : undefined}
-                          title="DEVELOPER FEEDBACK DASHBOARD"
-                        >
-                          <MessageSquare size={16} className="animate-pulse" />
-                        </button>
-                        <button
-                          onClick={() => setIsOperatorOpen(true)}
-                          className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
-                            isOperatorOpen ? "active shadow-[0_0_15px_rgba(239,68,68,0.2)]" : ""
-                          }`}
-                          style={isOperatorOpen ? {
-                            background: 'rgba(69, 10, 10, 0.4)', borderColor: 'rgba(153, 27, 27, 0.8)', color: '#f87171'
-                          } : undefined}
-                          title="OPERATOR COMMAND PANEL GATE"
-                        >
-                          <Eye size={16} className="animate-pulse" />
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            )}
-
-            <div style={{ position: 'relative' }}>
+            {/* CPU CHIP DROPDOWN: CONTAINS ALL GENERIC TOOLS */}
+            <div 
+              className="dev-menu-container"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: isDevMenuOpen ? '8px' : '0', 
+                background: isDevMenuOpen ? 'var(--bg-card)' : 'transparent',
+                padding: isDevMenuOpen ? '4px 12px 4px 4px' : '0',
+                borderRadius: '24px',
+                border: isDevMenuOpen ? '1px solid var(--border-glass)' : 'none',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
+            >
               <button
-                onClick={() => {
-                  setIsAlertOpen(!isAlertOpen);
-                  setIsAIOpen(false); // Close AI panel to prevent stacked layout collisions
-                  if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
-                    Notification.requestPermission();
-                  }
-                }}
-                className={`theme-trigger-btn ${isAlertOpen ? 'active' : ''}`}
-                  style={isAlertOpen ? {
-                    background: 'var(--bg-card)',
-                    color: 'var(--brand-primary)'
-                  } : undefined}
+                onClick={() => setIsDevMenuOpen(!isDevMenuOpen)}
+                className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${isDevMenuOpen ? 'active' : ''}`}
+                style={isDevMenuOpen ? { background: 'var(--brand-primary)', color: 'white', borderColor: 'var(--brand-primary)' } : undefined}
+                title="System Tools"
               >
-                <Bell size={18} />
-                {alerts.length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand animate-pulse shadow-[0_0_8px_rgba(var(--brand-primary),0.6)]" style={{ width: '8px', height: '8px', position: 'absolute' }} />
-                )}
+                <Cpu size={18} className={isDevMenuOpen ? '' : 'animate-pulse'} />
               </button>
 
-              {/* Dropdown Card Injection Portal */}
-              <NotificationDropdown 
-                isOpen={isAlertOpen} 
-                alerts={alerts} 
-                onSelectAlert={handleSelectNotification} 
-                onDismissAlert={(id) => setAlerts(prev => prev.filter(a => a.id !== id))}
-                onClearAll={() => setAlerts([])} 
-              />
-
-              {/* Message Read Popup Modal */}
               <AnimatePresence>
-                {selectedPopupAlert && (
-                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)' }}>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      style={{ background: 'var(--bg-card)', border: '1px solid var(--brand-primary)', borderRadius: '16px', padding: '24px', maxWidth: '400px', width: '90%', color: 'var(--text-primary)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
+                {isDevMenuOpen && (
+                  <motion.div
+                    initial={{ width: 0, opacity: 0, scale: 0.8 }}
+                    animate={{ width: 'auto', opacity: 1, scale: 1 }}
+                    exit={{ width: 0, opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}
+                  >
+                    {/* NOTIFICATION BELL */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => {
+                          setIsAlertOpen(!isAlertOpen);
+                          setIsAIOpen(false);
+                          if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+                            Notification.requestPermission();
+                          }
+                        }}
+                        className={`theme-trigger-btn ${isAlertOpen ? 'active shadow-[0_0_15px_rgba(var(--brand-primary),0.2)]' : ''}`}
+                        style={isAlertOpen ? { background: 'var(--bg-card)', color: 'var(--brand-primary)' } : undefined}
+                        title="Alerts"
+                      >
+                        <Bell size={16} />
+                        {alerts.length > 0 && (
+                          <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand animate-pulse shadow-[0_0_8px_rgba(var(--brand-primary),0.6)]" style={{ width: '8px', height: '8px', position: 'absolute' }} />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* AI ASSISTANT */}
+                    {isCampAdmin && (
+                      <button
+                        onClick={() => {
+                          setIsAIOpen(!isAIOpen);
+                          setIsThemeOpen(false);
+                        }}
+                        className={`theme-trigger-btn ${isAIOpen ? 'active shadow-[0_0_15px_rgba(var(--brand-primary),0.2)]' : ''}`}
+                        style={isAIOpen ? { background: 'var(--bg-card)', color: 'var(--brand-primary)' } : undefined}
+                        title="Compute Intelligence Matrices"
+                      >
+                        <Brain size={16} />
+                      </button>
+                    )}
+
+                    {/* THEME TOGGLE */}
+                    <button
+                      onClick={toggleTheme}
+                      className={`theme-trigger-btn ${!isDarkMode ? 'active' : ''}`}
+                      title="Toggle Light/Dark Mode"
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '14px', fontFamily: 'monospace', color: 'var(--brand-primary)', textTransform: 'uppercase' }}>INTERCEPT: {selectedPopupAlert.campsiteName}</h3>
-                        <button onClick={() => setSelectedPopupAlert(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={18} /></button>
-                      </div>
-                      <div style={{ marginBottom: '20px' }}>
-                        <p style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--text-primary)', marginBottom: '8px' }}>From: {selectedPopupAlert.senderName}</p>
-                        <p style={{ fontSize: '14px', lineHeight: '1.5', color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)' }}>{selectedPopupAlert.textPreview}</p>
-                      </div>
-                      <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                        <button onClick={() => {
-                          setAlerts(prev => prev.filter(a => a.id !== selectedPopupAlert.id));
-                          setSelectedPopupAlert(null);
-                        }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid var(--border-glass)', color: 'var(--text-secondary)', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={(e) => e.target.style.color = '#ff3b30'} onMouseOut={(e) => e.target.style.color = 'var(--text-secondary)'}>Delete</button>
-                        <button onClick={() => {
-                          changeViewChannelCallback(selectedPopupAlert.campsiteId, selectedPopupAlert.channelId);
-                          setSelectedPopupAlert(null);
-                        }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--brand-primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Jump to Channel</button>
-                      </div>
-                    </motion.div>
-                  </div>
+                      {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+                    </button>
+
+                    {/* PALETTE TOGGLE */}
+                    <button
+                      onClick={() => {
+                        setIsThemeOpen(!isThemeOpen);
+                        setIsAIOpen(false);
+                      }}
+                      className={`theme-trigger-btn ${isThemeOpen ? 'active' : ''}`}
+                      title="Modulate Theme Matrix"
+                    >
+                      <Palette size={16} />
+                    </button>
+
+                    {/* HELP DESK */}
+                    <button
+                      onClick={() => isGlobalAdmin ? setIsHelpDeskOpen(true) : setIsUserHelpDeskOpen(true)}
+                      className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
+                        (isGlobalAdmin ? isHelpDeskOpen : isUserHelpDeskOpen) ? "active shadow-[0_0_15px_rgba(74,222,128,0.2)]" : ""
+                      }`}
+                      style={(isGlobalAdmin ? isHelpDeskOpen : isUserHelpDeskOpen) ? {
+                        background: 'rgba(20, 83, 45, 0.4)', borderColor: 'rgba(34, 197, 94, 0.8)', color: '#4ade80'
+                      } : undefined}
+                      title="HELP DESK"
+                    >
+                      {isGlobalAdmin ? <HelpCircle size={16} className="animate-pulse" /> : <LifeBuoy size={16} />}
+                    </button>
+
+                    {/* FEEDBACK */}
+                    <button
+                      onClick={() => isGlobalAdmin ? setIsDeveloperFeedbackOpen(true) : setIsUserFeedbackOpen(true)}
+                      className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
+                        (isGlobalAdmin ? isDeveloperFeedbackOpen : isUserFeedbackOpen) ? "active shadow-[0_0_15px_rgba(255,165,0,0.2)]" : ""
+                      }`}
+                      style={(isGlobalAdmin ? isDeveloperFeedbackOpen : isUserFeedbackOpen) ? {
+                        background: 'rgba(184, 115, 51, 0.4)', borderColor: 'rgba(255, 165, 0, 0.8)', color: '#ffa500'
+                      } : undefined}
+                      title="FEEDBACK"
+                    >
+                      <MessageSquare size={16} className={isGlobalAdmin ? "animate-pulse" : ""} />
+                    </button>
+
+                    {/* COMMAND GATE (GLOBAL ADMIN ONLY) */}
+                    {isGlobalAdmin && (
+                      <button
+                        onClick={() => setIsOperatorOpen(true)}
+                        className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
+                          isOperatorOpen ? "active shadow-[0_0_15px_rgba(239,68,68,0.2)]" : ""
+                        }`}
+                        style={isOperatorOpen ? {
+                          background: 'rgba(69, 10, 10, 0.4)', borderColor: 'rgba(153, 27, 27, 0.8)', color: '#f87171'
+                        } : undefined}
+                        title="OPERATOR COMMAND PANEL GATE"
+                      >
+                        <Eye size={16} className="animate-pulse" />
+                      </button>
+                    )}
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {isCampAdmin && (
+            {/* Notification Portal & Popups */}
+            <NotificationDropdown 
+              isOpen={isAlertOpen} 
+              alerts={alerts} 
+              onSelectAlert={handleSelectNotification} 
+              onDismissAlert={(id) => setAlerts(prev => prev.filter(a => a.id !== id))}
+              onClearAll={() => setAlerts([])} 
+            />
+
+            <AnimatePresence>
+              {selectedPopupAlert && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)' }}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--brand-primary)', borderRadius: '16px', padding: '24px', maxWidth: '400px', width: '90%', color: 'var(--text-primary)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <h3 style={{ fontSize: '14px', fontFamily: 'monospace', color: 'var(--brand-primary)', textTransform: 'uppercase' }}>INTERCEPT: {selectedPopupAlert.campsiteName}</h3>
+                      <button onClick={() => setSelectedPopupAlert(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={18} /></button>
+                    </div>
+                    <div style={{ marginBottom: '20px' }}>
+                      <p style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--text-primary)', marginBottom: '8px' }}>From: {selectedPopupAlert.senderName}</p>
+                      <p style={{ fontSize: '14px', lineHeight: '1.5', color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)' }}>{selectedPopupAlert.textPreview}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                      <button onClick={() => {
+                        setAlerts(prev => prev.filter(a => a.id !== selectedPopupAlert.id));
+                        setSelectedPopupAlert(null);
+                      }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid var(--border-glass)', color: 'var(--text-secondary)', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={(e) => e.target.style.color = '#ff3b30'} onMouseOut={(e) => e.target.style.color = 'var(--text-secondary)'}>Delete</button>
+                      <button onClick={() => {
+                        changeViewChannelCallback(selectedPopupAlert.campsiteId, selectedPopupAlert.channelId);
+                        setSelectedPopupAlert(null);
+                      }} style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--brand-primary)', color: 'white', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}>Jump to Channel</button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
+
+            {/* GOD MODE BUTTON FOR ADMINS */}
+            {isGlobalAdmin && (
               <button
-                onClick={() => {
-                  setIsAIOpen(!isAIOpen);
-                  setIsThemeOpen(false);
+                onClick={() => window.open('/admin', '_blank')}
+                className="camp-ops-btn whitespace-nowrap"
+                style={{
+                  background: 'var(--brand-primary)',
+                  color: 'white',
+                  borderColor: 'var(--brand-primary)',
+                  fontWeight: 'bold',
+                  fontSize: '0.85rem',
+                  height: '32px'
                 }}
-                className={`theme-trigger-btn ${isAIOpen ? 'active' : ''}`}
-                  style={isAIOpen ? {
-                    background: 'var(--bg-card)',
-                    color: 'var(--brand-primary)'
-                  } : undefined}
-                title="Compute Intelligence Matrices"
+                title="Open Admin Dashboard"
               >
-                <Brain size={18} />
+                <ShieldAlert size={16} />
+                GOD MODE
               </button>
-            )}
-
-            <button
-              onClick={toggleTheme}
-              className={`theme-trigger-btn ${!isDarkMode ? 'active' : ''}`}
-              title="Toggle Light/Dark Mode"
-            >
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-
-
-            <button
-              onClick={() => {
-                setIsThemeOpen(!isThemeOpen);
-                setIsAIOpen(false);
-              }}
-              className={`theme-trigger-btn ${isThemeOpen ? 'active' : ''}`}
-              title="Modulate Theme Matrix"
-            >
-              <Palette size={18} />
-            </button>
-
-            {!isGlobalAdmin && (
-              <>
-                <button className={`theme-trigger-btn ${isUserHelpDeskOpen ? 'active' : ''}`} onClick={() => setIsUserHelpDeskOpen(true)} title="Help Desk">
-                  <LifeBuoy size={18} />
-                </button>
-                <button className={`theme-trigger-btn ${isUserFeedbackOpen ? 'active' : ''}`} onClick={() => setIsUserFeedbackOpen(true)} title="Feedback">
-                  <MessageSquare size={18} />
-                </button>
-              </>
             )}
 
             <button className="camp-ops-btn" onClick={() => setIsCampOpsModalOpen(true)}>
