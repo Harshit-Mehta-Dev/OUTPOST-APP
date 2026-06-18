@@ -8,10 +8,10 @@
 
 .outpost-top-bar {
   height: 54px;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--bg-glass);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-glass);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -86,10 +86,10 @@
 }
 
 .glass-panel-dark {
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--bg-glass);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid var(--border-glass);
 }
 
 /* 1. Campsite Sidebar */
@@ -106,7 +106,8 @@
   width: 48px;
   height: 48px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -249,7 +250,8 @@
 .user-controls {
   height: 60px;
   padding: 0 8px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-glass);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -415,7 +417,8 @@
   width: 68px;
   height: 68px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -515,7 +518,7 @@
 .chat-input-container {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-glass);
   border-radius: 12px;
   padding: 8px 16px;
@@ -523,8 +526,8 @@
 }
 
 .chat-attach-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-glass);
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -537,7 +540,7 @@
 }
 
 .chat-attach-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--bg-secondary);
   color: var(--text-primary);
 }
 
@@ -607,7 +610,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   position: relative;
 }
 

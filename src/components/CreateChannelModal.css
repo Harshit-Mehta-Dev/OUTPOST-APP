@@ -16,7 +16,7 @@
 .create-channel-content {
   width: 540px;
   max-width: 95vw;
-  background: var(--bg-glass);
+  background: var(--bg-primary);
   border: 1px solid var(--border-glass);
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.6);
@@ -31,7 +31,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .channel-modal-header h2 {
@@ -73,14 +73,14 @@
   display: flex;
   align-items: flex-start;
   gap: 15px;
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   transition: all 0.2s;
   z-index: 1;
 }
 
 .channel-type-option:hover {
-  background: rgba(255,255,255,0.05);
+  background: var(--bg-glass);
 }
 
 .channel-type-bg {
@@ -172,8 +172,8 @@
 
 .channel-input {
   width: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   padding: 12px 15px 12px 35px;
   border-radius: 6px;
   color: var(--text-primary);
@@ -184,13 +184,13 @@
 .channel-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--bg-primary);
 }
 
 .channel-textarea {
   width: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
   padding: 12px 15px;
   border-radius: 6px;
   color: var(--text-primary);
@@ -214,8 +214,8 @@
 
 .channel-modal-footer {
   padding: 20px 30px;
-  background: rgba(0,0,0,0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-glass);
   display: flex;
   justify-content: space-between;
   align-items: center;

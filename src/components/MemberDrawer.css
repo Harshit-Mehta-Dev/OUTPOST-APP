@@ -5,7 +5,7 @@
   width: 260px;
   height: calc(100vh - 60px);
   z-index: 100;
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 1px solid var(--border-glass);
   display: flex;
   flex-direction: column;
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
@@ -16,7 +16,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .drawer-title {
@@ -48,7 +48,7 @@
 }
 
 .drawer-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-glass);
   color: var(--text-primary);
 }
 
@@ -69,7 +69,7 @@
   background: transparent;
 }
 .drawer-members-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-glass);
   border-radius: 4px;
 }
 
@@ -84,7 +84,7 @@
 }
 
 .member-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-glass);
 }
 
 .member-avatar-wrapper {
@@ -99,7 +99,7 @@
   height: 100%;
   border-radius: 10px;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-glass);
 }
 
 .member-avatar-placeholder {
@@ -113,7 +113,7 @@
   justify-content: center;
   font-weight: bold;
   font-size: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-glass);
 }
 
 .member-status-dot {

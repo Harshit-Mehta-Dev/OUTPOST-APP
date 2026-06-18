@@ -1369,14 +1369,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               title="Toggle Sidebar"
             >
-              <Menu size={20} style={{ color: 'var(--text-secondary)' }} />
+              <Menu size={20} style={{ color: 'var(--text-primary)' }} />
             </button>
             <button 
               className="icon-btn menu-toggle-btn mobile-only" 
               onClick={() => setIsMobileDrawerOpen(true)}
               title="Toggle Mobile Sidebar"
             >
-              <Menu size={20} style={{ color: 'var(--text-secondary)' }} />
+              <Menu size={20} style={{ color: 'var(--text-primary)' }} />
             </button>
             <span className="active-camp-name"># {activeCampsite?.name || 'Loading...'}</span>
           </div>
