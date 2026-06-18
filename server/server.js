@@ -178,6 +178,9 @@ app.use('/api/help', helpRoutes);
 const feedbackRoutes = require('./routes/feedback');
 app.use('/api/feedback', feedbackRoutes);
 
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
+
 // Health Check for Keep-Alive
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', time: new Date() });

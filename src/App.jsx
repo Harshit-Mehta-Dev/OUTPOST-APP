@@ -10,6 +10,7 @@ const Landing = lazy(() => import('./pages/Landing'));
 const Auth = lazy(() => import('./pages/Auth'));
 const Basecamp = lazy(() => import('./pages/Basecamp'));
 const Invite = lazy(() => import('./pages/Invite'));
+const Admin = lazy(() => import('./pages/Admin'));
 const NotFoundPageModule = lazy(() => import('./components/ui/404-page-not-found'));
 
 // Fallback loader
@@ -117,7 +118,18 @@ function App() {
                 <Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
               </RequireAuth>
             } />
-            <Route path="/invite/:id" element={<Invite />} />
+            <Route path="/invite/:id" element={
+              <RequireAuth>
+                <Invite />
+              </RequireAuth>
+            } />
+            
+            <Route path="/admin" element={
+              <RequireAuth>
+                <Admin />
+              </RequireAuth>
+            } />
+
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
