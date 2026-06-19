@@ -10,7 +10,7 @@ const Landing = lazy(() => import('./pages/Landing'));
 const Auth = lazy(() => import('./pages/Auth'));
 const Basecamp = lazy(() => import('./pages/Basecamp'));
 const Invite = lazy(() => import('./pages/Invite'));
-const NotFoundPageModule = lazy(() => import('./components/ui/404-page-not-found'));
+// Lazy-loaded routes
 
 // Fallback loader
 const PageLoader = () => (
@@ -20,10 +20,7 @@ const PageLoader = () => (
 );
 
 // Wrapper for named exports like NotFoundPage
-const NotFoundPage = (props) => {
-  const Component = lazy(() => import('./components/ui/404-page-not-found').then(module => ({ default: module.NotFoundPage })));
-  return <Component {...props} />;
-};
+const NotFoundPage = lazy(() => import('./components/ui/404-page-not-found').then(module => ({ default: module.NotFoundPage })));
 
 const RequireAuth = ({ children }) => {
   if (typeof window !== 'undefined') {
