@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs');
 const supabase = require('../supabaseClient');
 const requireAuth = require('../middleware/auth');
 const jwt = require('jsonwebtoken');
+const validate = require('../middleware/validate');
+const userValidation = require('../validations/user.validation');
 
 // Helper to push user backups to Supabase
 const syncToSupabase = async (userDoc) => {
@@ -23,7 +25,7 @@ const syncToSupabase = async (userDoc) => {
 
 // POST /api/users/sync
 // Find user by email. If they don't exist, create them. (For Google Auth)
-router.post('/sync', async (req, res) => {
+router.post('/sync', validate(userValidation.syncUser), async (req, res) => {
   try {
     const { email, username } = req.body;
     
@@ -54,7 +56,7 @@ router.post('/sync', async (req, res) => {
 
 // POST /api/users/register
 // Register with email, username, and password
-router.post('/register', async (req, res) => {
+router.post('/register', validate(userValidation.registerUser), async (req, res) => {
   try {
     const { email, username, password } = req.body;
     if (!email || !username || !password) {
@@ -88,7 +90,7 @@ router.post('/register', async (req, res) => {
 
 // POST /api/users/login
 // Login with email and password
-router.post('/login', async (req, res) => {
+router.post('/login', validate(userValidation.loginUser), async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -124,7 +126,7 @@ router.post('/login', async (req, res) => {
 
 // PUT /api/users/profile
 // Update user profile (username, profilePictureUrl, passwords)
-router.put('/profile', async (req, res) => {
+router.put('/profile', validate(userValidation.updateProfile), async (req, res) => {
   try {
     const { email, username, profilePictureUrl, currentPassword, newPassword } = req.body;
     

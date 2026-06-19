@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { debounce } from 'lodash';
 import { 
   Compass, 
   Hash, 
@@ -544,7 +545,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.emit('send_message', messageData);
       
       // Stop typing
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      debouncedTypingStop.cancel();
       setIsTyping(false);
       socket.emit("scout-typing-stop", { 
         channelId: currentChannelKey, 
@@ -601,6 +602,23 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     });
   };
 
+  const debouncedTypingStop = React.useMemo(
+    () => debounce((channelKey, username) => {
+      setIsTyping(false);
+      socket.emit("scout-typing-stop", { 
+        channelId: channelKey, 
+        scoutName: username 
+      });
+    }, 1500),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedTypingStop.cancel();
+    };
+  }, [debouncedTypingStop]);
+
   const handleInputChange = (e) => {
     setInputText(e.target.value);
 
@@ -612,17 +630,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       });
     }
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      socket.emit("scout-typing-stop", { 
-        channelId: currentChannelKey, 
-        scoutName: currentUser?.username || 'Scout' 
-      });
-    }, 1500);
+    debouncedTypingStop(currentChannelKey, currentUser?.username || 'Scout');
   };
 
   const handleCampsiteClick = (id) => {

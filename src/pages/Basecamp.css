@@ -710,9 +710,9 @@
 .skeleton-shimmer-effect {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.03) 75%
+    var(--skeleton-base) 25%,
+    var(--skeleton-highlight) 50%,
+    var(--skeleton-base) 75%
   );
   background-size: 200% 100%;
   animation: skeleton-shimmer 2s infinite linear;
@@ -737,7 +737,7 @@
   height: 44px;
   border-radius: 12px;
   flex-shrink: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-highlight) 50%, var(--skeleton-base) 75%);
   background-size: 200% 100%;
   animation: skeleton-shimmer 2s infinite linear;
 }
@@ -759,7 +759,7 @@
 .skeleton-name {
   width: 120px;
   height: 14px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-highlight) 50%, var(--skeleton-base) 75%);
   background-size: 200% 100%;
   animation: skeleton-shimmer 2s infinite linear;
   border-radius: 4px;
@@ -768,7 +768,7 @@
 .skeleton-time {
   width: 60px;
   height: 10px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-highlight) 50%, var(--skeleton-base) 75%);
   background-size: 200% 100%;
   animation: skeleton-shimmer 2s infinite linear;
   border-radius: 4px;
@@ -776,7 +776,7 @@
 
 .skeleton-text {
   height: 12px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-highlight) 50%, var(--skeleton-base) 75%);
   background-size: 200% 100%;
   animation: skeleton-shimmer 2s infinite linear;
   border-radius: 4px;

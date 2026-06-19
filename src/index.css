@@ -35,6 +35,9 @@
   
   --hero-bg-center: rgba(220, 218, 208, 0.4);
 
+  --skeleton-base: rgba(0, 0, 0, 0.05);
+  --skeleton-highlight: rgba(0, 0, 0, 0.1);
+
   /* Typography */
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -62,6 +65,9 @@
   --text-secondary: #B1ADA1;
   
   --hero-bg-center: rgba(18, 18, 26, 0.8);
+
+  --skeleton-base: rgba(255, 255, 255, 0.03);
+  --skeleton-highlight: rgba(255, 255, 255, 0.08);
 }
 
 * {

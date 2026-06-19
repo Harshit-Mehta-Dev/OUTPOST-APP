@@ -166,7 +166,7 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, cu
                 </div>
                 <button 
                   className="btn-disable-account" 
-                  style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#ff6b6b', padding: '6px 12px', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: '1px solid var(--border-glass)', color: '#ff6b6b', padding: '6px 12px', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}
                   onClick={() => setShowDisableConfirm(true)}
                 >
                   Disable Account

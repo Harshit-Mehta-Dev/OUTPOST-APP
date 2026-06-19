@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Compass, Users, Globe, Code, Gamepad2, Palette, BookOpen } from 'lucide-react';
+import { debounce } from 'lodash';
 import './Discover.css';
 
 // Removing mock database
@@ -13,11 +14,25 @@ const PLACEHOLDERS = [
 ];
 
 const Discover = ({ onJoinCampsite, refreshTrigger }) => {
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [joiningCampId, setJoiningCampId] = useState(null);
   const [isExiting, setIsExiting] = useState(false);
+
+  // Debounce the search query update to optimize performance
+  const debouncedSearch = useMemo(
+    () => debounce((query) => setSearchQuery(query), 300),
+    []
+  );
+
+  // Clean up debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   const [publicCampsites, setPublicCampsites] = useState([]);
   const [connectionError, setConnectionError] = useState(false);
@@ -127,8 +142,11 @@ const Discover = ({ onJoinCampsite, refreshTrigger }) => {
               type="text" 
               className="radar-search-input"
               placeholder={PLACEHOLDERS[placeholderIndex]}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchInput}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+                debouncedSearch(e.target.value);
+              }}
             />
           </div>
         </header>

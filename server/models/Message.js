@@ -17,4 +17,7 @@ const messageSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Compound index for optimizing channel fetching (filter by channelKey, sort by createdAt)
+messageSchema.index({ channelKey: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Message', messageSchema);

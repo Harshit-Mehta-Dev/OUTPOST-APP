@@ -36,7 +36,7 @@ const data = {
   linkedinLink: "https://www.linkedin.com/in/harshit-mehta-%E2%98%81%EF%B8%8F-107425279/",
   githubLink: "https://github.com/Harshit-Mehta-Dev",
   instaLink: "https://www.instagram.com/_harshit.mehta_/",
-  email: "hello@outpostbasecamp.com",
+  email: "hello.outpostbasecamp@gmail.com",
   company: {
     name: "OUTPOST",
     description:

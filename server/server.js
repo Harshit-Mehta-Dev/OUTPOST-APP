@@ -5,6 +5,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { RedisStore } = require('rate-limit-redis');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger_output.json');
 require('dotenv').config();
@@ -80,9 +81,11 @@ app.use((req, res, next) => {
 });
 
 // Setup Redis Adapter for multi-container orchestration (Only if REDIS_URL is explicitly provided)
+let redisClientForLimits;
 if (process.env.REDIS_URL) {
   const pubClient = createClient({ url: process.env.REDIS_URL });
   const subClient = pubClient.duplicate();
+  redisClientForLimits = pubClient;
 
   pubClient.on('error', (err) => console.error('Redis Pub Client Error:', err));
   subClient.on('error', (err) => console.error('Redis Sub Client Error:', err));
@@ -120,33 +123,39 @@ app.get('/api/health', (req, res) => {
 // 4. Rate Limiters
 
 // Layer 1: Global DDoS Protection (100 requests per 15 minutes)
+const getStore = () => redisClientForLimits ? new RedisStore({ sendCommand: (...args) => redisClientForLimits.sendCommand(args) }) : undefined;
+
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
   max: 100, 
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
+  store: getStore(),
 });
 
 // Layer 2: Anti-Brute Force for Auth (5 requests per minute)
 const authLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
   max: 5, 
-  message: 'Too many login attempts from this IP, please try again after a minute'
+  message: 'Too many login attempts from this IP, please try again after a minute',
+  store: getStore(),
 });
 
 // Layer 3: Database Strain Prevention for Searching/Fetching (30 requests per minute)
 const dataLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
   max: 30, 
-  message: 'Too many data requests from this IP, please try again after a minute'
+  message: 'Too many data requests from this IP, please try again after a minute',
+  store: getStore(),
 });
 
 // Layer 4: Anti-Spam for Forms/Joining (10 requests per minute)
 const actionLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
   max: 10, 
-  message: 'Too many actions from this IP, please try again after a minute'
+  message: 'Too many actions from this IP, please try again after a minute',
+  store: getStore(),
 });
 
 // Apply Global Limiter to all API routes
@@ -190,9 +199,10 @@ const Message = require('./models/Message');
 const Campsite = require('./models/Campsite');
 const User = require('./models/User');
 const HelpRequest = require('./models/HelpRequest');
+const cache = require('./middleware/cache');
 
 // Messages Route
-app.get('/api/messages/:channelKey', async (req, res) => {
+app.get('/api/messages/:channelKey', cache(15), async (req, res) => {
   try {
     const messages = await Message.find({ channelKey: req.params.channelKey })
       .sort({ createdAt: 1 })
@@ -524,6 +534,15 @@ io.on('connection', (socket) => {
 });
 
 const { ServerApiVersion } = require('mongodb');
+const errorHandler = require('./middleware/errorHandler');
+
+// Catch-all route for 404s
+app.use((req, res, next) => {
+  res.status(404).json({ error: 'API Route Not Found' });
+});
+
+// Apply centralized error handler
+app.use(errorHandler);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {

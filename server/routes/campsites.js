@@ -3,9 +3,12 @@ const router = express.Router();
 const Campsite = require('../models/Campsite');
 const User = require('../models/User');
 const requireAuth = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const campsiteValidation = require('../validations/campsite.validation');
+const cache = require('../middleware/cache');
 
 // GET all public campsites (For Discover page)
-router.get('/public', async (req, res) => {
+router.get('/public', cache(30), async (req, res) => {
   try {
     const campsites = await Campsite.find({ isPublic: true });
     res.json(campsites);
@@ -49,7 +52,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST a new campsite
-router.post('/', async (req, res) => {
+router.post('/', validate(campsiteValidation.createCampsite), async (req, res) => {
   try {
     const User = require('../models/User'); // Import here to avoid circular dep if any, or just at top
     const user = await User.findOne({ email: req.body.adminEmail });
