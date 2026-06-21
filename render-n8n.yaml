@@ -31,8 +31,8 @@ services:
         value: "http"
       - key: N8N_PUSH_BACKEND
         value: "sse"
-      - key: EXECUTIONS_PROCESS
-        value: "main"
+      - key: N8N_RUNNERS_GRANT_TOKEN_TTL
+        value: "120"
       - key: NODE_OPTIONS
         value: "--max-old-space-size=400"
       - key: N8N_ENCRYPTION_KEY
