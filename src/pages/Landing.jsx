@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
@@ -10,6 +10,7 @@ import LegalHub from '../components/LegalHub';
 import FounderSection from '../components/landing/FounderSection';
 import FeedbackForm from '../components/FeedbackForm';
 import { GeometricBorder } from '../components/ui/GeometricBorder';
+import VideoSection from '../components/landing/VideoSection';
 
 const SectionBlendDivider = () => (
   <div style={{
@@ -46,6 +47,8 @@ const Landing = () => {
               <GeometricBorder side="left" opacity={0.35} />
               <GeometricBorder side="right" opacity={0.35} />
               <Hero />
+              <SectionBlendDivider />
+              <VideoSection />
               <SectionBlendDivider />
               <Features />
               <SectionBlendDivider />

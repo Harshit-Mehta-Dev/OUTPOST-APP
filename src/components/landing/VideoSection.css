@@ -1,0 +1,118 @@
+.video-section {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+
+.video-ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(var(--brand-primary), 0.08) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.video-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.video-content {
+  width: 100%;
+  max-width: 900px;
+}
+
+.video-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.video-heading {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.video-heading span {
+  color: rgb(var(--brand-primary));
+  text-shadow: 0 0 20px rgba(var(--brand-primary), 0.3);
+}
+
+.video-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 48px auto;
+  line-height: 1.6;
+}
+
+.video-frame-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  padding: 1px; /* for glow border */
+}
+
+.video-glow-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--brand-primary), 0.4) 0%,
+    rgba(var(--brand-primary), 0.05) 50%,
+    rgba(var(--brand-primary), 0.2) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.video-embed-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+}
+
+[data-theme='dark'] .video-embed-container {
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+}
+
+.youtube-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+}
