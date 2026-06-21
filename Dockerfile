@@ -1,5 +1,5 @@
 # Stage 1: Build the React Application
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -14,13 +14,13 @@ COPY . .
 RUN npm run build:ssr
 
 # Stage 2: Serve the application with Node.js SSR
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
 COPY --from=builder /app/package*.json ./
 # Install production dependencies for the SSR server
-RUN npm install --omit=dev
+RUN npm install --omit=dev --ignore-scripts
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/ssr-server.js ./

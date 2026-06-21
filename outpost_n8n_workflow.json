@@ -1,0 +1,56 @@
+{
+  "name": "My First OUTPOST Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "outpost-event",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "outpost-custom-webhook-id"
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "Status",
+              "value": "Automation Successful! Welcome Harshit!"
+            },
+            {
+              "name": "Data Received From App",
+              "value": "={{$json.body.message}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Format Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "a9018447-7cc7-4e78-8386-8d052b638b97"
+}
