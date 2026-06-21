@@ -31,6 +31,18 @@ router.post('/requests', async (req, res) => {
       issueType: 'Bug' // Or 'Task'
     });
 
+    // Trigger n8n Automation Webhook (Fire-and-forget)
+    fetch('https://outpost-n8n.onrender.com/webhook/support-alert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ticketId: newRequest.ticketId,
+        userName,
+        email,
+        description
+      })
+    }).catch(err => console.error('Failed to trigger n8n webhook:', err));
+
     res.status(201).json({ 
       message: 'Help request submitted successfully',
       requestId: newRequest.ticketId
