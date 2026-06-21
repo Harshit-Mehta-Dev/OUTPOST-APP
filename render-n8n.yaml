@@ -31,5 +31,9 @@ services:
         value: "http"
       - key: N8N_PUSH_BACKEND
         value: "sse"
+      - key: EXECUTIONS_PROCESS
+        value: "main"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=400"
       - key: WEBHOOK_URL
         sync: false
