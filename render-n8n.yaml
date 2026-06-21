@@ -3,7 +3,7 @@ services:
     name: outpost-n8n
     env: image
     image:
-      url: docker.n8n.io/n8nio/n8n:latest
+      url: docker.io/n8nio/n8n:latest
     region: oregon
     plan: free
     healthCheckPath: /healthz
