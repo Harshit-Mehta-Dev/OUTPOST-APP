@@ -86,7 +86,7 @@ services:
       - N8N_ENFORCEMENT_USER_MANAGEMENT=true
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      - N8N_PUSH_BACKEND=websocket
+      - N8N_PUSH_BACKEND=sse
       - WEBHOOK_URL=http://localhost:9081
       - N8N_LISTEN_ADDRESS=0.0.0.0
       - N8N_HOST=localhost
