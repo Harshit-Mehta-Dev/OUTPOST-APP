@@ -47,7 +47,7 @@ export async function createServer(
     )
   }
 
-  app.use('/*', async (req, res, next) => {
+  app.use('/', async (req, res, next) => {
     try {
       const url = req.originalUrl
 
