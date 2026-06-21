@@ -5,7 +5,7 @@ services:
     image:
       url: docker.n8n.io/n8nio/n8n:latest
     region: oregon
-    plan: starter
+    plan: free
     healthCheckPath: /healthz
     envVars:
       # Database Configuration (Supabase)
