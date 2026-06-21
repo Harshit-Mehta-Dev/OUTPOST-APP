@@ -38,4 +38,4 @@ services:
       - key: N8N_ENCRYPTION_KEY
         value: "outpost-secure-encryption-key-2026-xyz"
       - key: WEBHOOK_URL
-        sync: false
+        value: "https://outpost-n8n.onrender.com/"
