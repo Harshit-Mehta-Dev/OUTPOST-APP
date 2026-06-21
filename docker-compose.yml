@@ -1,4 +1,10 @@
 
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   # The Node.js API and WebSocket Server
   backend:
@@ -10,6 +16,7 @@ services:
       # Provide a placeholder or map your local .env
       # - MONGODB_URI=your_mongodb_uri
       - NODE_ENV=development
+    logging: *default-logging
     networks:
       - outpost-network
 
@@ -20,6 +27,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - backend
+    logging: *default-logging
     networks:
       - outpost-network
 
@@ -28,6 +36,7 @@ services:
     image: redis:alpine
     ports:
       - "127.0.0.1:6379:6379"
+    logging: *default-logging
     networks:
       - outpost-network
 
@@ -43,6 +52,7 @@ services:
       - frontend
       - backend
       - n8n
+    logging: *default-logging
     networks:
       - outpost-network
 
@@ -56,6 +66,7 @@ services:
     volumes:
       - jenkins_data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+    logging: *default-logging
     networks:
       - outpost-network
 
@@ -69,6 +80,7 @@ services:
       - POSTGRES_DB=n8n
     volumes:
       - n8n_db_data:/var/lib/postgresql/data
+    logging: *default-logging
     networks:
       - outpost-network
 
@@ -95,6 +107,7 @@ services:
       - n8n_data:/home/node/.n8n
     depends_on:
       - n8n-db
+    logging: *default-logging
     networks:
       - outpost-network
 
