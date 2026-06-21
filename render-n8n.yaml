@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: outpost-n8n
+    env: docker
+    image: docker.n8n.io/n8nio/n8n:latest
+    region: oregon
+    plan: starter
+    healthCheckPath: /healthz
+    envVars:
+      # Database Configuration (Supabase)
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_PORT
+        value: "5432"
+      - key: DB_POSTGRESDB_DATABASE
+        value: postgres
+      - key: DB_POSTGRESDB_HOST
+        sync: false
+      - key: DB_POSTGRESDB_USER
+        sync: false
+      - key: DB_POSTGRESDB_PASSWORD
+        sync: false
+
+      # n8n Core Settings
+      - key: N8N_ENFORCEMENT_USER_MANAGEMENT
+        value: "true"
+      - key: N8N_PORT
+        value: "10000"
+      - key: N8N_PROTOCOL
+        value: "https"
+      - key: N8N_PUSH_BACKEND
+        value: "sse"
+      - key: WEBHOOK_URL
+        sync: false
