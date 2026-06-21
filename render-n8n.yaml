@@ -35,5 +35,7 @@ services:
         value: "main"
       - key: NODE_OPTIONS
         value: "--max-old-space-size=400"
+      - key: N8N_ENCRYPTION_KEY
+        value: "outpost-secure-encryption-key-2026-xyz"
       - key: WEBHOOK_URL
         sync: false
