@@ -39,7 +39,7 @@ describe('Security Automation Test Suite', () => {
     it('should allow public access to the health check endpoint', async () => {
       const response = await request(app).get('/api/health');
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('status', 'ok');
+      expect(response.body).toHaveProperty('status', 'Operational');
     });
   });
 });
