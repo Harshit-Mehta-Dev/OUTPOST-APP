@@ -27,7 +27,7 @@ export function useSignalRadar(socket, activeChannelId, changeViewChannelCallbac
   useEffect(() => {
     if (!currentUser || !currentUser.username) return;
 
-    fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/${currentUser.username}/alerts`)
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users/${currentUser.username}/alerts`)
       .then(res => res.json())
       .then(data => {
         if (data && data.length > 0) {
@@ -93,7 +93,7 @@ export function useSignalRadar(socket, activeChannelId, changeViewChannelCallbac
     
     // 4. If it's a system override alert, delete it from the backend so it doesn't return
     if (alert.senderName === "SYSTEM OVERRIDE" && currentUser?.username) {
-       fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/${currentUser.username}/alerts`, { method: 'DELETE' })
+       fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users/${currentUser.username}/alerts`, { method: 'DELETE' })
          .catch(err => console.error("Error clearing system alerts:", err));
     }
   };

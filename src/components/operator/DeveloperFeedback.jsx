@@ -9,7 +9,7 @@ const DeveloperFeedback = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchFeedbacks = () => {
-    fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/feedback`)
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/feedback`)
       .then(res => res.json())
       .then(data => {
         setFeedbacks(data);
@@ -24,7 +24,7 @@ const DeveloperFeedback = ({ onClose }) => {
   useEffect(() => {
     fetchFeedbacks();
 
-    const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'), { 
+    const socket = io((import.meta.env.VITE_CHAT_URL || 'http://localhost:5003'), { 
       transports: ['websocket', 'polling'],
       auth: { token: localStorage.getItem('outpost_token') }
     });
@@ -37,7 +37,7 @@ const DeveloperFeedback = ({ onClose }) => {
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this feedback?")) {
-      fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/feedback/${id}`, {
+      fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/feedback/${id}`, {
         method: 'DELETE'
       })
       .then(() => {

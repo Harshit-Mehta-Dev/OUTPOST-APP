@@ -64,7 +64,7 @@ import HelpDesk from '../components/HelpDesk';
 import FeedbackForm from '../components/FeedbackForm';
 import GroupAdminPanelModal from '../components/modals/GroupAdminPanelModal';
 
-const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'), {
+const socket = io((import.meta.env.VITE_CHAT_URL || 'http://localhost:5003'), {
   auth: { token: localStorage.getItem('outpost_token') }
 });
 
@@ -123,7 +123,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     if (saved) {
       const parsed = JSON.parse(saved);
       // Fetch latest restriction status from backend
-      fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users`)
+      fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users`)
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
@@ -300,7 +300,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // Frontend Ping to keep Render Server Awake while app is open
   useEffect(() => {
     const interval = setInterval(() => {
-      fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/health`).catch(err => {});
+      fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/health`).catch(err => {});
     }, 10 * 60 * 1000); // 10 minutes
     
     return () => clearInterval(interval);
@@ -482,7 +482,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   useEffect(() => {
     if (!currentUser || !currentUser.username || !currentUser.email) return;
 
-    fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/user/${currentUser.username}/${currentUser.email}`)
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/campsites/user/${currentUser.username}/${currentUser.email}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -733,7 +733,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       expeditions: newExpeditions
     };
 
-    fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites`, {
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/campsites`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -799,7 +799,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   const handleDeleteCampsite = (campId) => {
-    fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/${campId}`, {
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/campsites/${campId}`, {
       method: 'DELETE'
     })
     .then(res => res.json())
@@ -841,7 +841,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     try {
       if (activeCampsite.id === 1) {
         // Outpost HQ special kick -> Global Restrict
-        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/global-restrict`, {
+        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users/global-restrict`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
           body: JSON.stringify({ targetUsername: username })
@@ -855,7 +855,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         return;
       }
 
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/${activeCampsite.id}/kick`, {
+      const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/campsites/${activeCampsite.id}/kick`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
         body: JSON.stringify({ username })
@@ -887,7 +887,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     try {
       if (activeCampsite.id === 1) {
         // Outpost HQ special ban -> Global Restrict
-        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/global-restrict`, {
+        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users/global-restrict`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
           body: JSON.stringify({ targetUsername: username })
@@ -901,7 +901,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         return;
       }
 
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/${activeCampsite.id}/ban`, {
+      const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/campsites/${activeCampsite.id}/ban`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
         body: JSON.stringify({ username })
@@ -931,7 +931,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleGlobalBan = async (username) => {
     try {
-      const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/global-restrict`, {
+      const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users/global-restrict`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
         body: JSON.stringify({ targetUsername: username })
@@ -971,7 +971,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   const handleLeaveCampsite = (campId) => {
-    fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/${campId}/leave`, {
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/campsites/${campId}/leave`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: currentUser?.username || 'Scout' })
@@ -1003,7 +1003,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleOperatorEraseMessage = async (msgId) => {
     try {
-      await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/operator/erase-message/${msgId}`, {
+      await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/operator/erase-message/${msgId}`, {
         method: "DELETE",
         headers: {
           "x-operator-email": currentUser?.email,
@@ -1029,7 +1029,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleOperatorDecommissionCampsite = async (campId) => {
     try {
-      await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/operator/decommission-campsite/${campId}`, {
+      await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/operator/decommission-campsite/${campId}`, {
         method: "DELETE",
         headers: {
           "x-operator-email": currentUser?.email
@@ -1254,7 +1254,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <Discover 
               refreshTrigger={discoverRefreshTrigger} 
               onJoinCampsite={(camp) => {
-              fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/campsites/${camp.id}/join`, {
+              fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/campsites/${camp.id}/join`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: currentUser?.username || 'Scout' })

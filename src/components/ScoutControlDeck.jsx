@@ -200,7 +200,7 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, cu
                       if (!currentUser?.email) return;
                       setIsDisabling(true);
                       try {
-                        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/${currentUser.email}/disable`, {
+                        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users/${currentUser.email}/disable`, {
                           method: 'PATCH'
                         });
                         if (response.ok) {
@@ -232,7 +232,7 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, cu
                       if (!currentUser?.email) return;
                       setIsDeleting(true);
                       try {
-                        const response = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/${currentUser.email}`, {
+                        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users/${currentUser.email}`, {
                           method: 'DELETE'
                         });
                         if (response.ok) {

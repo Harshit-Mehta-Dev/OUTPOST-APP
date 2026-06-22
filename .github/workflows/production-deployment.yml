@@ -57,21 +57,45 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name outpost-app --commit-dirty=true
 
-  # 2. Trigger Backend Deployment on Render
+  # 2. Trigger Backend Deployments on Render
   deploy-backend:
-    name: Deploy Backend (Render)
+    name: Deploy Microservices (Render)
     runs-on: ubuntu-latest
     needs: [deploy-frontend]
     steps:
-      - name: Trigger Render Deploy Hook
+      - name: Trigger Auth Service Deploy
         run: |
-          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
-            echo "RENDER_DEPLOY_HOOK secret is missing!"
-            exit 1
+          if [ ! -z "${{ secrets.RENDER_AUTH_HOOK }}" ]; then
+            echo "Deploying Auth Service..."
+            curl -s -X POST "${{ secrets.RENDER_AUTH_HOOK }}"
+          else
+            echo "RENDER_AUTH_HOOK not set. Skipping Auth Service."
           fi
-          echo "Triggering deployment on Render..."
-          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
-          echo "Deployment triggered successfully."
+          
+      - name: Trigger API Service Deploy
+        run: |
+          if [ ! -z "${{ secrets.RENDER_API_HOOK }}" ]; then
+            echo "Deploying API Service..."
+            curl -s -X POST "${{ secrets.RENDER_API_HOOK }}"
+          else
+            echo "RENDER_API_HOOK not set. Skipping API Service."
+          fi
+
+      - name: Trigger Chat Service Deploy
+        run: |
+          if [ ! -z "${{ secrets.RENDER_CHAT_HOOK }}" ]; then
+            echo "Deploying Chat Service..."
+            curl -s -X POST "${{ secrets.RENDER_CHAT_HOOK }}"
+          else
+            echo "RENDER_CHAT_HOOK not set. Skipping Chat Service."
+          fi
+
+      - name: Legacy Deploy Hook (Fallback)
+        run: |
+          if [ ! -z "${{ secrets.RENDER_DEPLOY_HOOK }}" ] && [ -z "${{ secrets.RENDER_API_HOOK }}" ]; then
+            echo "Falling back to monolithic deployment..."
+            curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+          fi
 
   # 3. Backup Supabase Database
   backup-database:

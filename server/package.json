@@ -4,6 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node services/apiService.js",
+    "start:auth": "node services/authService.js",
+    "start:api": "node services/apiService.js",
+    "start:chat": "node services/chatService.js",
+    "dev": "concurrently \"npm run start:auth\" \"npm run start:api\" \"npm run start:chat\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -35,5 +40,8 @@
     "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1",
     "xss-clean": "^0.1.4"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
   }
 }

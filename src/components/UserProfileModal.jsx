@@ -91,7 +91,7 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
         payload.newPassword = newPassword;
       }
 
-      const res = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/users/profile`, {
+      const res = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

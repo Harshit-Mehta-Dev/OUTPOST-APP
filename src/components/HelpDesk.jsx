@@ -4,7 +4,7 @@ import { UploadCloud, CheckCircle, Send, Image as ImageIcon, X, Clock, Lock, Mes
 import { io } from 'socket.io-client';
 import './HelpDesk.css';
 
-const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'), {
+const socket = io((import.meta.env.VITE_CHAT_URL || 'http://localhost:5003'), {
   auth: { token: localStorage.getItem('outpost_token') }
 });
 
@@ -44,7 +44,7 @@ const HelpDesk = () => {
       socket.emit('join_help_room', requestId);
       
       // Fetch initial messages
-      fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/help/requests/${requestId}`)
+      fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/help/requests/${requestId}`)
         .then(res => res.json())
         .then(data => {
           if (data && data.messages) {
@@ -120,7 +120,7 @@ const HelpDesk = () => {
           });
         }
 
-        const res = await fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/help/requests`, {
+        const res = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/help/requests`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
