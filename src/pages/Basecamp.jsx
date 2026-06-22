@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import { supabase } from '../lib/supabaseClient';
 import logoUrl from '../assets/logo.png';
 import './Basecamp.css';
 import CreateCampsiteModal from '../components/CreateCampsiteModal';
@@ -63,7 +64,9 @@ import HelpDesk from '../components/HelpDesk';
 import FeedbackForm from '../components/FeedbackForm';
 import GroupAdminPanelModal from '../components/modals/GroupAdminPanelModal';
 
-const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'));
+const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'), {
+  auth: { token: localStorage.getItem('outpost_token') }
+});
 
 const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const navigate = useNavigate();
@@ -227,24 +230,37 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const { alerts, setAlerts, handleSelectNotification } = useSignalRadar(socket, currentChannelKey, setSelectedPopupAlert, currentUser);
 
-  // Fetch messages from MongoDB when joining a new channel
+  // Fetch messages from Supabase directly to reduce load on Render backend
   useEffect(() => {
     setIsFetchingMessages(true);
-    fetch(`${(import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com')}/api/messages/${currentChannelKey}`)
-      .then(res => res.json())
-      .then(data => {
-        const mappedData = data.map(m => ({ ...m, receivedAt: m.createdAt ? new Date(m.createdAt).getTime() : Date.now() }));
+    
+    const fetchFromSupabase = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('channelKey', currentChannelKey)
+          .order('createdAt', { ascending: true })
+          .limit(100);
+
+        if (error) throw error;
+
+        // Map Supabase response to the format expected by the frontend
+        const mappedData = data.map(m => ({ ...m, _id: m.id, receivedAt: m.createdAt ? new Date(m.createdAt).getTime() : Date.now() }));
+        
         setMessagesByChannel(prev => ({
           ...prev,
           [currentChannelKey]: mappedData
         }));
+      } catch (err) {
+        console.error("Failed to fetch messages from Supabase:", err);
+      } finally {
         // Artificially delay hiding the skeleton for 800ms to improve perceived UX
         setTimeout(() => setIsFetchingMessages(false), 800);
-      })
-      .catch(err => {
-        console.error("Failed to fetch messages:", err);
-        setIsFetchingMessages(false);
-      });
+      }
+    };
+
+    fetchFromSupabase();
 
     // Join the socket room
     socket.emit('join_channel', currentChannelKey);

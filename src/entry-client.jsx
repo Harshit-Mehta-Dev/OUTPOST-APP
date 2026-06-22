@@ -24,6 +24,20 @@ if (typeof window !== 'undefined') {
   );
 }
 
+// Global Fetch Interceptor to automatically inject JWT tokens into all API requests
+const originalFetch = window.fetch;
+window.fetch = async (...args) => {
+  let [resource, config] = args;
+  if (typeof resource === 'string' && resource.includes('/api/')) {
+    config = config || {};
+    config.headers = {
+      ...config.headers,
+      'Authorization': `Bearer ${localStorage.getItem('outpost_token')}`
+    };
+  }
+  return originalFetch(resource, config);
+};
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={CLIENT_ID}>

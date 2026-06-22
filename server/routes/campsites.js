@@ -6,6 +6,22 @@ const requireAuth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const campsiteValidation = require('../validations/campsite.validation');
 const cache = require('../middleware/cache');
+const supabase = require('../supabaseClient');
+
+// Helper to push campsite backups to Supabase for RLS
+const syncCampsiteToSupabase = async (campsiteDoc) => {
+  try {
+    if (!supabase) return;
+    const doc = campsiteDoc.toObject ? campsiteDoc.toObject() : campsiteDoc;
+    const { error } = await supabase.from('campsites').upsert(
+      { id: doc._id.toString(), isPublic: doc.isPublic, members: doc.members || [] }, 
+      { onConflict: 'id' }
+    );
+    if (error) console.error('Supabase Campsite Sync Error:', error.message);
+  } catch (err) {
+    console.error('Supabase Campsite Sync Exception:', err.message);
+  }
+};
 
 // GET all public campsites (For Discover page)
 router.get('/public', cache(30), async (req, res) => {
@@ -52,7 +68,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST a new campsite
-router.post('/', validate(campsiteValidation.createCampsite), async (req, res) => {
+router.post('/', requireAuth, validate(campsiteValidation.createCampsite), async (req, res) => {
   try {
     const User = require('../models/User'); // Import here to avoid circular dep if any, or just at top
     const user = await User.findOne({ email: req.body.adminEmail });
@@ -62,6 +78,7 @@ router.post('/', validate(campsiteValidation.createCampsite), async (req, res) =
 
     const newCamp = new Campsite(req.body);
     const savedCamp = await newCamp.save();
+    syncCampsiteToSupabase(savedCamp);
     res.status(201).json(savedCamp);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -69,13 +86,14 @@ router.post('/', validate(campsiteValidation.createCampsite), async (req, res) =
 });
 
 // PUT (update) a campsite
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   try {
     const updatedCamp = await Campsite.findByIdAndUpdate(
       req.params.id, 
       req.body, 
       { new: true }
     );
+    if (updatedCamp) syncCampsiteToSupabase(updatedCamp);
     res.json(updatedCamp);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -83,7 +101,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE a campsite (Decommission)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, async (req, res) => {
   try {
     await Campsite.findByIdAndDelete(req.params.id);
     res.json({ message: 'Campsite permanently deleted' });
@@ -93,7 +111,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // POST join a campsite
-router.post('/:id/join', async (req, res) => {
+router.post('/:id/join', requireAuth, async (req, res) => {
   try {
     const { username } = req.body;
     const camp = await Campsite.findById(req.params.id);
@@ -109,6 +127,7 @@ router.post('/:id/join', async (req, res) => {
       camp.totalScouts += 1;
       camp.activeScouts += 1;
       await camp.save();
+      syncCampsiteToSupabase(camp);
     }
     
     res.json(camp);
@@ -118,7 +137,7 @@ router.post('/:id/join', async (req, res) => {
 });
 
 // POST leave a campsite
-router.post('/:id/leave', async (req, res) => {
+router.post('/:id/leave', requireAuth, async (req, res) => {
   try {
     const { username } = req.body;
     const camp = await Campsite.findById(req.params.id);
@@ -130,6 +149,7 @@ router.post('/:id/leave', async (req, res) => {
     camp.activeScouts = Math.max(1, camp.activeScouts - 1);
     
     await camp.save();
+    syncCampsiteToSupabase(camp);
     res.json({ message: 'Successfully left the bootcamp' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -178,6 +198,7 @@ router.post('/:id/kick', requireAuth, async (req, res) => {
     }
     
     await camp.save();
+    syncCampsiteToSupabase(camp);
     res.json({ message: `${username} has been kicked from the campsite`, camp });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -221,6 +242,7 @@ router.post('/:id/ban', requireAuth, async (req, res) => {
     }
     
     await camp.save();
+    syncCampsiteToSupabase(camp);
     res.json({ message: `${username} has been permanently banned`, camp });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -228,7 +250,7 @@ router.post('/:id/ban', requireAuth, async (req, res) => {
 });
 
 // POST create a role in a campsite
-router.post('/:id/roles', async (req, res) => {
+router.post('/:id/roles', requireAuth, async (req, res) => {
   try {
     const { name, color } = req.body;
     const camp = await Campsite.findById(req.params.id);
@@ -243,7 +265,7 @@ router.post('/:id/roles', async (req, res) => {
 });
 
 // POST assign a role to a member in a campsite
-router.post('/:id/roles/assign', async (req, res) => {
+router.post('/:id/roles/assign', requireAuth, async (req, res) => {
   try {
     const { username, roleName } = req.body;
     const camp = await Campsite.findById(req.params.id);

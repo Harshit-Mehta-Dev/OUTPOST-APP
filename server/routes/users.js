@@ -126,7 +126,7 @@ router.post('/login', validate(userValidation.loginUser), async (req, res) => {
 
 // PUT /api/users/profile
 // Update user profile (username, profilePictureUrl, passwords)
-router.put('/profile', validate(userValidation.updateProfile), async (req, res) => {
+router.put('/profile', requireAuth, validate(userValidation.updateProfile), async (req, res) => {
   try {
     const { email, username, profilePictureUrl, currentPassword, newPassword } = req.body;
     
@@ -179,7 +179,7 @@ router.put('/profile', validate(userValidation.updateProfile), async (req, res) 
 
 // PATCH /api/users/:email/disable
 // Temporarily disable user account
-router.patch('/:email/disable', async (req, res) => {
+router.patch('/:email/disable', requireAuth, async (req, res) => {
   try {
     const { email } = req.params;
     if (!email) {
@@ -204,7 +204,7 @@ router.patch('/:email/disable', async (req, res) => {
 
 // DELETE /api/users/:email
 // Permanently delete user account
-router.delete('/:email', async (req, res) => {
+router.delete('/:email', requireAuth, async (req, res) => {
   try {
     const { email } = req.params;
     if (!email) {
@@ -238,7 +238,7 @@ router.get('/:username/alerts', async (req, res) => {
 
 // DELETE /api/users/:username/alerts
 // Clear all system alerts for a user
-router.delete('/:username/alerts', async (req, res) => {
+router.delete('/:username/alerts', requireAuth, async (req, res) => {
   try {
     const { username } = req.params;
     const user = await User.findOneAndUpdate(
@@ -282,7 +282,7 @@ router.put('/global-restrict', requireAuth, async (req, res) => {
 
 // GET /api/users
 // Fetch all users (for Outpost HQ Developer access)
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
     const users = await User.find({}, 'username email isGloballyRestricted disabled');
     res.json(users);

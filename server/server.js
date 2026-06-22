@@ -74,6 +74,23 @@ const io = new Server(server, {
   }
 });
 
+// Socket.io JWT Authentication Middleware
+const jwt = require('jsonwebtoken');
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error('Authentication error: No token provided'));
+  }
+  try {
+    const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
+    const decoded = jwt.verify(token, secret);
+    socket.user = decoded;
+    next();
+  } catch (err) {
+    return next(new Error('Authentication error: Invalid token'));
+  }
+});
+
 // Make io accessible to our router middleware
 app.use((req, res, next) => {
   req.io = io;
@@ -556,6 +573,10 @@ mongoose.connect(process.env.MONGODB_URI, {
 .catch(err => console.error('❌ Failed to connect to MongoDB', err));
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+if (require.main === module) {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}
+
+module.exports = { app, server };

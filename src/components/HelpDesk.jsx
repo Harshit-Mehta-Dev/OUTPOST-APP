@@ -4,7 +4,9 @@ import { UploadCloud, CheckCircle, Send, Image as ImageIcon, X, Clock, Lock, Mes
 import { io } from 'socket.io-client';
 import './HelpDesk.css';
 
-const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'));
+const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'), {
+  auth: { token: localStorage.getItem('outpost_token') }
+});
 
 const HelpDesk = () => {
   const [viewMode, setViewMode] = useState('submit'); // 'submit' or 'status'

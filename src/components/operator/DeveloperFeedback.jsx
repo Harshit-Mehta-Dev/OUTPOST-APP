@@ -24,7 +24,10 @@ const DeveloperFeedback = ({ onClose }) => {
   useEffect(() => {
     fetchFeedbacks();
 
-    const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'), { transports: ['websocket', 'polling'] });
+    const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'), { 
+      transports: ['websocket', 'polling'],
+      auth: { token: localStorage.getItem('outpost_token') }
+    });
     socket.on('new_feedback', (feedback) => {
       setFeedbacks(prev => [feedback, ...prev]);
     });

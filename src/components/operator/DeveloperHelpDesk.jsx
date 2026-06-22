@@ -4,7 +4,9 @@ import { X, Send, Image as ImageIcon, CheckCircle, MessageSquare, Paperclip, Use
 import { io } from 'socket.io-client';
 import './DeveloperHelpDesk.css';
 
-const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'));
+const socket = io((import.meta.env.VITE_API_URL || 'https://outpost-app.onrender.com'), {
+  auth: { token: localStorage.getItem('outpost_token') }
+});
 
 const DeveloperHelpDesk = ({ onClose, currentUser }) => {
   const [requests, setRequests] = useState([]);
