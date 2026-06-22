@@ -72,9 +72,9 @@ jobs:
           fi
           
           echo "Dumping database schema..."
-          # Fix: We don't need to use supabase link here. We can use the project-ref directly
-          # and provide the database password via the SUPABASE_DB_PASSWORD environment variable.
-          supabase db dump --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} --data-only > supabase_backup_$(date +%Y%m%d_%H%M%S).sql
+          # Link the project first, then dump the linked database
+          supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          supabase db dump --linked --data-only > supabase_backup_$(date +%Y%m%d_%H%M%S).sql
           
           echo "Backup successful. Uploading as artifact..."
         env:
