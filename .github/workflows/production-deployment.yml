@@ -49,6 +49,10 @@ jobs:
 
       - name: Build Application
         run: npm run build
+        env:
+          VITE_AUTH_URL: https://outpost-auth-service.onrender.com
+          VITE_CHAT_URL: https://outpost-chat-service.onrender.com
+          VITE_CORE_API_URL: https://outpost-app.onrender.com
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
