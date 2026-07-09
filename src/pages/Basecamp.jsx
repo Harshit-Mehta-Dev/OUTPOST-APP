@@ -2174,7 +2174,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           <div ref={messagesEndRef} />
         </div>
 
-        <AnimatePresence>
+        {activeChannel !== 'ai-nexus' && <AnimatePresence>
           {activeTypers.length > 0 && (
             <motion.div 
               className="typing-indicator"
@@ -2196,8 +2196,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               </span>
             </motion.div>
           )}
-        </AnimatePresence>
-        <AnimatePresence>
+        </AnimatePresence>}
+        {activeChannel !== 'ai-nexus' && <AnimatePresence>
           {replyingTo && (
             <motion.div 
               initial={{ opacity: 0, y: 10, height: 0 }}
@@ -2216,9 +2216,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </AnimatePresence>}
 
-        <div className="chat-input-wrapper">
+        <div className="chat-input-wrapper" style={{ display: activeChannel === 'ai-nexus' ? 'none' : undefined }}>
           <div className="chat-input-container" style={{ position: 'relative', overflow: 'visible' }}>
             {activeCampsite?.bannedUsers?.includes(currentUser?.username) ? (
               <div style={{ width: '100%', textAlign: 'center', padding: '12px', color: '#ff4444', fontWeight: 'bold', background: 'rgba(255,0,0,0.1)', borderRadius: '8px' }}>
