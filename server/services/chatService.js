@@ -262,7 +262,7 @@ io.on('connection', (socket) => {
       
       let processedBody = body;
       if (mediaType && body) {
-        processedBody = await compressMediaPayload(body, mediaType);
+        // processedBody = await compressMediaPayload(body, mediaType);
       }
 
       const newMessage = {
@@ -307,7 +307,8 @@ io.on('connection', (socket) => {
     try {
       // --- Phase 5: Media Compression Engine ---
       if (data.type === 'media' && data.body) {
-        data.body = await compressMediaPayload(data.body, data.mediaType);
+        // compressMediaPayload is missing, bypassing for now
+        // data.body = await compressMediaPayload(data.body, data.mediaType);
       }
 
       // 1. Save to MongoDB
@@ -428,6 +429,32 @@ io.on('connection', (socket) => {
       }
     } catch (err) {
       console.error("Error saving/broadcasting message:", err);
+    }
+  });
+
+  socket.on("submit-scout-vote", async ({ messageId, channelKey, optionIndex, scoutId }) => {
+    try {
+      const msg = await Message.findById(messageId);
+      if (msg && msg.pollData) {
+        if (!msg.pollData.votesArray) msg.pollData.votesArray = [];
+        if (!msg.pollData.votesMap) msg.pollData.votesMap = {};
+        
+        if (!msg.pollData.votesArray.includes(scoutId)) {
+          msg.pollData.votesArray.push(scoutId);
+          if (!msg.pollData.votesMap[optionIndex]) msg.pollData.votesMap[optionIndex] = [];
+          msg.pollData.votesMap[optionIndex].push(scoutId);
+          
+          msg.markModified('pollData');
+          await msg.save();
+          
+          io.to(channelKey).emit('broadcast-updated-vote', {
+            messageId: msg._id,
+            pollData: msg.pollData
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error saving vote:", err);
     }
   });
 
