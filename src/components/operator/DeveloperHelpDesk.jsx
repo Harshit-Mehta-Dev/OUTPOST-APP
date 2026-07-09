@@ -4,7 +4,7 @@ import { X, Send, Image as ImageIcon, CheckCircle, MessageSquare, Paperclip, Use
 import { io } from 'socket.io-client';
 import './DeveloperHelpDesk.css';
 
-const socket = io((import.meta.env.VITE_CHAT_URL || 'http://localhost:5003'), {
+const socket = io((import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003')), {
   auth: { token: localStorage.getItem('outpost_token') }
 });
 
@@ -29,7 +29,7 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
 
   // Fetch all requests
   const fetchRequests = () => {
-    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/help/requests`)
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/help/requests`)
       .then(res => res.json())
       .then(data => setRequests(data))
       .catch(err => {
@@ -56,7 +56,7 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
   const openTicket = (reqId) => {
     socket.emit('join_help_room', reqId);
     
-    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/help/requests/${reqId}`)
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/help/requests/${reqId}`)
       .then(res => res.json())
       .then(data => {
         setActiveRequest(data);
@@ -130,7 +130,7 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
   };
 
   const handleCloseTicket = () => {
-    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/help/requests/${activeRequest._id}/close`, {
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/help/requests/${activeRequest._id}/close`, {
       method: 'PATCH'
     })
       .then(res => res.json())
@@ -147,7 +147,7 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
 
   const handleClearAllTickets = () => {
     if (window.confirm("Are you sure you want to completely erase ALL tickets? This action cannot be undone.")) {
-      fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/help/requests`, {
+      fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/help/requests`, {
         method: 'DELETE'
       })
       .then(res => res.json())

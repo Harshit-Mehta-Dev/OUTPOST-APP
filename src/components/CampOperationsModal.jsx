@@ -40,7 +40,7 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
   const handleForgeRole = async () => {
     if (newRoleName.trim()) {
       try {
-        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/campsites/${campsite.id}/roles`, {
+        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites/${campsite.id}/roles`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: newRoleName.trim(), color: newRoleColor })
@@ -63,7 +63,7 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
 
   const handleAssignRole = async (username, roleName) => {
     try {
-      const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/campsites/${campsite.id}/roles/assign`, {
+      const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites/${campsite.id}/roles/assign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, roleName })

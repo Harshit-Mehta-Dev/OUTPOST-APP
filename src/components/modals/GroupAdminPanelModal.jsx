@@ -11,7 +11,7 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
     if (isOpen && campsite) {
       if (campsite.id === 1) {
         // Outpost HQ (Global Basecamp) - Fetch all registered users
-        fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/users`)
+        fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/users`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) {

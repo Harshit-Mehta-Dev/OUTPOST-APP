@@ -13,7 +13,7 @@ const FeedbackForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/feedback`, {
+    fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/feedback`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
