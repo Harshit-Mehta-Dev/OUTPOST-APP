@@ -621,7 +621,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       // Multi-player AI Nexus Interception
       if (currentChannelKey === '1_ai-nexus') {
         const token = localStorage.getItem('outpost_token');
-        fetch((import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002')) + '/api/ai/chat', {
+        const aiApiBase = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
+        fetch(aiApiBase + '/api/ai/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -631,7 +632,29 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             message: messageData.text,
             channelKey: currentChannelKey
           })
-        }).catch(err => console.error("AI Communication Failure:", err));
+        })
+        .then(async res => {
+          const data = await res.json();
+          if (!res.ok) {
+            console.error('AI Error Response:', data);
+            return;
+          }
+          // Inject AI response directly from HTTP as guaranteed fallback
+          // (Socket.io room event may not arrive if user wasn't in the room)
+          if (data.success && data.message) {
+            const aiMsg = data.message;
+            setMessagesByChannel(prev => {
+              const channelMsgs = prev['1_ai-nexus'] || [];
+              const alreadyExists = channelMsgs.some(m => (m._id || m.id) === (aiMsg._id || aiMsg.id));
+              if (alreadyExists) return prev;
+              return {
+                ...prev,
+                '1_ai-nexus': [...channelMsgs, { ...aiMsg, receivedAt: Date.now() }]
+              };
+            });
+          }
+        })
+        .catch(err => console.error("AI Communication Failure:", err));
       }
       
       // Stop typing
@@ -1919,6 +1942,68 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               if (evaluateFlash && isThisTheNewestMessage) {
                 localStorage.removeItem("highlight_message_trigger");
                 highlightClass = " animate-signal-glow";
+              }
+
+              const isAiMessage = (msg.user?.username || msg.user) === 'Outpost AI';
+              if (isAiMessage) {
+                return (
+                  <div
+                    key={msg._id || msg.id || index}
+                    style={{
+                      display: 'flex',
+                      gap: '12px',
+                      padding: '14px 16px',
+                      margin: '8px 0',
+                      background: 'linear-gradient(135deg, rgba(79, 172, 254, 0.08) 0%, rgba(0, 242, 254, 0.05) 100%)',
+                      border: '1px solid rgba(79, 172, 254, 0.25)',
+                      borderRadius: '12px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      animation: 'fadeInUp 0.4s ease'
+                    }}
+                  >
+                    {/* Animated shimmer line */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0, left: '-100%',
+                      width: '60%', height: '2px',
+                      background: 'linear-gradient(90deg, transparent, rgba(79,172,254,0.6), transparent)',
+                      animation: 'shimmerLine 2s ease-in-out infinite'
+                    }} />
+                    {/* Bot avatar */}
+                    <div style={{
+                      width: '42px', height: '42px', borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '20px', flexShrink: 0, flexGrow: 0,
+                      boxShadow: '0 0 12px rgba(79,172,254,0.5)',
+                      animation: 'botPulse 3s ease-in-out infinite'
+                    }}>
+                      🤖
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <span style={{
+                          fontWeight: 700, fontSize: '14px',
+                          background: 'linear-gradient(90deg, #4facfe, #00f2fe)',
+                          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+                        }}>Outpost AI</span>
+                        <span style={{
+                          fontSize: '10px', padding: '2px 7px', borderRadius: '20px',
+                          background: 'rgba(79,172,254,0.15)', color: '#4facfe',
+                          border: '1px solid rgba(79,172,254,0.3)', fontWeight: 600, letterSpacing: '0.5px'
+                        }}>BOT</span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginLeft: 'auto' }}>{msg.time}</span>
+                      </div>
+                      <div style={{
+                        fontSize: '14px', lineHeight: '1.6', color: 'var(--text-primary)',
+                        whiteSpace: 'pre-wrap', wordBreak: 'break-word'
+                      }}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  </div>
+                );
               }
 
               return (
