@@ -480,6 +480,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     socket.on("user_banned", handleBanned);
     socket.on("global-restricted", handleGlobalRestricted);
     socket.on("permission_denied", handlePermissionDenied);
+    socket.on("new_public_campsite", () => {
+      setDiscoverRefreshTrigger(prev => prev + 1);
+    });
 
     return () => {
       socket.off('receive_message', handleReceiveMessage);
@@ -496,6 +499,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("user_banned", handleBanned);
       socket.off("global-restricted", handleGlobalRestricted);
       socket.off("permission_denied", handlePermissionDenied);
+      socket.off("new_public_campsite");
     };
   }, [currentChannelKey]);
 
@@ -839,7 +843,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       // Instantly add to local sidebar and make it active
       setCampsites(prev => {
         const disabledPrev = prev.map(c => ({...c, active: false}));
-        return [...disabledPrev, { ...savedData, active: true }];
+        const normalizedCamp = { ...savedData, id: savedData._id || savedData.id, active: true };
+        return [...disabledPrev, normalizedCamp];
       });
       
       // Auto-switch to its first text channel

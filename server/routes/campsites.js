@@ -79,6 +79,11 @@ router.post('/', requireAuth, validate(campsiteValidation.createCampsite), async
     const newCamp = new Campsite(req.body);
     const savedCamp = await newCamp.save();
     syncCampsiteToSupabase(savedCamp);
+    
+    if (savedCamp.isPublic && req.io) {
+      req.io.emit('new_public_campsite', savedCamp);
+    }
+    
     res.status(201).json(savedCamp);
   } catch (err) {
     res.status(400).json({ error: err.message });
