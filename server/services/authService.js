@@ -4,6 +4,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
 require('dotenv').config({ path: '../.env' });
 const errorHandler = require('../middleware/errorHandler');
 const swaggerUi = require('swagger-ui-express');
@@ -17,6 +19,8 @@ app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(morgan('combined'));
+app.use(mongoSanitize());
+app.use(xss());
 
 // API Docs
 const docsAuth = basicAuth({

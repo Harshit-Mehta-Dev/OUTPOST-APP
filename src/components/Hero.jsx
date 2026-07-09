@@ -28,9 +28,17 @@ const Hero = () => {
         </p>
         
         <div className="hero-actions">
-          <button className="btn-primary flex-center" onClick={() => navigate(localStorage.getItem('outpost_user') ? '/app' : '/auth')}>
-            {localStorage.getItem('outpost_user') ? 'Open App' : 'Join the Outpost'} <ArrowRight size={18} className="ml-2" />
-          </button>
+          {
+            (() => {
+              const saved = localStorage.getItem('outpost_user');
+              const isLoggedIn = saved && saved !== 'undefined' && saved !== 'null';
+              return (
+                <button className="btn-primary flex-center" onClick={() => navigate(isLoggedIn ? '/app' : '/auth')}>
+                  {isLoggedIn ? 'Open App' : 'Join the Outpost'} <ArrowRight size={18} className="ml-2" />
+                </button>
+              );
+            })()
+          }
         </div>
       </div>
     </section>

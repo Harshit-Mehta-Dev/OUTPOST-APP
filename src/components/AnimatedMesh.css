@@ -12,10 +12,11 @@
 .mesh-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
   opacity: 0.4;
   mix-blend-mode: screen;
-  transition: background 1s ease-in-out;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .orb-1 {

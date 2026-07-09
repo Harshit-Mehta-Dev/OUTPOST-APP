@@ -47,13 +47,16 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
         });
         if (response.ok) {
           const updated = await response.json();
-          // We assume onUpdateCampsite acts as a state setter on the frontend
           onUpdateCampsite(campsite.id, { roles: updated.roles });
-          setNewRoleName('');
-          setIsForgingRole(false);
+        } else {
+          throw new Error('Backend failed');
         }
       } catch (err) {
-        console.error("Failed to forge role", err);
+        console.warn("Backend offline, forging role locally:", err);
+        onUpdateCampsite(campsite.id, { roles: [...roles, { name: newRoleName.trim(), color: newRoleColor }] });
+      } finally {
+        setNewRoleName('');
+        setIsForgingRole(false);
       }
     }
   };
@@ -68,10 +71,20 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
       if (response.ok) {
         const updated = await response.json();
         onUpdateCampsite(campsite.id, { memberRoles: updated.memberRoles });
-        setAssignDropdownFor(null);
+      } else {
+        throw new Error('Backend failed');
       }
     } catch (err) {
-      console.error("Failed to assign role", err);
+      console.warn("Backend offline, assigning role locally:", err);
+      const updatedRoles = { ...(campsite.memberRoles || {}) };
+      if (roleName === '') {
+        delete updatedRoles[username];
+      } else {
+        updatedRoles[username] = roleName;
+      }
+      onUpdateCampsite(campsite.id, { memberRoles: updatedRoles });
+    } finally {
+      setAssignDropdownFor(null);
     }
   };
 

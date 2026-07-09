@@ -40,7 +40,13 @@ const Invite = () => {
     // Check if user is already in this campsite
     const existingIndex = parsed.findIndex(c => c.id.toString() === id);
     
-    const currentUser = JSON.parse(localStorage.getItem('outpost_user')) || { name: 'Guest Scout' };
+    let currentUser = { name: 'Guest Scout' };
+    try {
+      const saved = localStorage.getItem('outpost_user');
+      if (saved && saved !== 'undefined' && saved !== 'null') {
+        currentUser = JSON.parse(saved);
+      }
+    } catch(e) {}
 
     if (existingIndex >= 0) {
       // User already has this campsite, just make sure they are in members

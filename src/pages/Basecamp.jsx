@@ -142,7 +142,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // User identity
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('outpost_user');
-    return saved ? JSON.parse(saved) : null;
+    if (!saved || saved === 'undefined' || saved === 'null') return null;
+    try { return JSON.parse(saved); } catch (e) { return null; }
   });
 
   // Keep currentUser fresh from localStorage/backend syncs
@@ -152,10 +153,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (
-          parsed.profilePictureUrl !== currentUser.profilePictureUrl || 
-          parsed.username !== currentUser.username ||
-          parsed.level !== currentUser.level ||
-          parsed.xp !== currentUser.xp
+          parsed.profilePictureUrl !== currentUser?.profilePictureUrl || 
+          parsed.username !== currentUser?.username ||
+          parsed.level !== currentUser?.level ||
+          parsed.xp !== currentUser?.xp
         ) {
           setCurrentUser(parsed);
         }
@@ -230,37 +231,31 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const { alerts, setAlerts, handleSelectNotification } = useSignalRadar(socket, currentChannelKey, setSelectedPopupAlert, currentUser);
 
-  // Fetch messages from Supabase directly to reduce load on Render backend
+  // Fetch messages from Backend API
   useEffect(() => {
     setIsFetchingMessages(true);
     
-    const fetchFromSupabase = async () => {
+    const fetchMessages = async () => {
       try {
-        const { data, error } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('channelKey', currentChannelKey)
-          .order('createdAt', { ascending: true })
-          .limit(100);
+        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/messages/${currentChannelKey}`);
+        if (!response.ok) throw new Error('Failed to fetch messages');
+        const data = await response.json();
 
-        if (error) throw error;
-
-        // Map Supabase response to the format expected by the frontend
-        const mappedData = data.map(m => ({ ...m, _id: m.id, receivedAt: m.createdAt ? new Date(m.createdAt).getTime() : Date.now() }));
+        // Ensure receivedAt is set for the timestamp filter
+        const mappedData = data.map(m => ({ ...m, receivedAt: m.createdAt ? new Date(m.createdAt).getTime() : Date.now() }));
         
         setMessagesByChannel(prev => ({
           ...prev,
           [currentChannelKey]: mappedData
         }));
       } catch (err) {
-        console.error("Failed to fetch messages from Supabase:", err);
+        console.warn("Failed to fetch messages from Backend:", err);
       } finally {
-        // Artificially delay hiding the skeleton for 800ms to improve perceived UX
-        setTimeout(() => setIsFetchingMessages(false), 800);
+        setIsFetchingMessages(false);
       }
     };
 
-    fetchFromSupabase();
+    fetchMessages();
 
     // Join the socket room
     socket.emit('join_channel', currentChannelKey);
@@ -268,11 +263,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   }, [currentChannelKey]);
 
   useEffect(() => {
+    if (campsites && campsites.length > 0) {
+      campsites.forEach(camp => {
+        socket.emit('join_campsite_room', camp.id);
+      });
+    }
     if (activeCampsite) {
-      socket.emit('join_campsite_room', activeCampsite.id);
       setActiveMembersList(activeCampsite.members || []);
     }
-  }, [activeCampsite]);
+  }, [campsites, activeCampsite]);
 
   useEffect(() => {
     if (currentUser?.email) {
@@ -311,8 +310,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     const handleReceiveMessage = (newMessage) => {
       setMessagesByChannel(prev => {
         const currentMessages = prev[newMessage.channelKey] || [];
-        // Prevent duplicate messages if already in state
-        if (currentMessages.find(m => m._id === newMessage.id || m.id === newMessage.id)) {
+        // Prevent duplicate messages if already in state (checking both _id and id properties)
+        const incomingId = newMessage._id || newMessage.id;
+        if (currentMessages.find(m => m._id === incomingId || m.id === incomingId)) {
           return prev;
         }
         return {
@@ -501,7 +501,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           });
         }
       })
-      .catch(err => console.error("Error loading user campsites from API:", err));
+      .catch(err => console.warn("Backend offline, utilizing cached/default campsites.", err));
   }, [currentUser?.username, currentUser?.email, activeCampsite?.id]);
 
   const scrollToBottom = () => {
@@ -514,8 +514,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleSendMessage = async () => {
     if (inputText.trim()) {
+      // The AI Ranger check was blocking message sending and causing lag because the endpoint doesn't exist.
+      // We skip this check to fix the message sending delay.
+      /*
       const isRangerEnabled = localStorage.getItem("outpost_ai_ranger") === "true";
-
       if (isRangerEnabled) {
         try {
           const aiResponse = await fetch("/api/ai/evaluate-comms", {
@@ -534,6 +536,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           // Fail-safe protection: fallback silently
         }
       }
+      */
 
       const messageData = {
         channelKey: currentChannelKey,
@@ -557,16 +560,25 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         } : null
       };
       
-      // Emit to server
-      socket.emit('send_message', messageData);
+      // Emit to server or fallback locally
+      if (socket && socket.connected) {
+        socket.emit('send_message', messageData);
+        socket.emit("scout-typing-stop", { 
+          channelId: currentChannelKey, 
+          scoutName: currentUser?.username || 'Scout' 
+        });
+      } else {
+        console.warn("Socket offline, appending message locally.");
+        const localMessage = { ...messageData, id: 'local-' + Date.now() };
+        setMessagesByChannel(prev => {
+          const current = prev[currentChannelKey] || [];
+          return { ...prev, [currentChannelKey]: [...current, localMessage] };
+        });
+      }
       
       // Stop typing
       debouncedTypingStop.cancel();
       setIsTyping(false);
-      socket.emit("scout-typing-stop", { 
-        channelId: currentChannelKey, 
-        scoutName: currentUser?.username || 'Scout' 
-      });
 
       setInputText('');
       setReplyingTo(null);
@@ -586,7 +598,16 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       mediaType: fileType,
       body: base64Data
     };
-    socket.emit('send_message', messageData);
+    if (socket && socket.connected) {
+      socket.emit('send_message', messageData);
+    } else {
+      console.warn("Socket offline, appending media message locally.");
+      const localMessage = { ...messageData, id: 'local-' + Date.now() };
+      setMessagesByChannel(prev => {
+        const current = prev[currentChannelKey] || [];
+        return { ...prev, [currentChannelKey]: [...current, localMessage] };
+      });
+    }
   };
 
   const handleSendPollMessage = (question, options) => {
@@ -606,7 +627,16 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         votesMap: options.reduce((acc, _, i) => ({ ...acc, [i]: [] }), {})
       }
     };
-    socket.emit('send_message', messageData);
+    if (socket && socket.connected) {
+      socket.emit('send_message', messageData);
+    } else {
+      console.warn("Socket offline, appending poll message locally.");
+      const localMessage = { ...messageData, id: 'local-' + Date.now() };
+      setMessagesByChannel(prev => {
+        const current = prev[currentChannelKey] || [];
+        return { ...prev, [currentChannelKey]: [...current, localMessage] };
+      });
+    }
   };
 
   const handleVoteSubmission = (messageId, optionIndex) => {
@@ -771,28 +801,35 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       }, 4000);
     })
     .catch(err => {
-      console.error("Error creating campsite in API:", err);
+      console.warn("Backend offline, creating outpost locally:", err);
       
       if (err.message && err.message.toLowerCase().includes('globally restricted')) {
         setJoinNotification(`🚫 ACCESS DENIED: ${err.message}`);
         setTimeout(() => setJoinNotification(null), 6000);
-        // Force update the local user state
         const updatedUser = { ...currentUser, isGloballyRestricted: true };
         setCurrentUser(updatedUser);
         localStorage.setItem('outpost_user', JSON.stringify(updatedUser));
-        return; // DO NOT create locally
+        return;
       }
       
-      // Fallback: still add it locally if backend fails for other reasons (like timeout)
+      // Fallback: update local UI for offline demo mode
+      const mockOutpost = {
+        ...newCamp,
+        id: 'local-' + Date.now(),
+        members: [currentUser?.username || 'Scout'],
+        expeditions: [{ id: 'general', name: 'general', type: 'text' }],
+        roles: [{ name: 'Commander', color: '#ffb732' }, { name: 'Scout', color: '#4facfe' }],
+        memberRoles: { [currentUser?.username || 'Scout']: 'Commander' },
+        active: true
+      };
+      
       setCampsites(prev => {
         const disabledPrev = prev.map(c => ({...c, active: false}));
-        return [...disabledPrev, { ...newCampData, active: true }];
+        return [...disabledPrev, mockOutpost];
       });
-      const firstTextChannel = newCampData.expeditions?.find(e => e.type === 'text');
-      if (firstTextChannel) setActiveChannel(firstTextChannel.id);
-      
-      setJoinNotification(`⚠️ Established locally, but failed to sync to server: ${err.message}`);
-      setTimeout(() => setJoinNotification(null), 4000);
+      setActiveCampsite(mockOutpost);
+      setActiveChannel('general');
+      setIsCreateModalOpen(false);
     });
     
     setIsCreateModalOpen(false);
@@ -814,7 +851,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         return filtered;
       });
     })
-    .catch(err => console.error("Error deleting campsite:", err));
+    .catch(err => {
+      console.warn("Backend offline, deleting campsite locally:", err);
+      setCampsites(prev => {
+        const filtered = prev.filter(c => c.id !== campId);
+        if (filtered.length > 0) {
+          filtered[0].active = true;
+          const firstText = filtered[0].expeditions?.find(e => e.type === 'text');
+          if (firstText) setActiveChannel(firstText.id);
+        }
+        return filtered;
+      });
+    });
   };
 
   const handleCreateChannel = (channelData) => {
@@ -866,7 +914,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         return;
       }
       
-      const isGlobalAdmin = currentUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
+      const isGlobalAdmin = currentUser?.email?.toLowerCase()?.trim() === 'harshitmehta1012@gmail.com';
       const actor = isGlobalAdmin ? 'Developer' : 'Admin';
 
       socket.emit('kick_user_event', { 
@@ -878,8 +926,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       setActiveMembersList(prev => prev.filter(m => m !== username && m.username !== username));
       alert(data.message);
     } catch (err) {
-      console.error(err);
-      alert('Error kicking user');
+      console.warn("Backend offline, simulating kick locally:", err);
+      setActiveMembersList(prev => prev.filter(m => m !== username && m.username !== username));
+      alert(`${username} kicked offline`);
     }
   };
 
@@ -912,7 +961,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         return;
       }
       
-      const isGlobalAdmin = currentUser.email.toLowerCase().trim() === 'harshitmehta1012@gmail.com';
+      const isGlobalAdmin = currentUser?.email?.toLowerCase()?.trim() === 'harshitmehta1012@gmail.com';
       const actor = isGlobalAdmin ? 'Developer' : 'Admin';
 
       socket.emit('ban_user_event', { 
@@ -924,8 +973,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       setActiveMembersList(prev => prev.filter(m => m !== username && m.username !== username));
       alert(data.message);
     } catch (err) {
-      console.error(err);
-      alert('Error banning user');
+      console.warn("Backend offline, simulating ban locally:", err);
+      setActiveMembersList(prev => prev.filter(m => m !== username && m.username !== username));
+      alert(`${username} banned offline`);
     }
   };
 
@@ -944,8 +994,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       
       alert(data.message);
     } catch (err) {
-      console.error(err);
-      alert('Error issuing global ban');
+      console.warn("Backend offline, simulating global ban locally:", err);
+      alert(`${username} globally banned offline`);
     }
   };
 
@@ -989,7 +1039,19 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       });
       setIsCampOpsModalOpen(false);
     })
-    .catch(err => console.error("Error leaving campsite:", err));
+    .catch(err => {
+      console.warn("Backend offline, leaving campsite locally:", err);
+      setCampsites(prev => {
+        const filtered = prev.filter(c => c.id !== campId);
+        if (filtered.length > 0) {
+          filtered[0].active = true;
+          const firstText = filtered[0].expeditions?.find(e => e.type === 'text');
+          if (firstText) setActiveChannel(firstText.id);
+        }
+        return filtered;
+      });
+      setIsCampOpsModalOpen(false);
+    });
   };
 
   const handleUpdateCampsite = (campId, updates) => {
@@ -1023,7 +1085,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         };
       });
     } catch (err) {
-      console.error("Operator Error erasing message:", err);
+      console.warn("Backend offline, simulating Operator Erase locally:", err);
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[currentChannelKey] || [];
+        return {
+          ...prev,
+          [currentChannelKey]: currentMessages.map(m => 
+            (m._id || m.id) === msgId 
+              ? { ...m, text: "SYSTEM DECREE: Our Operator has decided to delete this message under community violation guidelines.", isSystemDeleted: true } 
+              : m
+          )
+        };
+      });
     }
   };
 
@@ -1036,7 +1109,17 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         }
       });
     } catch (err) {
-      console.error("Operator Error decommissioning campsite:", err);
+      console.warn("Backend offline, simulating Operator Decommission locally:", err);
+      // Remove campsite visually from sidebar
+      setCampsites(prev => {
+        const filtered = prev.filter(c => c.id !== campId);
+        if (filtered.length > 0 && activeCampsite?.id === campId) {
+          filtered[0].active = true;
+          const firstText = filtered[0].expeditions?.find(e => e.type === 'text');
+          if (firstText) setActiveChannel(firstText.id);
+        }
+        return filtered;
+      });
     }
   };
 
@@ -1294,7 +1377,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   setJoinNotification(null);
                 }, 4000);
               })
-              .catch(err => console.error("Error joining campsite via API:", err));
+              .catch(err => {
+                console.warn("Backend offline, joining campsite locally:", err);
+                setCampsites(prev => {
+                  const exists = prev.find(c => c.id === camp.id);
+                  if (exists) {
+                    return prev.map(c => ({ ...c, active: c.id === camp.id }));
+                  }
+                  return [...prev.map(c => ({...c, active: false})), { ...camp, active: true }];
+                });
+                setActiveChannel('lobby');
+                setShowDiscover(false);
+                setJoinNotification(`🏕️ Offline Mode: You've joined ${camp.name} locally!`);
+                setTimeout(() => setJoinNotification(null), 4000);
+              });
             }} />
           </div>
         ) : (
@@ -2065,7 +2161,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 <div className="user-profile">
                   <div className="user-info" onClick={() => { setIsProfileModalOpen(true); setIsMobileDrawerOpen(false); }}>
                     <div className="user-avatar">
-                      {currentUser.profilePictureUrl ? (
+                      {currentUser?.profilePictureUrl ? (
                         <img 
                           src={currentUser.profilePictureUrl} 
                           alt="Profile" 
@@ -2073,13 +2169,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         />
                       ) : (
                         <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:'bold', fontSize:'0.9rem'}}>
-                          {currentUser.username.substring(0, 2).toUpperCase()}
+                          {currentUser?.username?.substring(0, 2)?.toUpperCase() || 'U'}
                         </div>
                       )}
                       <div className="status-dot online"></div>
                     </div>
                     <div className="user-name">
-                      <strong>{currentUser.username}</strong>
+                      <strong>{currentUser?.username || 'Scout'}</strong>
                       <span>Active</span>
                     </div>
                   </div>

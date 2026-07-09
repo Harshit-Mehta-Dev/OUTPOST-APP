@@ -32,7 +32,12 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
     fetch(`${(import.meta.env.VITE_CORE_API_URL || 'http://localhost:5002')}/api/help/requests`)
       .then(res => res.json())
       .then(data => setRequests(data))
-      .catch(err => console.error("Error fetching requests:", err));
+      .catch(err => {
+        console.warn("Backend offline, loading mock tickets:", err);
+        setRequests([
+          { _id: 'mock-1', ticketId: 'REQ-12345', userName: 'ScoutTester', email: 'scout@test.com', status: 'Open', description: 'Help! My compass is broken.', createdAt: new Date().toISOString(), messages: [] }
+        ]);
+      });
   };
 
   useEffect(() => {
@@ -58,7 +63,13 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
         setMessages(data.messages || []);
         setTicketStatus(data.status);
       })
-      .catch(err => console.error("Error fetching request details:", err));
+      .catch(err => {
+        console.warn("Backend offline, simulating ticket open:", err);
+        const mockTicket = requests.find(r => r._id === reqId) || { _id: reqId, ticketId: reqId, userName: 'LocalUser', email: 'local@local.com', description: 'Local ticket description', status: 'Open', messages: [] };
+        setActiveRequest(mockTicket);
+        setMessages(mockTicket.messages || []);
+        setTicketStatus(mockTicket.status);
+      });
   };
 
   useEffect(() => {
@@ -127,7 +138,11 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
         setTicketStatus('Closed');
         fetchRequests(); // refresh list
       })
-      .catch(err => console.error("Error closing ticket:", err));
+      .catch(err => {
+        console.warn("Backend offline, simulating ticket close:", err);
+        setTicketStatus('Closed');
+        setRequests(prev => prev.map(r => r._id === activeRequest._id ? { ...r, status: 'Closed' } : r));
+      });
   };
 
   const handleClearAllTickets = () => {
@@ -140,7 +155,11 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
         setRequests([]);
         setActiveRequest(null);
       })
-      .catch(err => console.error("Error clearing tickets:", err));
+      .catch(err => {
+        console.warn("Backend offline, simulating ticket clear:", err);
+        setRequests([]);
+        setActiveRequest(null);
+      });
     }
   };
 

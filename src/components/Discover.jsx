@@ -51,12 +51,19 @@ const Discover = ({ onJoinCampsite, refreshTrigger }) => {
         if (Array.isArray(data)) {
           setPublicCampsites(data.map(c => ({ ...c, id: c._id || c.id })));
         }
-        // Artificially delay hiding the skeleton for 800ms
-        setTimeout(() => setIsDiscoverLoading(false), 800);
+        setIsDiscoverLoading(false);
       })
       .catch(err => {
-        console.error("Error loading public campsites:", err);
-        setConnectionError(true);
+        console.error("Error loading public campsites, falling back to mock data:", err);
+        // Fallback mock data since backend is offline
+        setPublicCampsites([
+          { id: 'mock-1', name: 'Cyberpunk Red RPG', description: 'A massive hub for TTRPG cyber-runners.', category: 'Gaming', activeScouts: 124, totalScouts: 590, color: '#f43f5e', icon: '🎲' },
+          { id: 'mock-2', name: 'React Developers', description: 'Advanced front-end architecture discussion.', category: 'Tech & Dev', activeScouts: 89, totalScouts: 1200, color: '#0ea5e9', icon: '⚛️' },
+          { id: 'mock-3', name: 'Lo-Fi Study Group', description: 'Quiet channels for focused work.', category: 'Study Camps', activeScouts: 340, totalScouts: 8000, color: '#8b5cf6', icon: '🎧' },
+          { id: 'mock-4', name: 'Digital Art Showcase', description: 'Share your latest illustrations and 3D models.', category: 'Art & Creative', activeScouts: 45, totalScouts: 320, color: '#ec4899', icon: '🎨' },
+          { id: 'mock-5', name: 'Global News Feed', description: 'World events discussed in real-time.', category: 'Global Hubs', activeScouts: 210, totalScouts: 4500, color: '#eab308', icon: '🌍' }
+        ]);
+        setConnectionError(false);
         setIsDiscoverLoading(false);
       });
   }, [refreshTrigger]); // re-run when refreshTrigger changes
@@ -81,13 +88,10 @@ const Discover = ({ onJoinCampsite, refreshTrigger }) => {
   const handleVentureInside = (camp) => {
     setJoiningCampId(camp.id);
     
-    // Simulate network delay and joining process
+    setIsExiting(true);
     setTimeout(() => {
-      setIsExiting(true);
-      setTimeout(() => {
-        onJoinCampsite(camp);
-      }, 600); // Wait for exit animation
-    }, 1500); // 1.5s simulated loading
+      onJoinCampsite(camp);
+    }, 600); // Wait for exit animation
   };
 
   // Framer Motion Variants

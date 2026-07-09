@@ -22,10 +22,36 @@ const PageLoader = () => (
 // Wrapper for named exports like NotFoundPage
 const NotFoundPage = lazy(() => import('./components/ui/404-page-not-found').then(module => ({ default: module.NotFoundPage })));
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    this.setState({ error, errorInfo });
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', color: 'white', background: 'red', zIndex: 99999, position: 'absolute', inset: 0 }}>
+          <h2>Dashboard Crash Debug Info:</h2>
+          <pre>{this.state.error && this.state.error.toString()}</pre>
+          <pre>{this.state.errorInfo && this.state.errorInfo.componentStack}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const RequireAuth = ({ children }) => {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('outpost_user');
-    if (!saved) {
+    if (!saved || saved === 'undefined' || saved === 'null') {
       return <Navigate to="/auth" replace />;
     }
   }
@@ -39,7 +65,10 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('outpost_theme_dark');
-      return saved !== null ? JSON.parse(saved) : true;
+      if (saved === 'undefined' || saved === 'null') return true;
+      if (saved !== null) {
+        try { return JSON.parse(saved); } catch(e) { return true; }
+      }
     }
     return true; // Default for SSR
   });
@@ -112,7 +141,9 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/app" element={
               <RequireAuth>
-                <Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+                <ErrorBoundary>
+                  <Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+                </ErrorBoundary>
               </RequireAuth>
             } />
             <Route path="/invite/:id" element={

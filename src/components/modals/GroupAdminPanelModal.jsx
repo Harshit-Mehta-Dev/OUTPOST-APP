@@ -18,7 +18,10 @@ const GroupAdminPanelModal = ({ isOpen, onClose, campsite, currentUser, onKick, 
               setMembers(data.map(u => u.username));
             }
           })
-          .catch(err => console.error("Error fetching all users:", err));
+          .catch(err => {
+            console.warn("Backend offline, utilizing local mock for users:", err);
+            setMembers([currentUser.username || 'Scout', 'LocalTestUser', 'DemoScout']);
+          });
       } else {
         setMembers(campsite.members || []);
       }

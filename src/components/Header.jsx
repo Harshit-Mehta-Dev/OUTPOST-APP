@@ -12,7 +12,8 @@ const Header = ({ isDarkMode, toggleTheme }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isLoggedIn = !!localStorage.getItem('outpost_user');
+  const savedUser = localStorage.getItem('outpost_user');
+  const isLoggedIn = !!(savedUser && savedUser !== 'undefined' && savedUser !== 'null');
 
   const handleLogoClick = () => {
     setIsRefreshing(true);

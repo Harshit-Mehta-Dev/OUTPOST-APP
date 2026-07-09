@@ -100,7 +100,7 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             if (!canvas || !ctx) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.filter = "blur(35px)";
+            // Removed ctx.filter = "blur(35px)"; to prevent massive CPU blocking
 
             const totalBeams = beamsRef.current.length;
             beamsRef.current.forEach((beam, index) => {
@@ -134,10 +134,10 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         >
             <canvas
                 ref={canvasRef}
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", filter: "blur(15px)" }}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", filter: "blur(45px)", transform: "translateZ(0)" }}
             />
             <motion.div
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.05)", backdropFilter: "blur(50px)" }}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.05)" }}
                 animate={{
                     opacity: [0.05, 0.15, 0.05],
                 }}
