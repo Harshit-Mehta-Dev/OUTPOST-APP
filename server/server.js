@@ -81,11 +81,7 @@ io.use((socket, next) => {
     return next(new Error('Authentication error: No token provided'));
   }
   try {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      console.error("FATAL ERROR: JWT_SECRET is not defined in environment variables.");
-      return next(new Error('Internal Server Configuration Error'));
-    }
+    const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
     const decoded = jwt.verify(token, secret);
     socket.user = decoded;
     next();
