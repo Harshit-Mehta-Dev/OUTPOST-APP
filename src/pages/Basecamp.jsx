@@ -58,6 +58,7 @@ import { useSignalRadar } from '../hooks/useSignalRadar';
 import { useTheme } from '../context/ThemeContext';
 import OperatorTerminalTab from '../components/operator/OperatorTerminalTab';
 import DeveloperHelpDesk from '../components/operator/DeveloperHelpDesk';
+import AiNexus from '../components/AiNexus';
 import DeveloperFeedback from '../components/operator/DeveloperFeedback';
 import GradientBars from '../components/ui/gradient-bars-background';
 import HelpDesk from '../components/HelpDesk';
@@ -1897,7 +1898,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
         </header>
 
-        <div className="chat-messages">
+        {activeChannel === 'ai-nexus' ? (
+          <AiNexus currentUser={currentUser} />
+        ) : null}
+
+        <div className="chat-messages" style={{ display: activeChannel === 'ai-nexus' ? 'none' : undefined }}>
           <div className="chat-welcome">
             <div className="welcome-icon">
               <Hash size={40} />
