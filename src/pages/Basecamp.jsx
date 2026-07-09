@@ -817,7 +817,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       adminUsername: currentUser?.username,
       isPublic: data.isPublic,
       template: data.template,
-      imageUrl: data.imageUrl,
+      imageUrl: data.imageUrl || '',
       members: [currentUser?.username || 'Scout'], // Creator is automatically a member
       expeditions: newExpeditions
     };
@@ -875,7 +875,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       
       // Fallback: update local UI for offline demo mode
       const mockOutpost = {
-        ...newCamp,
+        ...newCampData,
         id: 'local-' + Date.now(),
         members: [currentUser?.username || 'Scout'],
         expeditions: [{ id: 'general', name: 'general', type: 'text' }],
