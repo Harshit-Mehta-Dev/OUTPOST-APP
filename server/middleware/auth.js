@@ -9,7 +9,11 @@ function requireAuth(req, res, next) {
   const token = authHeader.split(' ')[1];
 
   try {
-    const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error("FATAL ERROR: JWT_SECRET is not defined in environment variables.");
+      return res.status(500).json({ error: 'Internal Server Configuration Error' });
+    }
     const decoded = jwt.verify(token, secret);
     req.user = decoded; // Attach user payload to request
     next();

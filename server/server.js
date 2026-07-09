@@ -81,7 +81,11 @@ io.use((socket, next) => {
     return next(new Error('Authentication error: No token provided'));
   }
   try {
-    const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error("FATAL ERROR: JWT_SECRET is not defined in environment variables.");
+      return next(new Error('Internal Server Configuration Error'));
+    }
     const decoded = jwt.verify(token, secret);
     socket.user = decoded;
     next();
@@ -122,7 +126,24 @@ app.use(helmet());
 app.set('trust proxy', 1);
 
 // 3. CORS and Body Parsing
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://afb8f70f.outpost-app-a0c.pages.dev'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith('.pages.dev')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -146,7 +167,7 @@ const getStore = () => redisClientForLimits ? new RedisStore({ sendCommand: (...
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 100, 
+  max: 1000, 
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,

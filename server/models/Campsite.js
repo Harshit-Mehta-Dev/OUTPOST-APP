@@ -41,4 +41,8 @@ const campsiteSchema = new mongoose.Schema({
   activeScouts: { type: Number, default: 1 }
 }, { timestamps: true });
 
+// Performance Indexes
+campsiteSchema.index({ isPublic: 1, active: 1 }); // Optimizes Discover fetching
+campsiteSchema.index({ members: 1 }); // Optimizes Sidebar fetching
+
 module.exports = mongoose.model('Campsite', campsiteSchema);
