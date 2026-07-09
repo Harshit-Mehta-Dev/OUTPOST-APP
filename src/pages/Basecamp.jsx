@@ -517,7 +517,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             active: (camp._id || camp.id) === (activeCampsite ? activeCampsite.id : 1)
           }));
           setCampsites(prev => {
-            const hq = prev.find(c => c.id === 1);
+            let hq = prev.find(c => c.id === 1);
+            
+            // Always ensure Outpost HQ has the ai-nexus channel (migration for existing users)
+            if (hq) {
+              const hasAiNexus = hq.expeditions?.some(e => e.id === 'ai-nexus');
+              if (!hasAiNexus) {
+                hq = {
+                  ...hq,
+                  expeditions: [
+                    { id: 'community-chat', name: 'community-chat', type: 'text' },
+                    { id: 'ai-nexus', name: 'ai-nexus', type: 'text' },
+                    ...(hq.expeditions || []).filter(e => e.id !== 'community-chat')
+                  ]
+                };
+              }
+            }
             
             // Only show campsites the user is a member of in the sidebar
             const merged = [...formattedCamps];
@@ -1278,16 +1293,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     className="btn-primary" 
                     style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff3b30', borderColor: '#ff3b30' }}
                     onClick={() => {
-                      if (String(messageToDelete.id).startsWith('local-')) {
-                        alert("Message is still synchronizing to the secure network. Please wait a moment.");
-                        setMessageToDelete(null);
-                        return;
-                      }
-                      socket.emit("delete_message_for_all", { 
-                        messageId: messageToDelete.id, 
-                        channelKey: messageToDelete.channelKey,
-                        username: currentUser.username
+                      // Always delete from local state immediately for instant UI feedback
+                      setMessagesByChannel(prev => {
+                        const currentMessages = prev[messageToDelete.channelKey] || [];
+                        return {
+                          ...prev,
+                          [messageToDelete.channelKey]: currentMessages.filter(m => (m._id || m.id) !== messageToDelete.id)
+                        };
                       });
+                      // Fire socket to delete on server + for all other users (only if we have a real DB ID)
+                      if (!String(messageToDelete.id).startsWith('local-')) {
+                        socket.emit("delete_message_for_all", { 
+                          messageId: messageToDelete.id, 
+                          channelKey: messageToDelete.channelKey,
+                          username: currentUser.username
+                        });
+                      }
                       setMessageToDelete(null);
                     }}
                   >
