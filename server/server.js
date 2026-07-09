@@ -227,6 +227,9 @@ app.use('/api/help', helpRoutes);
 const feedbackRoutes = require('./routes/feedback');
 app.use('/api/feedback', feedbackRoutes);
 
+const aiRoutes = require('./routes/ai');
+app.use('/api/ai', aiRoutes);
+
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
 

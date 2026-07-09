@@ -182,6 +182,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       active: true,
       expeditions: [
         { id: 'community-chat', name: 'community-chat', type: 'text' },
+        { id: 'ai-nexus', name: 'ai-nexus', type: 'text' },
         { id: 'announcements', name: 'announcements', type: 'text' },
         { id: 'ideas', name: 'ideas', type: 'text' },
         { id: 'dev-talk', name: 'dev-talk', type: 'text' },
@@ -600,6 +601,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         });
       } else {
         console.warn("Socket offline, message only saved locally.");
+      }
+      
+      // Multi-player AI Nexus Interception
+      if (currentChannelKey === '1_ai-nexus') {
+        const token = localStorage.getItem('outpost_token');
+        fetch((import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002')) + '/api/ai/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            message: messageData.text,
+            channelKey: currentChannelKey
+          })
+        }).catch(err => console.error("AI Communication Failure:", err));
       }
       
       // Stop typing
