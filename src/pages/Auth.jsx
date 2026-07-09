@@ -42,7 +42,7 @@ const Auth = () => {
         
         // Sync with backend
         try {
-          const syncRes = await fetch(`${(import.meta.env.VITE_AUTH_URL || 'http://localhost:5001')}/api/users/sync`, {
+          const syncRes = await fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}/api/users/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: finalEmail.toLowerCase().trim(), username: finalUsername })
@@ -137,7 +137,7 @@ const Auth = () => {
 
     // Communicate with backend
     setIsLoading(true);
-    fetch(`${(import.meta.env.VITE_AUTH_URL || 'http://localhost:5001')}${endpoint}`, {
+    fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

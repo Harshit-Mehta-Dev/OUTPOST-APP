@@ -821,7 +821,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('outpost_token')}`
       },
       body: JSON.stringify(newCampData)
     })
@@ -892,7 +893,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleDeleteCampsite = (campId) => {
     fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites/${campId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('outpost_token')}`
+      }
     })
     .then(res => res.json())
     .then(() => {
