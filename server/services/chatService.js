@@ -35,7 +35,6 @@ const { checkScoutPermission } = require('../utils/rbac');
 const Notification = require('../models/Notification');
 const { compressMediaPayload } = require('../utils/compression');
 
-const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const morgan = require('morgan');
 
