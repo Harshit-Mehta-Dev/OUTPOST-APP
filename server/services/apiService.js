@@ -4,8 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
-const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
+// Removed old requires
 require('dotenv').config({ path: '../.env' });
 const errorHandler = require('../middleware/errorHandler');
 
