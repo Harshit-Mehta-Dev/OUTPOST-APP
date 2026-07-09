@@ -478,7 +478,7 @@ io.on('connection', (socket) => {
       const msg = await Message.findById(messageId);
       if (!msg) return;
 
-      const isAuthor = msg.user && msg.user.username === username;
+      const isAuthor = (msg.user && msg.user.username === username) || (msg.user === username);
 
       if (!isAuthor) {
         const campsiteId = channelKey.split('_')[0];

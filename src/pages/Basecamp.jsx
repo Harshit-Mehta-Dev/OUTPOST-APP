@@ -464,6 +464,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       }
     };
 
+    const handlePermissionDenied = (data) => {
+      alert(`⚠️ ${data.message}`);
+    };
+
     socket.on("scout-joined-list", handleScoutJoinedList);
     socket.on("campsite-admin-notification", handleAdminNotification);
     socket.on("level_up_alert", handleLevelUp);
@@ -474,6 +478,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     socket.on("user_kicked", handleKicked);
     socket.on("user_banned", handleBanned);
     socket.on("global-restricted", handleGlobalRestricted);
+    socket.on("permission_denied", handlePermissionDenied);
 
     return () => {
       socket.off('receive_message', handleReceiveMessage);
@@ -489,6 +494,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("user_kicked", handleKicked);
       socket.off("user_banned", handleBanned);
       socket.off("global-restricted", handleGlobalRestricted);
+      socket.off("permission_denied", handlePermissionDenied);
     };
   }, [currentChannelKey]);
 
@@ -1212,6 +1218,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     className="btn-primary" 
                     style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff3b30', borderColor: '#ff3b30' }}
                     onClick={() => {
+                      if (String(messageToDelete.id).startsWith('local-')) {
+                        alert("Message is still synchronizing to the secure network. Please wait a moment.");
+                        setMessageToDelete(null);
+                        return;
+                      }
                       socket.emit("delete_message_for_all", { 
                         messageId: messageToDelete.id, 
                         channelKey: messageToDelete.channelKey,
