@@ -131,7 +131,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // 3.5. Logging & Sanitization
 app.use(morgan('combined')); // Operational Logging
 // app.use(mongoSanitize()); // Prevent NoSQL Injection (Crashes Express 5)
-app.use(xss()); // Prevent Cross-Site Scripting (XSS)
+// app.use(xss()); // Prevent Cross-Site Scripting (XSS) (Crashes Express 5)
 
 // 24/7 Health Check Endpoint
 app.get('/api/health', (req, res) => {

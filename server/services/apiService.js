@@ -17,7 +17,7 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(morgan('combined'));
 // app.use(mongoSanitize());
-app.use(xss());
+// app.use(xss());
 
 // Limiters
 const actionLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, message: 'Too many actions' });
