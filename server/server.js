@@ -156,7 +156,7 @@ const globalLimiter = rateLimit({
 // Layer 2: Anti-Brute Force for Auth (5 requests per minute)
 const authLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
-  max: 5, 
+  max: 10, 
   message: 'Too many login attempts from this IP, please try again after a minute',
   store: getStore(),
 });
@@ -164,7 +164,7 @@ const authLimiter = rateLimit({
 // Layer 3: Database Strain Prevention for Searching/Fetching (30 requests per minute)
 const dataLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
-  max: 30, 
+  max: 300, 
   message: 'Too many data requests from this IP, please try again after a minute',
   store: getStore(),
 });

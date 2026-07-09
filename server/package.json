@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node services/apiService.js",
+    "start": "node server.js",
     "start:auth": "node services/authService.js",
     "start:api": "node services/apiService.js",
     "start:chat": "node services/chatService.js",

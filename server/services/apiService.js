@@ -20,8 +20,8 @@ app.use(mongoSanitize);
 app.use(xssClean);
 
 // Limiters
-const actionLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, message: 'Too many actions' });
-const dataLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, message: 'Too many data requests' });
+const actionLimiter = rateLimit({ windowMs: 60 * 1000, max: 100, message: 'Too many actions' });
+const dataLimiter = rateLimit({ windowMs: 60 * 1000, max: 300, message: 'Too many data requests' });
 
 app.use('/api/campsites/join', actionLimiter);
 app.use('/api/campsites/create', actionLimiter);

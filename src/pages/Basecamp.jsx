@@ -308,6 +308,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // Listen for real-time messages and member events
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {
+      console.log("RECEIVED MESSAGE:", newMessage);
       setMessagesByChannel(prev => {
         const currentMessages = prev[newMessage.channelKey] || [];
         const incomingId = newMessage._id || newMessage.id;
@@ -619,15 +620,48 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       mediaType: fileType,
       body: base64Data
     };
-    if (socket && socket.connected) {
-      socket.emit('send_message', messageData);
+
+    // Client-side image compression to avoid WebSocket 1MB frame limits
+    if (fileType === 'image') {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        // Max dimension 800px
+        const maxDim = 800;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        messageData.body = canvas.toDataURL('image/jpeg', 0.7);
+        emitOrAppend(messageData);
+      };
+      img.src = base64Data;
     } else {
-      console.warn("Socket offline, appending media message locally.");
-      const localMessage = { ...messageData, id: 'local-' + Date.now() };
-      setMessagesByChannel(prev => {
-        const current = prev[currentChannelKey] || [];
-        return { ...prev, [currentChannelKey]: [...current, localMessage] };
-      });
+      emitOrAppend(messageData);
+    }
+
+    function emitOrAppend(finalMessageData) {
+      if (socket && socket.connected) {
+        socket.emit('send_message', finalMessageData);
+      } else {
+        console.warn("Socket offline, appending media message locally.");
+        const localMessage = { ...finalMessageData, id: 'local-' + Date.now() };
+        setMessagesByChannel(prev => {
+          const current = prev[currentChannelKey] || [];
+          return { ...prev, [currentChannelKey]: [...current, localMessage] };
+        });
+      }
     }
   };
 
