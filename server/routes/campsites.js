@@ -24,7 +24,7 @@ const syncCampsiteToSupabase = async (campsiteDoc) => {
 };
 
 // GET all public campsites (For Discover page)
-router.get('/public', cache(30), async (req, res) => {
+router.get('/public', async (req, res) => {
   try {
     const campsites = await Campsite.find({ isPublic: true });
     res.json(campsites);
