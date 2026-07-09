@@ -130,8 +130,9 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // --- Phase 6: 24/7 Ops & Security ---
 // 3.5. Logging & Sanitization
 app.use(morgan('combined')); // Operational Logging
-// app.use(mongoSanitize()); // Prevent NoSQL Injection (Crashes Express 5)
-// app.use(xss()); // Prevent Cross-Site Scripting (XSS) (Crashes Express 5)
+const { mongoSanitize, xssClean } = require('./middleware/security');
+app.use(mongoSanitize); // Custom NoSQL Injection Protection
+app.use(xssClean); // Custom Cross-Site Scripting (XSS) Protection
 
 // 24/7 Health Check Endpoint
 app.get('/api/health', (req, res) => {
