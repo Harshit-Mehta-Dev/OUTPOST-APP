@@ -310,11 +310,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     const handleReceiveMessage = (newMessage) => {
       setMessagesByChannel(prev => {
         const currentMessages = prev[newMessage.channelKey] || [];
-        // Prevent duplicate messages if already in state (checking both _id and id properties)
         const incomingId = newMessage._id || newMessage.id;
-        if (currentMessages.find(m => m._id === incomingId || m.id === incomingId)) {
-          return prev;
+        
+        // Find if we already have this exact message (either by real ID or optimistic match)
+        const existingIndex = currentMessages.findIndex(m => 
+          (m._id === incomingId || m.id === incomingId) || 
+          (String(m.id).startsWith('local-') && m.text === newMessage.text && (m.user?.username === newMessage.user?.username || m.user === newMessage.user))
+        );
+
+        if (existingIndex !== -1) {
+          // Update the optimistic message with the real MongoDB ID and data
+          const updatedMessages = [...currentMessages];
+          updatedMessages[existingIndex] = { ...newMessage, receivedAt: currentMessages[existingIndex].receivedAt || Date.now() };
+          return {
+            ...prev,
+            [newMessage.channelKey]: updatedMessages
+          };
         }
+        
         return {
           ...prev,
           [newMessage.channelKey]: [...currentMessages, { ...newMessage, receivedAt: Date.now() }]
@@ -560,7 +573,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         } : null
       };
       
-      // Emit to server or fallback locally
+      // Optimistic UI: Always append locally for instant feedback
+      const localMessage = { ...messageData, id: 'local-' + Date.now(), receivedAt: Date.now() };
+      setMessagesByChannel(prev => {
+        const current = prev[currentChannelKey] || [];
+        return { ...prev, [currentChannelKey]: [...current, localMessage] };
+      });
+      
+      // Emit to server
       if (socket && socket.connected) {
         socket.emit('send_message', messageData);
         socket.emit("scout-typing-stop", { 
@@ -568,12 +588,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           scoutName: currentUser?.username || 'Scout' 
         });
       } else {
-        console.warn("Socket offline, appending message locally.");
-        const localMessage = { ...messageData, id: 'local-' + Date.now() };
-        setMessagesByChannel(prev => {
-          const current = prev[currentChannelKey] || [];
-          return { ...prev, [currentChannelKey]: [...current, localMessage] };
-        });
+        console.warn("Socket offline, message only saved locally.");
       }
       
       // Stop typing
