@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Users, Hash } from 'lucide-react';
@@ -6,31 +5,28 @@ import { Users, Hash } from 'lucide-react';
 const Invite = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [campsite, setCampsite] = useState(null);
-
-  useEffect(() => {
-    // Try to find campsite in local storage, or mock one
-    const saved = localStorage.getItem('outpost_campsites');
-    let found = null;
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      found = parsed.find(c => c.id.toString() === id);
-    }
-    
-    if (!found) {
-      // Create a mock campsite for the invite
-      found = {
-        id: parseInt(id) || Date.now(),
-        name: `Campsite #${id || 'Unknown'}`,
-        active: false,
-        expeditions: [
-          { id: 'general', name: 'general', type: 'text' }
-        ],
-        members: []
-      };
-    }
-    setCampsite(found);
-  }, [id]);
+  // Derive campsite from URL parameter and localStorage
+  let found = null;
+  const saved = localStorage.getItem('outpost_campsites');
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    found = parsed.find(c => c.id.toString() === id);
+  }
+  
+  if (!found) {
+    // Create a mock campsite for the invite
+    found = {
+      id: parseInt(id) || 'mock-id',
+      name: `Campsite #${id || 'Unknown'}`,
+      active: false,
+      expeditions: [
+        { id: 'general', name: 'general', type: 'text' }
+      ],
+      members: []
+    };
+  }
+  
+  const campsite = found;
 
   const handleJoin = () => {
     // Add to local storage
