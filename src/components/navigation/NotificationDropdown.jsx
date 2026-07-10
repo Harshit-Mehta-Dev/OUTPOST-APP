@@ -7,21 +7,23 @@ export default function NotificationDropdown({ isOpen, alerts, onSelectAlert, on
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0, y: -15 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -15 }}
+          initial={{ opacity: 0, y: -20, scale: 0.95, filter: 'blur(10px)' }}
+          animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, y: -10, scale: 0.95, filter: 'blur(10px)' }}
+          transition={{ type: "spring", stiffness: 400, damping: 30 }}
           style={{
             position: 'absolute',
-            top: '60px',
+            top: '64px',
             right: '10px',
             width: 'calc(100vw - 20px)',
-            maxWidth: '320px',
-            background: 'rgba(9, 9, 11, 0.95)',
-            border: '1px solid rgba(39, 39, 42, 1)',
-            backdropFilter: 'blur(12px)',
+            maxWidth: '340px',
+            background: 'rgba(9, 9, 11, 0.85)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '16px',
             padding: '16px',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.05)',
             zIndex: 1000,
             fontFamily: 'var(--font-body)',
             color: 'var(--text-primary)'

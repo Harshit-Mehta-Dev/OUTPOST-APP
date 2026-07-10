@@ -1638,6 +1638,27 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             
+            {/* NOTIFICATION BELL OUTSIDE SYSTEM TOOLS */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => {
+                  setIsAlertOpen(!isAlertOpen);
+                  setIsAIOpen(false);
+                  if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+                    Notification.requestPermission();
+                  }
+                }}
+                className={`theme-trigger-btn ${isAlertOpen ? 'active shadow-[0_0_15px_rgba(var(--brand-primary),0.2)]' : ''}`}
+                style={isAlertOpen ? { background: 'var(--bg-card)', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)' } : { border: '1px solid transparent' }}
+                title="Alerts"
+              >
+                <Bell size={18} />
+                {alerts.length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand animate-pulse shadow-[0_0_8px_rgba(var(--brand-primary),0.6)]" style={{ width: '8px', height: '8px', position: 'absolute' }} />
+                )}
+              </button>
+            </div>
+
             {/* CPU CHIP DROPDOWN: CONTAINS ALL GENERIC TOOLS */}
             <div 
               className="dev-menu-container"
@@ -1670,27 +1691,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     transition={{ duration: 0.3, ease: 'easeOut' }}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}
                   >
-                    {/* NOTIFICATION BELL */}
-                    <div style={{ position: 'relative' }}>
-                      <button
-                        onClick={() => {
-                          setIsAlertOpen(!isAlertOpen);
-                          setIsAIOpen(false);
-                          if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
-                            Notification.requestPermission();
-                          }
-                        }}
-                        className={`theme-trigger-btn ${isAlertOpen ? 'active shadow-[0_0_15px_rgba(var(--brand-primary),0.2)]' : ''}`}
-                        style={isAlertOpen ? { background: 'var(--bg-card)', color: 'var(--accent-primary)' } : undefined}
-                        title="Alerts"
-                      >
-                        <Bell size={16} />
-                        {alerts.length > 0 && (
-                          <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand animate-pulse shadow-[0_0_8px_rgba(var(--brand-primary),0.6)]" style={{ width: '8px', height: '8px', position: 'absolute' }} />
-                        )}
-                      </button>
-                    </div>
-
                     {/* AI ASSISTANT */}
                     {isCampAdmin && (
                       <button
