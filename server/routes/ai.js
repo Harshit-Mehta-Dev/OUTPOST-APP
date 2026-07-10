@@ -19,7 +19,7 @@ const syncMessageToSupabase = async (messageDoc) => {
 // Helper: save and broadcast an AI message
 const broadcastAiMessage = async (text, io) => {
   const msg = new Message({
-    channelKey: '1_ai-nexus',
+    channelKey: '1_Ai-Scout',
     user: { username: 'Ai-Scout', profilePictureUrl: AI_BOT_AVATAR, level: 99 },
     text,
     time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -28,8 +28,8 @@ const broadcastAiMessage = async (text, io) => {
   const saved = await msg.save();
   syncMessageToSupabase(saved);
   if (io) {
-    io.to('1_ai-nexus').emit('broadcast-typing-stop', { channelId: '1_ai-nexus', scoutName: 'Ai-Scout' });
-    io.to('1_ai-nexus').emit('receive_message', { ...saved.toObject(), receivedAt: Date.now() });
+    io.to('1_Ai-Scout').emit('broadcast-typing-stop', { channelId: '1_Ai-Scout', scoutName: 'Ai-Scout' });
+    io.to('1_Ai-Scout').emit('receive_message', { ...saved.toObject(), receivedAt: Date.now() });
   }
   return saved;
 };
@@ -40,8 +40,8 @@ router.post('/chat', requireAuth, async (req, res) => {
   try {
     const { message, channelKey } = req.body;
 
-    if (channelKey !== '1_ai-nexus') {
-      return res.status(403).json({ error: 'AI Assistant can only be accessed from #ai-nexus.' });
+    if (channelKey !== '1_Ai-Scout') {
+      return res.status(403).json({ error: 'AI Assistant can only be accessed from #Ai-Scout.' });
     }
     if (!message || message.trim() === '') {
       return res.status(400).json({ error: 'Message cannot be empty.' });
@@ -66,7 +66,7 @@ router.post('/chat', requireAuth, async (req, res) => {
       aiText = "Outpost HQ was created by Harshit Mehta to provide a seamless, modern, and highly interactive chat experience.";
     }
     else if (lowerMessage.includes('channel') || lowerMessage.includes('rooms')) {
-      aiText = "Outpost has multiple channels you can join! For example, #basecamp is the main lobby, #development is for coding, and #ai-nexus is where you are right now communicating with me.";
+      aiText = "Outpost has multiple channels you can join! For example, #basecamp is the main lobby, #development is for coding, and #Ai-Scout is where you are right now communicating with me.";
     }
     else if (lowerMessage.includes('theme') || lowerMessage.includes('dark mode')) {
       aiText = "You can customize your experience! Outpost supports various themes including Midnight Blue, Cyberpunk, and Classic Dark. Just click the gear icon to explore settings.";
@@ -98,7 +98,7 @@ router.post('/chat', requireAuth, async (req, res) => {
       const saved = await broadcastAiMessage(`⚠️ Ai-Scout had an internal error: ${err.message}`, io);
       return res.status(200).json({ success: true, message: saved });
     } catch(e2) {
-      if (io) io.to('1_ai-nexus').emit('broadcast-typing-stop', { channelId: '1_ai-nexus', scoutName: 'Ai-Scout' });
+      if (io) io.to('1_Ai-Scout').emit('broadcast-typing-stop', { channelId: '1_Ai-Scout', scoutName: 'Ai-Scout' });
       return res.status(500).json({ error: err.message });
     }
   }

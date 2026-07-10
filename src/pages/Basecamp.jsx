@@ -183,7 +183,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       active: true,
       expeditions: [
         { id: 'community-chat', name: 'community-chat', type: 'text' },
-        { id: 'ai-nexus', name: 'ai-nexus', type: 'text' },
+        { id: 'Ai-Scout', name: 'Ai-Scout', type: 'text' },
         { id: 'announcements', name: 'announcements', type: 'text' },
         { id: 'ideas', name: 'ideas', type: 'text' },
         { id: 'dev-talk', name: 'dev-talk', type: 'text' },
@@ -522,13 +522,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             
             // Always ensure Outpost HQ has the ai-nexus channel (migration for existing users)
             if (hq) {
-              const hasAiNexus = hq.expeditions?.some(e => e.id === 'ai-nexus');
+              const hasAiNexus = hq.expeditions?.some(e => e.id === 'Ai-Scout');
               if (!hasAiNexus) {
                 hq = {
                   ...hq,
                   expeditions: [
                     { id: 'community-chat', name: 'community-chat', type: 'text' },
-                    { id: 'ai-nexus', name: 'ai-nexus', type: 'text' },
+                    { id: 'Ai-Scout', name: 'Ai-Scout', type: 'text' },
                     ...(hq.expeditions || []).filter(e => e.id !== 'community-chat')
                   ]
                 };
@@ -620,7 +620,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       }
       
       // Multi-player AI Nexus Interception
-      if (currentChannelKey === '1_ai-nexus') {
+      if (currentChannelKey === '1_Ai-Scout') {
         const token = localStorage.getItem('outpost_token');
         const aiApiBase = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
         fetch(aiApiBase + '/api/ai/chat', {
@@ -645,12 +645,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           if (data.success && data.message) {
             const aiMsg = data.message;
             setMessagesByChannel(prev => {
-              const channelMsgs = prev['1_ai-nexus'] || [];
+              const channelMsgs = prev['1_Ai-Scout'] || [];
               const alreadyExists = channelMsgs.some(m => (m._id || m.id) === (aiMsg._id || aiMsg.id));
               if (alreadyExists) return prev;
               return {
                 ...prev,
-                '1_ai-nexus': [...channelMsgs, { ...aiMsg, receivedAt: Date.now() }]
+                '1_Ai-Scout': [...channelMsgs, { ...aiMsg, receivedAt: Date.now() }]
               };
             });
           }
@@ -1898,11 +1898,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
         </header>
 
-        {activeChannel === 'ai-nexus' ? (
+        {activeChannel === 'Ai-Scout' ? (
           <AiNexus currentUser={currentUser} />
         ) : null}
 
-        <div className="chat-messages" style={{ display: activeChannel === 'ai-nexus' ? 'none' : undefined }}>
+        <div className="chat-messages" style={{ display: activeChannel === 'Ai-Scout' ? 'none' : undefined }}>
           <div className="chat-welcome">
             <div className="welcome-icon">
               <Hash size={40} />
@@ -2174,7 +2174,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           <div ref={messagesEndRef} />
         </div>
 
-        {activeChannel !== 'ai-nexus' && <AnimatePresence>
+        {activeChannel !== 'Ai-Scout' && <AnimatePresence>
           {activeTypers.length > 0 && (
             <motion.div 
               className="typing-indicator"
@@ -2197,7 +2197,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </motion.div>
           )}
         </AnimatePresence>}
-        {activeChannel !== 'ai-nexus' && <AnimatePresence>
+        {activeChannel !== 'Ai-Scout' && <AnimatePresence>
           {replyingTo && (
             <motion.div 
               initial={{ opacity: 0, y: 10, height: 0 }}
@@ -2218,7 +2218,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           )}
         </AnimatePresence>}
 
-        <div className="chat-input-wrapper" style={{ display: activeChannel === 'ai-nexus' ? 'none' : undefined }}>
+        <div className="chat-input-wrapper" style={{ display: activeChannel === 'Ai-Scout' ? 'none' : undefined }}>
           <div className="chat-input-container" style={{ position: 'relative', overflow: 'visible' }}>
             {activeCampsite?.bannedUsers?.includes(currentUser?.username) ? (
               <div style={{ width: '100%', textAlign: 'center', padding: '12px', color: '#ff4444', fontWeight: 'bold', background: 'rgba(255,0,0,0.1)', borderRadius: '8px' }}>

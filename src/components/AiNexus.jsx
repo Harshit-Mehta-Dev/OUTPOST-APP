@@ -68,7 +68,7 @@ const AiNexus = ({ currentUser }) => {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ message: text, channelKey: '1_ai-nexus' })
+        body: JSON.stringify({ message: text, channelKey: '1_Ai-Scout' })
       });
 
       const data = await res.json();
