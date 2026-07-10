@@ -2419,6 +2419,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         <ShieldAlert size={18} />
                       </button>
                     )}
+                    <button className="icon-btn" style={{ color: '#ff6b6b' }} title="Log Out" onClick={() => { 
+                      setIsMobileDrawerOpen(false);
+                      handleLogout();
+                    }}>
+                      <LogOut size={18} />
+                    </button>
                   </div>
                 </div>
                 
