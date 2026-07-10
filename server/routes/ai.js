@@ -3,7 +3,7 @@ const router = express.Router();
 const requireAuth = require('../middleware/auth');
 const Message = require('../models/Message');
 
-const AI_BOT_AVATAR = 'https://api.dicebear.com/7.x/bottts/svg?seed=OutpostAI&backgroundColor=4facfe';
+const AI_BOT_AVATAR = 'https://api.dicebear.com/7.x/bottts/svg?seed=Ai-Scout&backgroundColor=4facfe';
 
 const supabase = require('../supabaseClient');
 const syncMessageToSupabase = async (messageDoc) => {
@@ -20,7 +20,7 @@ const syncMessageToSupabase = async (messageDoc) => {
 const broadcastAiMessage = async (text, io) => {
   const msg = new Message({
     channelKey: '1_ai-nexus',
-    user: { username: 'Outpost AI', profilePictureUrl: AI_BOT_AVATAR, level: 99 },
+    user: { username: 'Ai-Scout', profilePictureUrl: AI_BOT_AVATAR, level: 99 },
     text,
     time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     type: 'text'
@@ -28,7 +28,7 @@ const broadcastAiMessage = async (text, io) => {
   const saved = await msg.save();
   syncMessageToSupabase(saved);
   if (io) {
-    io.to('1_ai-nexus').emit('broadcast-typing-stop', { channelId: '1_ai-nexus', scoutName: 'Outpost AI' });
+    io.to('1_ai-nexus').emit('broadcast-typing-stop', { channelId: '1_ai-nexus', scoutName: 'Ai-Scout' });
     io.to('1_ai-nexus').emit('receive_message', { ...saved.toObject(), receivedAt: Date.now() });
   }
   return saved;
@@ -72,7 +72,7 @@ router.post('/chat', requireAuth, async (req, res) => {
       aiText = "You can customize your experience! Outpost supports various themes including Midnight Blue, Cyberpunk, and Classic Dark. Just click the gear icon to explore settings.";
     }
     else if (lowerMessage.includes('hello') || lowerMessage.includes('hi ') || lowerMessage.trim() === 'hi') {
-      aiText = "Hello Scout! I am the Outpost Core AI. How can I help you navigate the app today?";
+      aiText = "Hello Scout! I am Ai-Scout. How can I help you navigate the app today?";
     }
     else if (lowerMessage.includes('help')) {
       aiText = "I can help you understand how to use Outpost! Ask me about channels, themes, voice expeditions, or who created the app.";
@@ -82,7 +82,7 @@ router.post('/chat', requireAuth, async (req, res) => {
     }
     // 3. Fallback
     else {
-      aiText = "I am Outpost Core AI, specialized only in assisting you with the Outpost application. I don't know the answer to that, but I can help you with app features, channels, or themes! Try asking 'What is Outpost?'";
+      aiText = "I am Ai-Scout, specialized only in assisting you with the Outpost application. I don't know the answer to that, but I can help you with app features, channels, or themes! Try asking 'What is Outpost?'";
     }
 
     // Add a slight artificial delay to make it feel like AI is "thinking"
@@ -95,10 +95,10 @@ router.post('/chat', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('❌ AI Route crash:', err.message, err.stack);
     try {
-      const saved = await broadcastAiMessage(`⚠️ Outpost AI had an internal error: ${err.message}`, io);
+      const saved = await broadcastAiMessage(`⚠️ Ai-Scout had an internal error: ${err.message}`, io);
       return res.status(200).json({ success: true, message: saved });
     } catch(e2) {
-      if (io) io.to('1_ai-nexus').emit('broadcast-typing-stop', { channelId: '1_ai-nexus', scoutName: 'Outpost AI' });
+      if (io) io.to('1_ai-nexus').emit('broadcast-typing-stop', { channelId: '1_ai-nexus', scoutName: 'Ai-Scout' });
       return res.status(500).json({ error: err.message });
     }
   }

@@ -18,7 +18,7 @@ const AiNexus = ({ currentUser }) => {
     {
       id: 'welcome',
       role: 'bot',
-      text: `Hello, ${currentUser?.username || 'Scout'}! 👋 I'm Outpost AI — your personal assistant. Ask me anything!`,
+      text: `Hello, ${currentUser?.username || 'Scout'}! 👋 I'm Ai-Scout — your personal assistant. Ask me anything!`,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -113,7 +113,7 @@ const AiNexus = ({ currentUser }) => {
           <span className="ainex-online-dot" />
         </div>
         <div className="ainex-hero-info">
-          <span className="ainex-hero-name">Outpost Core AI</span>
+          <span className="ainex-hero-name">Ai-Scout</span>
           <span className="ainex-hero-status">● Secure Local Engine</span>
         </div>
         
@@ -151,7 +151,7 @@ const AiNexus = ({ currentUser }) => {
           <textarea
             ref={textareaRef}
             className="ainex-textarea"
-            placeholder={`Ask Outpost AI anything...`}
+            placeholder={`Ask Ai-Scout anything...`}
             value={input}
             onChange={handleInput}
             onKeyDown={handleKeyDown}

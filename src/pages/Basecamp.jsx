@@ -1949,7 +1949,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 highlightClass = " animate-signal-glow";
               }
 
-              const isAiMessage = (msg.user?.username || msg.user) === 'Outpost AI';
+              const isAiMessage = (msg.user?.username || msg.user) === 'Ai-Scout';
               if (isAiMessage) {
                 return (
                   <div
@@ -1992,7 +1992,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           fontWeight: 700, fontSize: '14px',
                           background: 'linear-gradient(90deg, #4facfe, #00f2fe)',
                           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-                        }}>Outpost AI</span>
+                        }}>Ai-Scout</span>
                         <span style={{
                           fontSize: '10px', padding: '2px 7px', borderRadius: '20px',
                           background: 'rgba(79,172,254,0.15)', color: '#4facfe',
