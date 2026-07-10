@@ -207,7 +207,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const activeCampsite = campsites && campsites.length > 0 ? (campsites.find(c => c.active) || campsites[0]) : null;
   const expeditions = activeCampsite?.expeditions || [];
-  const currentChannelKey = activeCampsite ? `${activeCampsite.id}_${activeChannel}` : 'fallback';
+  const currentCampsiteId = activeCampsite?.id || activeCampsite?._id || 'global';
+  const currentChannelKey = activeCampsite ? `${currentCampsiteId}_${activeChannel}` : 'fallback';
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [selectedPopupAlert, setSelectedPopupAlert] = useState(null);
   const [clearedTimestamps, setClearedTimestamps] = useState(() => {
@@ -262,7 +263,23 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     // Join the socket room
     socket.emit('join_channel', currentChannelKey);
     setActiveTypers([]); // Reset typers when changing channels
-  }, [currentChannelKey]);
+    
+    // Auto re-join on reconnect
+    const handleReconnect = () => {
+      socket.emit('join_channel', currentChannelKey);
+      if (currentUser?.email) {
+        socket.emit('join_admin_room', currentUser.email);
+      }
+      if (currentUser?.username) {
+        socket.emit('join_user_room', currentUser.username);
+      }
+    };
+    socket.on('connect', handleReconnect);
+    
+    return () => {
+      socket.off('connect', handleReconnect);
+    };
+  }, [currentChannelKey, currentUser]);
 
   useEffect(() => {
     if (campsites && campsites.length > 0) {
@@ -2185,7 +2202,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               exit={{ opacity: 0, y: 5 }}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px', marginBottom: '10px', color: 'var(--accent-primary)', fontStyle: 'italic', fontSize: '0.85rem' }}
             >
-              <Bot size={16} />
+              <MessageSquare size={16} />
               <div className="flex gap-1 items-center justify-center" style={{ display: 'flex', gap: '4px', marginRight: '4px' }}>
                 <span className="typing-dot" />
                 <span className="typing-dot" />
