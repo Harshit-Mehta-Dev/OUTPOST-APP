@@ -41,6 +41,7 @@ const Auth = () => {
         const finalUsername = userInfo?.name || (finalEmail.includes('@') ? finalEmail.split('@')[0] : finalEmail);
         
         // Sync with backend
+        try {
           const syncRes = await fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}/api/users/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
