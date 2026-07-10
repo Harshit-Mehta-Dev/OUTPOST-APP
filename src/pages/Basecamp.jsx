@@ -1607,6 +1607,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             currentUser={currentUser}
           />
         </div>
+        
+        {/* Scout-Guardian Security Badge */}
+        <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid var(--border)', background: 'rgba(0, 0, 0, 0.2)', fontSize: '0.75rem', color: 'var(--text-secondary)' }} title="Scout-Guardian is actively protecting your session.">
+          <Shield size={14} color="#059669" />
+          <span style={{ fontWeight: '600', letterSpacing: '0.5px' }}>Protected by Scout-Guardian</span>
+        </div>
       </aside>
         )}
 
@@ -2397,6 +2403,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                       </button>
                     )}
                   </div>
+                </div>
+                
+                {/* Scout-Guardian Security Badge */}
+                <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid var(--border)', background: 'rgba(0, 0, 0, 0.2)', fontSize: '0.75rem', color: 'var(--text-secondary)' }} title="Scout-Guardian is actively protecting your session.">
+                  <Shield size={14} color="#059669" />
+                  <span style={{ fontWeight: '600', letterSpacing: '0.5px' }}>Protected by Scout-Guardian</span>
                 </div>
               </aside>
             </motion.div>
