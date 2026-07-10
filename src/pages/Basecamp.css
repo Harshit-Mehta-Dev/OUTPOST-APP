@@ -937,12 +937,7 @@
   }
   
   .top-bar-center {
-    display: flex !important; 
-    font-size: 0.75rem !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100px;
+    display: none !important; /* Hide on mobile to prevent overlapping */
   }
 
   .desktop-only-menu-toggle {
@@ -967,12 +962,14 @@
     position: absolute;
     top: 50px;
     right: 10px;
-    background: var(--bg-card);
+    background: rgba(9, 9, 11, 0.95) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     padding: 8px !important;
     border-radius: 12px;
-    border: 1px solid var(--border-glass);
-    z-index: 60;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    z-index: 9999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
   }
 
   .top-bar-right .icon-btn {
