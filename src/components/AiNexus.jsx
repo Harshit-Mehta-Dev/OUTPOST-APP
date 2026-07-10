@@ -72,7 +72,13 @@ const AiNexus = ({ currentUser }) => {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Unknown server error.');
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('outpost_token');
+          throw new Error('Your secure session token expired. Please log out and log back in to reconnect Ai-Scout.');
+        }
+        throw new Error(data.error || 'Unknown server error.');
+      }
 
       setMessages(prev => [...prev, {
         id: 'b-' + Date.now(),
