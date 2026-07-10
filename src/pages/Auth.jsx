@@ -45,7 +45,7 @@ const Auth = () => {
           const syncRes = await fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}/api/users/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: finalEmail.toLowerCase().trim(), username: finalUsername, profilePictureUrl: userInfo?.picture || '' })
+            body: JSON.stringify({ email: finalEmail.toLowerCase().trim(), username: finalUsername })
           });
           const syncedUser = await syncRes.json();
           // Merge local profile picture so it's not lost
