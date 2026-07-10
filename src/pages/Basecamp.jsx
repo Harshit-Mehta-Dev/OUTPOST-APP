@@ -438,7 +438,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
     const handleKicked = (data) => {
       setKickNotification(`⚠️ KICKED: ${data.message}`);
-      setTimeout(() => setKickNotification(null), 8000);
       
       setCampsites(prev => {
         // Remove the campsite
@@ -1476,7 +1475,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 if (!res.ok) {
                   // This handles 403 Forbidden (e.g. user was kicked)
                   setKickNotification(`🚫 ACCESS DENIED: ${data.message}`);
-                  setTimeout(() => setKickNotification(null), 6000);
                   throw new Error(data.message);
                 }
                 return data;
@@ -2485,6 +2483,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             }}
           >
             <div style={{
+              position: 'relative',
               background: 'rgba(255, 59, 48, 0.2)',
               border: '2px solid #ff3b30',
               padding: '40px 60px',
@@ -2494,6 +2493,27 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               boxShadow: '0 0 50px rgba(255, 59, 48, 0.4)',
               maxWidth: '80%'
             }}>
+              <button 
+                onClick={() => {
+                  setKickNotification(null);
+                  handleCampsiteClick(1);
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '20px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#ff3b30',
+                  fontSize: '28px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  lineHeight: 1
+                }}
+                title="Close and return to HQ"
+              >
+                &times;
+              </button>
               <AlertOctagon size={64} color="#ff3b30" style={{ marginBottom: '24px', animation: 'pulse 2s infinite' }} />
               <h2 style={{ fontSize: '28px', margin: '0 0 16px 0', textTransform: 'uppercase', letterSpacing: '2px', color: '#ff3b30' }}>
                 Action Prohibited
