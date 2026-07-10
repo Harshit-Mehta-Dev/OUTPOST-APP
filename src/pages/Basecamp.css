@@ -957,6 +957,24 @@
     gap: 4px !important; /* Compress icons */
   }
 
+  .dev-menu-container {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  .dev-menu-items {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    background: var(--bg-card);
+    padding: 8px !important;
+    border-radius: 12px;
+    border: 1px solid var(--border-glass);
+    z-index: 60;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
   .top-bar-right .icon-btn {
     width: 28px;
     height: 28px;

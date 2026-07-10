@@ -1707,6 +1707,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <AnimatePresence>
                 {isDevMenuOpen && (
                   <motion.div
+                    className="dev-menu-items"
                     initial={{ width: 0, opacity: 0, scale: 0.8 }}
                     animate={{ width: 'auto', opacity: 1, scale: 1 }}
                     exit={{ width: 0, opacity: 0, scale: 0.8 }}
