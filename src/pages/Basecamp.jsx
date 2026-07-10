@@ -520,19 +520,17 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           setCampsites(prev => {
             let hq = prev.find(c => c.id === 1);
             
-            // Always ensure Outpost HQ has the ai-nexus channel (migration for existing users)
+            // Always ensure Outpost HQ has the Ai-Scout channel and explicitly remove the old ai-nexus
             if (hq) {
-              const hasAiNexus = hq.expeditions?.some(e => e.id === 'Ai-Scout');
-              if (!hasAiNexus) {
-                hq = {
-                  ...hq,
-                  expeditions: [
-                    { id: 'community-chat', name: 'community-chat', type: 'text' },
-                    { id: 'Ai-Scout', name: 'Ai-Scout', type: 'text' },
-                    ...(hq.expeditions || []).filter(e => e.id !== 'community-chat')
-                  ]
-                };
-              }
+              const cleanedExpeditions = (hq.expeditions || []).filter(e => e.id !== 'community-chat' && e.id !== 'ai-nexus' && e.id !== 'Ai-Scout');
+              hq = {
+                ...hq,
+                expeditions: [
+                  { id: 'community-chat', name: 'community-chat', type: 'text' },
+                  { id: 'Ai-Scout', name: 'Ai-Scout', type: 'text' },
+                  ...cleanedExpeditions
+                ]
+              };
             }
             
             // Only show campsites the user is a member of in the sidebar
