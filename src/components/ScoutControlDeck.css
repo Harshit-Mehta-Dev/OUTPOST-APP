@@ -232,3 +232,4 @@
   cursor: pointer;
 }
 .btn-leave:hover { background: #b91c1c; }
+@media (max-width: 768px) { .advanced-tactical-popup { background: rgba(9, 9, 11, 0.95) !important; z-index: 9999; } }

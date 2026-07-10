@@ -259,18 +259,19 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, cu
               </div>
             ) : showLogoutConfirm ? (
               <div className="logout-confirm-gate">
-                <p className="logout-warning">Abandon the Basecamp?</p>
+                <p className="logout-warning">Logout of your account?</p>
                 <div className="logout-actions">
-                  <button onClick={() => setShowLogoutConfirm(false)} className="btn-stay">Stay</button>
-                  <button onClick={onLogout} className="btn-leave">Leave</button>
+                  <button onClick={() => setShowLogoutConfirm(false)} className="btn-stay">Cancel</button>
+                  <button onClick={onLogout} className="btn-leave">Logout</button>
                 </div>
               </div>
             ) : (
               <button 
                 onClick={() => setShowLogoutConfirm(true)}
                 className="btn-decommission"
+                style={{ background: '#3f3f46', marginTop: '10px' }}
               >
-                🚪 Decommission Session
+                Log Out
               </button>
             )}
           </motion.div>
