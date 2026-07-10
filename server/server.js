@@ -246,7 +246,7 @@ const cache = require('./middleware/cache');
 const scoutVault = require('./utils/scoutVault');
 
 // Messages Route
-app.get('/api/messages/:channelKey', cache(15), async (req, res) => {
+app.get('/api/messages/:channelKey', async (req, res) => {
   try {
     const messages = await Message.find({ channelKey: req.params.channelKey })
       .sort({ createdAt: 1 })
