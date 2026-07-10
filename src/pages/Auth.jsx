@@ -41,29 +41,44 @@ const Auth = () => {
         const finalUsername = userInfo?.name || (finalEmail.includes('@') ? finalEmail.split('@')[0] : finalEmail);
         
         // Sync with backend
-        try {
           const syncRes = await fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}/api/users/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: finalEmail.toLowerCase().trim(), username: finalUsername, profilePictureUrl: userInfo?.picture || '' })
           });
           const syncedUser = await syncRes.json();
+          // Merge local profile picture so it's not lost
+          const existing = JSON.parse(localStorage.getItem('outpost_user') || '{}');
+          syncedUser.profilePictureUrl = userInfo?.picture || syncedUser.profilePictureUrl || existing.profilePictureUrl || '';
+          
           localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
-          if (syncedUser.token) localStorage.setItem('outpost_token', syncedUser.token);
+          if (syncedUser.token) {
+            localStorage.setItem('outpost_token', syncedUser.token);
+          } else {
+            localStorage.removeItem('outpost_token');
+          }
         } catch (syncErr) {
           console.error("Failed to sync user with backend", syncErr);
+          const existing = JSON.parse(localStorage.getItem('outpost_user') || '{}');
           localStorage.setItem('outpost_user', JSON.stringify({ 
             email: finalEmail.toLowerCase().trim(), 
             username: finalUsername,
-            profilePictureUrl: userInfo?.picture || ''
+            profilePictureUrl: userInfo?.picture || existing.profilePictureUrl || ''
           }));
+          localStorage.removeItem('outpost_token');
         }
 
         triggerLoadingAndNavigate();
       } catch (err) {
         console.error('Failed to fetch user info', err);
         const fallbackEmail = email || `scout_${Math.floor(Math.random() * 10000)}@outpost.local`;
-        localStorage.setItem('outpost_user', JSON.stringify({ email: fallbackEmail, username: 'GoogleUser' }));
+        const existing = JSON.parse(localStorage.getItem('outpost_user') || '{}');
+        localStorage.setItem('outpost_user', JSON.stringify({ 
+          email: fallbackEmail, 
+          username: 'GoogleUser',
+          profilePictureUrl: existing.profilePictureUrl || ''
+        }));
+        localStorage.removeItem('outpost_token');
         triggerLoadingAndNavigate();
       }
     },
