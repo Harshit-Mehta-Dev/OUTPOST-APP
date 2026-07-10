@@ -4,11 +4,13 @@ import './AiNexus.css';
 
 const API_BASE = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
 
-const TypingIndicator = () => (
+const SkeletonMessage = () => (
   <div className="ainex-row ainex-row-bot">
     <div className="ainex-bot-icon"><img src="/ai-scout-logo.png" alt="Ai-Scout" className="ainex-custom-logo" /></div>
-    <div className="ainex-bubble ainex-bubble-bot ainex-typing">
-      <span className="ainex-dot" /><span className="ainex-dot" /><span className="ainex-dot" />
+    <div className="ainex-bubble ainex-bubble-bot ainex-skeleton-wrapper">
+      <div className="ainex-skeleton-line short"></div>
+      <div className="ainex-skeleton-line long"></div>
+      <div className="ainex-skeleton-line medium"></div>
     </div>
   </div>
 );
@@ -146,7 +148,7 @@ const AiNexus = ({ currentUser }) => {
             )}
           </div>
         ))}
-        {isLoading && <TypingIndicator />}
+        {isLoading && <SkeletonMessage />}
         <div ref={bottomRef} />
       </div>
 

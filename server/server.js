@@ -136,7 +136,7 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'QUERY'],
   credentials: true
 }));
 
@@ -244,6 +244,33 @@ const User = require('./models/User');
 const HelpRequest = require('./models/HelpRequest');
 const cache = require('./middleware/cache');
 const scoutVault = require('./utils/scoutVault');
+
+// Advanced Message Search using modern HTTP QUERY method
+app.use('/api/messages/search', async (req, res, next) => {
+  if (req.method !== 'QUERY') return next();
+  try {
+    const filter = req.body; 
+    if (!filter || Object.keys(filter).length === 0) {
+      return res.status(400).json({ error: 'QUERY body must contain a valid filter' });
+    }
+    
+    const messages = await Message.find(filter).sort({ createdAt: -1 }).limit(50);
+      
+    // Scout-Vault: Decrypt messages
+    const decryptedMessages = messages.map(msg => {
+      const doc = msg.toObject ? msg.toObject() : msg;
+      if (doc.encryptedData && doc.iv) {
+        doc.text = scoutVault.decrypt(doc.encryptedData, doc.iv);
+      }
+      return doc;
+    });
+    
+    res.setHeader('Accept-Query', 'application/json');
+    res.json(decryptedMessages);
+  } catch (error) {
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
 
 // Messages Route
 app.get('/api/messages/:channelKey', async (req, res) => {
