@@ -13,7 +13,7 @@ const PLACEHOLDERS = [
   "Find a cozy campfire..."
 ];
 
-const Discover = ({ onJoinCampsite, refreshTrigger }) => {
+const Discover = ({ onJoinCampsite, refreshTrigger, onBack }) => {
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -137,7 +137,18 @@ const Discover = ({ onJoinCampsite, refreshTrigger }) => {
       
       <div className="discover-content">
         <header className="discover-hero">
-          <h1>DISCOVER CAMPSITES ON OUTPOST</h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', position: 'relative' }}>
+            {onBack && (
+              <button 
+                onClick={onBack}
+                className="hide-on-desktop"
+                style={{ position: 'absolute', left: '-20px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '8px' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+            )}
+            <h1>DISCOVER CAMPSITES ON OUTPOST</h1>
+          </div>
           <p>Explore thousands of public communities and find your next squad.</p>
           
           <div className="radar-search-box">

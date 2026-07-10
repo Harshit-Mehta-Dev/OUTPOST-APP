@@ -1481,6 +1481,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', zIndex: 1 }}>
             <Discover 
               refreshTrigger={discoverRefreshTrigger} 
+              onBack={() => setShowDiscover(false)}
               onJoinCampsite={(camp) => {
               fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites/${camp.id}/join`, {
                 method: 'POST',

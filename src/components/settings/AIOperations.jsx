@@ -18,10 +18,10 @@ export default function AIOperations({ onClose }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="absolute top-16 right-4 w-80 bg-zinc-950/95 border border-zinc-900 backdrop-blur-xl rounded-2xl p-5 shadow-2xl z-50 text-zinc-300 font-sans"
+      className="fixed top-16 right-4 w-80 max-w-[95vw] bg-zinc-950/95 border border-zinc-900 backdrop-blur-xl rounded-2xl p-5 shadow-2xl z-50 text-zinc-300 font-sans"
       style={{
-        position: 'absolute',
-        top: '60px',
+        position: 'fixed',
+        top: '64px',
         right: '10px',
         width: 'calc(100vw - 20px)',
         maxWidth: '320px',

@@ -339,3 +339,9 @@
   color: var(--text-secondary);
   opacity: 0.6;
 }
+
+@media (max-width: 768px) {
+  .ainex-input-section {
+    padding-bottom: 100px !important; /* Clears the mobile bottom dock */
+  }
+}

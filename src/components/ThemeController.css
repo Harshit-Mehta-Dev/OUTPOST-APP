@@ -1,8 +1,9 @@
 .theme-controller-overlay {
-  position: absolute;
+  position: fixed;
   top: 4rem;
   right: 1rem;
   width: 20rem;
+  max-width: 95vw;
   background-color: var(--bg-primary);
   border: 1px solid var(--border-glass);
   backdrop-filter: blur(24px);

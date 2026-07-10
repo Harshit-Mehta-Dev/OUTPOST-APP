@@ -850,6 +850,9 @@
   .hide-on-mobile {
     display: none !important;
   }
+  .hide-on-desktop {
+    display: flex !important;
+  }
 
   .chat-input-wrapper {
     padding-bottom: 100px !important; /* Extra safe space for the dock and lock icon */
@@ -946,6 +949,10 @@
     display: none !important;
   }
 
+  .top-bar-left {
+    gap: 6px !important;
+  }
+
   .top-bar-right {
     gap: 4px !important; /* Compress icons */
   }
@@ -1028,6 +1035,11 @@
   .mobile-only {
     display: none !important;
   }
+}
+
+.hide-on-desktop {
+  display: none !important;
+}
 }
 
 /* === OUTPOST AI BOT ANIMATIONS === */

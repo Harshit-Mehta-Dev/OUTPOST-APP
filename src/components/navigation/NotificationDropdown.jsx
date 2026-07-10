@@ -12,7 +12,7 @@ export default function NotificationDropdown({ isOpen, alerts, onSelectAlert, on
           exit={{ opacity: 0, y: -10, scale: 0.95, filter: 'blur(10px)' }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
           style={{
-            position: 'absolute',
+            position: 'fixed',
             top: '64px',
             right: '10px',
             width: 'calc(100vw - 20px)',
