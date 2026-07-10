@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, Sparkles, RotateCcw } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Bot, RotateCcw, Sparkles, Lock } from 'lucide-react';
 import './AiNexus.css';
 
 const API_BASE = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
 
-const TypingDots = () => (
-  <div className="ai-typing-indicator">
-    <div className="ai-avatar-small">🤖</div>
-    <div className="ai-bubble ai-bubble-bot">
-      <span className="ai-dot" />
-      <span className="ai-dot" />
-      <span className="ai-dot" />
+const TypingIndicator = () => (
+  <div className="ainex-row ainex-row-bot">
+    <div className="ainex-bot-icon">🤖</div>
+    <div className="ainex-bubble ainex-bubble-bot ainex-typing">
+      <span className="ainex-dot" /><span className="ainex-dot" /><span className="ainex-dot" />
     </div>
   </div>
 );
@@ -20,29 +18,42 @@ const AiNexus = ({ currentUser }) => {
     {
       id: 'welcome',
       role: 'bot',
-      text: `Hello, ${currentUser?.username || 'Scout'}! 👋 I'm **Outpost AI**, your personal assistant. Ask me anything — coding help, general knowledge, creative ideas, or just chat!`,
-      time: 'Today'
+      text: `Hello, ${currentUser?.username || 'Scout'}! 👋 I'm Outpost AI — your personal assistant. Ask me anything!`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [aiModel, setAiModel] = useState('gemini');
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  const autoResize = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  };
+
+  const handleInput = (e) => {
+    setInput(e.target.value);
+    autoResize();
+  };
 
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || isLoading) return;
 
     setInput('');
-    setError(null);
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
     const userMsg = {
-      id: 'user-' + Date.now(),
+      id: 'u-' + Date.now(),
       role: 'user',
       text,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -58,142 +69,115 @@ const AiNexus = ({ currentUser }) => {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ message: text, channelKey: '1_ai-nexus' })
+        body: JSON.stringify({ message: text, channelKey: '1_ai-nexus', model: aiModel })
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unknown server error.');
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Unknown error from AI.');
-      }
-
-      const aiText = data.message?.text || 'I had a blank thought. Try again!';
       setMessages(prev => [...prev, {
-        id: 'bot-' + Date.now(),
+        id: 'b-' + Date.now(),
         role: 'bot',
-        text: aiText,
+        text: data.message?.text || 'I got a blank response. Try again!',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
     } catch (err) {
-      setError(err.message);
       setMessages(prev => [...prev, {
-        id: 'err-' + Date.now(),
+        id: 'e-' + Date.now(),
         role: 'bot',
-        text: `⚠️ ${err.message}`,
+        text: '⚠️ ' + err.message,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isError: true
       }]);
     } finally {
       setIsLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 100);
+      setTimeout(() => textareaRef.current?.focus(), 50);
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
-  const clearChat = () => {
-    setMessages([{
-      id: 'welcome-' + Date.now(),
-      role: 'bot',
-      text: `Chat cleared! How can I help you, ${currentUser?.username || 'Scout'}? 🚀`,
-      time: 'Today'
-    }]);
-  };
-
-  const renderText = (text) => {
-    // Simple bold rendering for **text**
-    return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i}>{part.slice(2, -2)}</strong>;
-      }
-      return part;
-    });
-  };
+  const clearChat = () => setMessages([{
+    id: 'w-' + Date.now(), role: 'bot',
+    text: `Chat cleared! How can I help, ${currentUser?.username || 'Scout'}?`,
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }]);
 
   return (
-    <div className="ainexus-container">
-      {/* Header */}
-      <div className="ainexus-header">
-        <div className="ainexus-header-left">
-          <div className="ainexus-bot-orb">
-            <span>🤖</span>
-            <div className="ainexus-orb-ring" />
-          </div>
-          <div>
-            <div className="ainexus-title">Outpost AI</div>
-            <div className="ainexus-subtitle">
-              <span className="ainexus-status-dot" />
-              Always online · Powered by Gemini
-            </div>
-          </div>
+    <div className="ainex-container">
+      {/* Bot header strip */}
+      <div className="ainex-hero">
+        <div className="ainex-hero-avatar">
+          <Bot size={20} />
+          <span className="ainex-online-dot" />
         </div>
-        <button className="ainexus-clear-btn" onClick={clearChat} title="Clear conversation">
-          <RotateCcw size={15} />
-          <span>New Chat</span>
+        <div className="ainex-hero-info">
+          <span className="ainex-hero-name">Outpost AI</span>
+          <span className="ainex-hero-status">● Always online</span>
+        </div>
+        
+        <select 
+          value={aiModel} 
+          onChange={(e) => setAiModel(e.target.value)}
+          className="ainex-model-select"
+        >
+          <option value="gemini">✨ Gemini</option>
+          <option value="chatgpt">⚡ ChatGPT</option>
+        </select>
+        <button className="ainex-new-chat-btn" onClick={clearChat} title="New conversation">
+          <RotateCcw size={13} /> New Chat
         </button>
       </div>
 
       {/* Messages */}
-      <div className="ainexus-messages">
-        {messages.map((msg, index) => (
-          <div
-            key={msg.id}
-            className={`ainexus-message-row ${msg.role === 'user' ? 'row-user' : 'row-bot'}`}
-            style={{ animationDelay: `${index * 0.05}s` }}
-          >
-            {msg.role === 'bot' && (
-              <div className="ai-avatar-small">🤖</div>
-            )}
-            <div className={`ainexus-bubble ${msg.role === 'user' ? 'bubble-user' : 'bubble-bot'} ${msg.isError ? 'bubble-error' : ''}`}>
-              <div className="ainexus-bubble-text">
-                {msg.text.split('\n').map((line, i) => (
-                  <span key={i}>{renderText(line)}{i < msg.text.split('\n').length - 1 && <br />}</span>
-                ))}
-              </div>
-              <div className="ainexus-bubble-time">{msg.time}</div>
+      <div className="ainex-messages">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`ainex-row ${msg.role === 'user' ? 'ainex-row-user' : 'ainex-row-bot'}`}>
+            {msg.role === 'bot' && <div className="ainex-bot-icon">🤖</div>}
+            <div className={`ainex-bubble ${msg.role === 'user' ? 'ainex-bubble-user' : 'ainex-bubble-bot'} ${msg.isError ? 'ainex-bubble-error' : ''}`}>
+              <div className="ainex-bubble-text">{msg.text}</div>
+              <div className="ainex-bubble-time">{msg.time}</div>
             </div>
             {msg.role === 'user' && (
-              <div className="ainexus-user-avatar">
+              <div className="ainex-user-icon">
                 {currentUser?.profilePictureUrl
                   ? <img src={currentUser.profilePictureUrl} alt="You" />
-                  : (currentUser?.username?.[0] || 'S').toUpperCase()
-                }
+                  : (currentUser?.username?.[0] || 'S').toUpperCase()}
               </div>
             )}
           </div>
         ))}
-        {isLoading && <TypingDots />}
+        {isLoading && <TypingIndicator />}
         <div ref={bottomRef} />
       </div>
 
       {/* Input */}
-      <div className="ainexus-input-area">
-        <div className="ainexus-input-wrapper">
-          <Sparkles size={16} className="ainexus-sparkle-icon" />
+      <div className="ainex-input-section">
+        <div className="ainex-input-box">
+          <Sparkles size={15} className="ainex-sparkle" />
           <textarea
-            ref={inputRef}
-            className="ainexus-input"
-            placeholder="Ask Outpost AI anything..."
+            ref={textareaRef}
+            className="ainex-textarea"
+            placeholder={`Ask Outpost AI anything...`}
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={handleInput}
             onKeyDown={handleKeyDown}
             rows={1}
             disabled={isLoading}
           />
           <button
-            className={`ainexus-send-btn ${input.trim() && !isLoading ? 'active' : ''}`}
+            className={`ainex-send ${input.trim() && !isLoading ? 'ainex-send-active' : ''}`}
             onClick={sendMessage}
             disabled={!input.trim() || isLoading}
           >
-            {isLoading ? <div className="ainexus-send-spinner" /> : <Send size={16} />}
+            {isLoading ? <div className="ainex-spinner" /> : <Send size={15} />}
           </button>
         </div>
-        <div className="ainexus-hint">Press Enter to send · Shift+Enter for new line</div>
+        <div className="ainex-footer-hint">
+          <Lock size={11} /> <span>End-to-End Encrypted · Press Enter to send · Shift+Enter for new line</span>
+        </div>
       </div>
     </div>
   );

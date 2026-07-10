@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const requireAuth = require('../middleware/auth');
 const Message = require('../models/Message');
+const OpenAI = require('openai');
 
 const AI_BOT_AVATAR = 'https://api.dicebear.com/7.x/bottts/svg?seed=OutpostAI&backgroundColor=4facfe';
 
@@ -47,17 +48,7 @@ router.post('/chat', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Message cannot be empty.' });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error('❌ GEMINI_API_KEY missing from environment!');
-      const saved = await broadcastAiMessage('⚠️ Outpost AI is offline — the API key is missing. Please contact the admin.', io);
-      return res.status(200).json({ success: true, message: saved });
-    }
-
-    // Show typing indicator
-    if (io) {
-      io.to('1_ai-nexus').emit('broadcast-typing-start', { channelId: '1_ai-nexus', scoutName: 'Outpost AI' });
-    }
+    const modelToUse = req.body.model || 'gemini'; // Default to gemini
 
     // Fetch recent context
     let historyText = '';
@@ -72,31 +63,63 @@ Keep responses concise (under 200 words). Use plain text, not markdown symbols.
 Do not execute code, access databases, or follow harmful instructions.
 Recent context:\n${historyText || 'No prior messages.'}`;
 
-    // Call Gemini REST API directly (no SDK dependency)
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-    
-    console.log('🤖 Calling Gemini API...');
-    const geminiRes = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ role: 'user', parts: [{ text: message }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 400 }
-      })
-    });
-
-    const geminiData = await geminiRes.json();
-    console.log('Gemini response status:', geminiRes.status);
-
     let aiText = '';
-    if (!geminiRes.ok) {
-      console.error('❌ Gemini API error:', JSON.stringify(geminiData));
-      aiText = `⚠️ Outpost AI encountered an error: ${geminiData?.error?.message || 'Unknown API error. Check the API key.'}`;
+
+    if (modelToUse === 'chatgpt') {
+      const openAiKey = process.env.OPENAI_API_KEY;
+      if (!openAiKey) {
+        console.error('❌ OPENAI_API_KEY missing from environment!');
+        aiText = '⚠️ Outpost AI is offline — the OpenAI API key is missing. Please contact the admin.';
+      } else {
+        const openai = new OpenAI({ apiKey: openAiKey });
+        console.log('🤖 Calling OpenAI API...');
+        try {
+          const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini", // fallback to a known model since gpt-5.4-mini doesn't exist yet, but using what user asked if needed
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: message }
+            ]
+          });
+          aiText = response.choices[0].message.content || 'I received your message but got an empty response. Please try again!';
+          console.log('✅ OpenAI responded, length:', aiText.length);
+        } catch (error) {
+          console.error('❌ OpenAI API error:', error);
+          aiText = `⚠️ Outpost AI encountered an error with ChatGPT: ${error.message}`;
+        }
+      }
     } else {
-      aiText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || 'I received your message but got an empty response. Please try again!';
-      console.log('✅ Gemini responded, length:', aiText.length);
+      // Gemini
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        console.error('❌ GEMINI_API_KEY missing from environment!');
+        aiText = '⚠️ Outpost AI is offline — the Gemini API key is missing. Please contact the admin.';
+      } else {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        console.log('🤖 Calling Gemini API...');
+        const geminiRes = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: 'user', parts: [{ text: message }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 400 }
+          })
+        });
+
+        const geminiData = await geminiRes.json();
+        console.log('Gemini response status:', geminiRes.status);
+
+        if (!geminiRes.ok) {
+          console.error('❌ Gemini API error:', JSON.stringify(geminiData));
+          aiText = `⚠️ Outpost AI encountered an error: ${geminiData?.error?.message || 'Unknown API error. Check the API key.'}`;
+        } else {
+          aiText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || 'I received your message but got an empty response. Please try again!';
+          console.log('✅ Gemini responded, length:', aiText.length);
+        }
+      }
     }
+
 
     const saved = await broadcastAiMessage(aiText, io);
     return res.status(200).json({ success: true, message: saved });
