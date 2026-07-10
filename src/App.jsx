@@ -22,31 +22,7 @@ const PageLoader = () => (
 // Wrapper for named exports like NotFoundPage
 const NotFoundPage = lazy(() => import('./components/ui/404-page-not-found').then(module => ({ default: module.NotFoundPage })));
 
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
-  }
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-  componentDidCatch(error, errorInfo) {
-    this.setState({ error, errorInfo });
-    console.error("ErrorBoundary caught an error", error, errorInfo);
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{ padding: '20px', color: 'white', background: 'red', zIndex: 99999, position: 'absolute', inset: 0 }}>
-          <h2>Dashboard Crash Debug Info:</h2>
-          <pre>{this.state.error && this.state.error.toString()}</pre>
-          <pre>{this.state.errorInfo && this.state.errorInfo.componentStack}</pre>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
+import { ScoutGuardian } from './components/security/ScoutGuardian';
 
 const RequireAuth = ({ children }) => {
   if (typeof window !== 'undefined') {
@@ -134,29 +110,29 @@ function App() {
     <>
       <BeamsBackground fixed={true} intensity="medium" />
       {!hideHeaderFooter && <Header isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
-      <main className={isAppRoute ? 'app-main' : ''}>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/app" element={
-              <RequireAuth>
-                <ErrorBoundary>
+      <ScoutGuardian>
+        <main className={isAppRoute ? 'app-main' : ''}>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/app" element={
+                <RequireAuth>
                   <Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-                </ErrorBoundary>
-              </RequireAuth>
-            } />
-            <Route path="/invite/:id" element={
-              <RequireAuth>
-                <Invite />
-              </RequireAuth>
-            } />
-            
+                </RequireAuth>
+              } />
+              <Route path="/invite/:id" element={
+                <RequireAuth>
+                  <Invite />
+                </RequireAuth>
+              } />
+              
 
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </main>
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </main>
+      </ScoutGuardian>
     </>
   );
 }

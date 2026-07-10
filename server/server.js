@@ -143,6 +143,10 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// --- Scout-Guardian Security Layer ---
+const scoutGuardian = require('./middleware/scoutGuardian');
+app.use(scoutGuardian);
+
 // --- Phase 6: 24/7 Ops & Security ---
 // 3.5. Logging & Sanitization
 app.use(morgan('combined')); // Operational Logging
