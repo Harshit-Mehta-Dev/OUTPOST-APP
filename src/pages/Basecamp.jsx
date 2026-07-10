@@ -1839,12 +1839,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
             <button className="camp-ops-btn" onClick={() => setIsCampOpsModalOpen(true)}>
               <Settings size={18} />
-              Camp Operations
+              <span className="hide-on-mobile">Camp Operations</span>
             </button>
             {isCampAdmin && (
               <button className="camp-ops-btn" style={{ marginLeft: '8px' }} onClick={() => setIsAdminPanelOpen(true)}>
                 <ShieldAlert size={18} />
-                Manage Members
+                <span className="hide-on-mobile">Manage Members</span>
               </button>
             )}
 
@@ -1895,7 +1895,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-glass)'; e.currentTarget.style.background = 'transparent'; }}
               title="Clear Chat For Me"
             >
-              <Trash2 size={14} /> Clear Chat
+              <Trash2 size={14} /> <span className="hide-on-mobile uppercase-text" style={{textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px'}}>Clear Chat</span>
             </button>
             <button 
               className={`icon-btn ${isDrawerOpen ? 'active' : ''}`}
@@ -2040,16 +2040,16 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         )}
                       </div>
                       <div className="message-content">
-                        <div className="message-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
+                        <div className="message-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', width: '100%', overflow: 'hidden' }}>
                           {(() => {
                             const username = msg.user?.username || msg.user || 'Unknown Scout';
                             const userRoleName = activeCampsite?.memberRoles?.[username];
                             const userRoleColor = activeCampsite?.roles?.find(r => r.name === userRoleName)?.color || 'var(--text-primary)';
                             return (
-                              <span className="message-author" style={{ color: userRoleColor, fontWeight: userRoleName ? 'bold' : 'normal', display: 'flex', alignItems: 'center' }}>
-                                {username}
-                                {username.toLowerCase() === 'harshit mehta' && <span className="role-tag developer">DEVELOPER</span>}
-                                {((activeCampsite?.adminUsername && username === activeCampsite?.adminUsername) || (activeCampsite?.adminEmail === currentUser?.email && username === currentUser?.username)) && username.toLowerCase() !== 'harshit mehta' && <span className="role-tag admin">ADMIN</span>}
+                              <span className="message-author" style={{ color: userRoleColor, fontWeight: userRoleName ? 'bold' : 'normal', display: 'flex', alignItems: 'center', flexShrink: 1, minWidth: 0, overflow: 'hidden' }}>
+                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</span>
+                                {username.toLowerCase() === 'harshit mehta' && <span className="role-tag developer" style={{flexShrink: 0}}>DEVELOPER</span>}
+                                {((activeCampsite?.adminUsername && username === activeCampsite?.adminUsername) || (activeCampsite?.adminEmail === currentUser?.email && username === currentUser?.username)) && username.toLowerCase() !== 'harshit mehta' && <span className="role-tag admin" style={{flexShrink: 0}}>ADMIN</span>}
                               </span>
                             );
                           })()}

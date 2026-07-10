@@ -847,8 +847,12 @@
     padding-bottom: 0px; /* Shifted padding to chat-input-wrapper */
   }
   
+  .hide-on-mobile {
+    display: none !important;
+  }
+
   .chat-input-wrapper {
-    padding-bottom: 85px !important; /* Safely clear the mobile bottom dock */
+    padding-bottom: 100px !important; /* Extra safe space for the dock and lock icon */
     padding-left: 12px !important;
     padding-right: 12px !important;
   }
@@ -876,8 +880,8 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 65px;
-    background: rgba(0, 0, 0, 0.9);
+    height: 70px;
+    background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -1005,7 +1009,17 @@
   }
 
   .message-item {
-    gap: 10px;
+    gap: 8px;
+    padding-bottom: 8px; /* Slightly tighter spacing on mobile */
+  }
+
+  .message-meta {
+    gap: 4px; /* Compress the gap between name and time */
+  }
+
+  .message-action-btn, .operator-action-btn {
+    padding: 2px !important;
+    opacity: 1 !important; /* Ensure they are visible on mobile since no hover */
   }
 }
 
