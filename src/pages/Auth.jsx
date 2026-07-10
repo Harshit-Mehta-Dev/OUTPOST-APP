@@ -23,7 +23,7 @@ const Auth = () => {
       setIsLoading(true);
       setTimeout(() => {
         navigate('/app');
-      }, 100);
+      }, 1500);
     }
   }, [navigate]);
 
@@ -77,7 +77,7 @@ const Auth = () => {
     setIsLoading(true);
     setTimeout(() => {
       navigate('/app');
-    }, 200); // Minimal loading screen delay
+    }, 5000); // 5 seconds loading screen
   };
 
   const [failedAttempts, setFailedAttempts] = useState(0);
@@ -153,7 +153,7 @@ const Auth = () => {
       setFailedAttempts(0);
       localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
       if (syncedUser.token) localStorage.setItem('outpost_token', syncedUser.token);
-      setTimeout(() => { navigate('/app'); }, 500);
+      setTimeout(() => { navigate('/app'); }, 4000);
     })
     .catch(err => {
       console.warn("Backend offline, simulating local login/signup:", err);
@@ -167,7 +167,7 @@ const Auth = () => {
       };
       setFailedAttempts(0);
       localStorage.setItem('outpost_user', JSON.stringify(mockUser));
-      setTimeout(() => { navigate('/app'); }, 500);
+      setTimeout(() => { navigate('/app'); }, 2000);
     });
   };
 
