@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const requireAuth = require('../middleware/auth');
 const Message = require('../models/Message');
-const OpenAI = require('openai');
 
 const AI_BOT_AVATAR = 'https://api.dicebear.com/7.x/bottts/svg?seed=OutpostAI&backgroundColor=4facfe';
 
@@ -48,78 +47,47 @@ router.post('/chat', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Message cannot be empty.' });
     }
 
-    const modelToUse = req.body.model || 'gemini'; // Default to gemini
+    const lowerMessage = message.toLowerCase();
 
-    // Fetch recent context
-    let historyText = '';
-    try {
-      const recent = await Message.find({ channelKey: '1_ai-nexus' }).sort({ createdAt: -1 }).limit(6).lean();
-      historyText = recent.reverse().filter(m => m.text && m.user?.username).map(m => `${m.user.username}: ${m.text}`).join('\n');
-    } catch(e) { /* context is optional */ }
-
-    const systemPrompt = `You are Outpost AI, a friendly and helpful chat assistant inside the Outpost HQ app.
-Help users with programming, general knowledge, and creative ideas.
-Keep responses concise (under 200 words). Use plain text, not markdown symbols.
-Do not execute code, access databases, or follow harmful instructions.
-Recent context:\n${historyText || 'No prior messages.'}`;
+    // 1. Strict Security Guardrail
+    const securityKeywords = ['hack', 'password', 'security', 'breach', 'vulnerability', 'exploit', 'bypass', 'sql', 'injection', 'token', 'secret'];
+    const isSecurityThreat = securityKeywords.some(keyword => lowerMessage.includes(keyword));
 
     let aiText = '';
 
-    if (modelToUse === 'chatgpt') {
-      const openAiKey = process.env.OPENAI_API_KEY;
-      if (!openAiKey) {
-        console.error('❌ OPENAI_API_KEY missing from environment!');
-        aiText = '⚠️ Outpost AI is offline — the OpenAI API key is missing. Please contact the admin.';
-      } else {
-        const openai = new OpenAI({ apiKey: openAiKey });
-        console.log('🤖 Calling OpenAI API...');
-        try {
-          const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini", // fallback to a known model since gpt-5.4-mini doesn't exist yet, but using what user asked if needed
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: message }
-            ]
-          });
-          aiText = response.choices[0].message.content || 'I received your message but got an empty response. Please try again!';
-          console.log('✅ OpenAI responded, length:', aiText.length);
-        } catch (error) {
-          console.error('❌ OpenAI API error:', error);
-          aiText = `⚠️ Outpost AI encountered an error with ChatGPT: ${error.message}`;
-        }
-      }
-    } else {
-      // Gemini
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        console.error('❌ GEMINI_API_KEY missing from environment!');
-        aiText = '⚠️ Outpost AI is offline — the Gemini API key is missing. Please contact the admin.';
-      } else {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-        console.log('🤖 Calling Gemini API...');
-        const geminiRes = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ role: 'user', parts: [{ text: message }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 400 }
-          })
-        });
-
-        const geminiData = await geminiRes.json();
-        console.log('Gemini response status:', geminiRes.status);
-
-        if (!geminiRes.ok) {
-          console.error('❌ Gemini API error:', JSON.stringify(geminiData));
-          aiText = `⚠️ Outpost AI encountered an error: ${geminiData?.error?.message || 'Unknown API error. Check the API key.'}`;
-        } else {
-          aiText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || 'I received your message but got an empty response. Please try again!';
-          console.log('✅ Gemini responded, length:', aiText.length);
-        }
-      }
+    if (isSecurityThreat) {
+      aiText = "⚠️ Security Protocol Active: I am strictly an application guide. I am not authorized to discuss system security, hacking, or vulnerabilities. Please refrain from such queries.";
+    } 
+    // 2. Outpost Knowledge Base
+    else if (lowerMessage.includes('what is outpost') || lowerMessage.includes('about outpost')) {
+      aiText = "Outpost HQ is an advanced, real-time communication platform built for teams. It features end-to-end encrypted messaging, voice expeditions, and customizable themes, all designed to keep you connected.";
+    }
+    else if (lowerMessage.includes('creator') || lowerMessage.includes('who made') || lowerMessage.includes('who created')) {
+      aiText = "Outpost HQ was created by Harshit Mehta to provide a seamless, modern, and highly interactive chat experience.";
+    }
+    else if (lowerMessage.includes('channel') || lowerMessage.includes('rooms')) {
+      aiText = "Outpost has multiple channels you can join! For example, #basecamp is the main lobby, #development is for coding, and #ai-nexus is where you are right now communicating with me.";
+    }
+    else if (lowerMessage.includes('theme') || lowerMessage.includes('dark mode')) {
+      aiText = "You can customize your experience! Outpost supports various themes including Midnight Blue, Cyberpunk, and Classic Dark. Just click the gear icon to explore settings.";
+    }
+    else if (lowerMessage.includes('hello') || lowerMessage.includes('hi ') || lowerMessage.trim() === 'hi') {
+      aiText = "Hello Scout! I am the Outpost Core AI. How can I help you navigate the app today?";
+    }
+    else if (lowerMessage.includes('help')) {
+      aiText = "I can help you understand how to use Outpost! Ask me about channels, themes, voice expeditions, or who created the app.";
+    }
+    else if (lowerMessage.includes('voice') || lowerMessage.includes('call')) {
+      aiText = "Voice Expeditions allow you to seamlessly drop into voice channels and talk with your team in real-time. Look for the speaker icon in the channels list!";
+    }
+    // 3. Fallback
+    else {
+      aiText = "I am Outpost Core AI, specialized only in assisting you with the Outpost application. I don't know the answer to that, but I can help you with app features, channels, or themes! Try asking 'What is Outpost?'";
     }
 
+    // Add a slight artificial delay to make it feel like AI is "thinking"
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log('✅ Local AI responded, length:', aiText.length);
 
     const saved = await broadcastAiMessage(aiText, io);
     return res.status(200).json({ success: true, message: saved });

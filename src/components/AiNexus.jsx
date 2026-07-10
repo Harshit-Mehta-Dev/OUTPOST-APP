@@ -24,7 +24,6 @@ const AiNexus = ({ currentUser }) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [aiModel, setAiModel] = useState('gemini');
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const textareaRef = useRef(null);
@@ -69,7 +68,7 @@ const AiNexus = ({ currentUser }) => {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ message: text, channelKey: '1_ai-nexus', model: aiModel })
+        body: JSON.stringify({ message: text, channelKey: '1_ai-nexus' })
       });
 
       const data = await res.json();
@@ -114,18 +113,10 @@ const AiNexus = ({ currentUser }) => {
           <span className="ainex-online-dot" />
         </div>
         <div className="ainex-hero-info">
-          <span className="ainex-hero-name">Outpost AI</span>
-          <span className="ainex-hero-status">● Always online</span>
+          <span className="ainex-hero-name">Outpost Core AI</span>
+          <span className="ainex-hero-status">● Secure Local Engine</span>
         </div>
         
-        <select 
-          value={aiModel} 
-          onChange={(e) => setAiModel(e.target.value)}
-          className="ainex-model-select"
-        >
-          <option value="gemini">✨ Gemini</option>
-          <option value="chatgpt">⚡ ChatGPT</option>
-        </select>
         <button className="ainex-new-chat-btn" onClick={clearChat} title="New conversation">
           <RotateCcw size={13} /> New Chat
         </button>
