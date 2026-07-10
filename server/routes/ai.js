@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const requireAuth = require('../middleware/auth');
 const Message = require('../models/Message');
+const scoutVault = require('../utils/scoutVault');
 
 const AI_BOT_AVATAR = 'https://api.dicebear.com/7.x/bottts/svg?seed=Ai-Scout&backgroundColor=4facfe';
 
@@ -18,10 +19,14 @@ const syncMessageToSupabase = async (messageDoc) => {
 
 // Helper: save and broadcast an AI message
 const broadcastAiMessage = async (text, io) => {
+  const encryptedObj = scoutVault.encrypt(text);
+
   const msg = new Message({
     channelKey: '1_Ai-Scout',
     user: { username: 'Ai-Scout', profilePictureUrl: AI_BOT_AVATAR, level: 99 },
-    text,
+    text: null, // ScoutVault: store null for plaintext
+    encryptedData: encryptedObj.encryptedData,
+    iv: encryptedObj.iv,
     time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     type: 'text'
   });
@@ -29,7 +34,12 @@ const broadcastAiMessage = async (text, io) => {
   syncMessageToSupabase(saved);
   if (io) {
     io.to('1_Ai-Scout').emit('broadcast-typing-stop', { channelId: '1_Ai-Scout', scoutName: 'Ai-Scout' });
-    io.to('1_Ai-Scout').emit('receive_message', { ...saved.toObject(), receivedAt: Date.now() });
+    
+    // Decrypt the broadcast payload for real-time WebSockets
+    const broadcastPayload = saved.toObject();
+    broadcastPayload.text = text; 
+    
+    io.to('1_Ai-Scout').emit('receive_message', { ...broadcastPayload, receivedAt: Date.now() });
   }
   return saved;
 };

@@ -9,7 +9,9 @@ const messageSchema = new mongoose.Schema({
   },
   time: { type: String, required: true },
   type: { type: String, default: "text" },
-  text: { type: String },
+  text: { type: String }, // Legacy plaintext field
+  encryptedData: { type: String }, // Scout-Vault ciphertext
+  iv: { type: String }, // Scout-Vault initialization vector
   mediaType: { type: String },
   body: { type: String },
   pollData: { type: mongoose.Schema.Types.Mixed },

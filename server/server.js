@@ -243,6 +243,7 @@ const Campsite = require('./models/Campsite');
 const User = require('./models/User');
 const HelpRequest = require('./models/HelpRequest');
 const cache = require('./middleware/cache');
+const scoutVault = require('./utils/scoutVault');
 
 // Messages Route
 app.get('/api/messages/:channelKey', cache(15), async (req, res) => {
@@ -250,7 +251,17 @@ app.get('/api/messages/:channelKey', cache(15), async (req, res) => {
     const messages = await Message.find({ channelKey: req.params.channelKey })
       .sort({ createdAt: 1 })
       .limit(100);
-    res.json(messages);
+      
+    // Scout-Vault: Decrypt messages in-flight before sending to client
+    const decryptedMessages = messages.map(msg => {
+      const doc = msg.toObject ? msg.toObject() : msg;
+      if (doc.encryptedData && doc.iv) {
+        doc.text = scoutVault.decrypt(doc.encryptedData, doc.iv);
+      }
+      return doc;
+    });
+    
+    res.json(decryptedMessages);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
@@ -353,19 +364,35 @@ io.on('connection', (socket) => {
         // data.body = await compressMediaPayload(data.body, data.mediaType);
       }
 
+      // Scout-Vault: Encrypt text messages before saving to DB
+      let encryptedData = null;
+      let iv = null;
+      let plainTextForBroadcast = data.text;
+      
+      if (data.type === 'text' && data.text) {
+        const encryptedObj = scoutVault.encrypt(data.text);
+        encryptedData = encryptedObj.encryptedData;
+        iv = encryptedObj.iv;
+      }
+
       // 1. Save to MongoDB
       const newMessage = new Message({
         channelKey: data.channelKey,
         user: data.user,
         time: data.time,
         type: data.type,
-        text: data.text,
+        text: encryptedData ? null : data.text, // Store null if encrypted, else legacy
+        encryptedData: encryptedData,
+        iv: iv,
         mediaType: data.mediaType,
         body: data.body,
         pollData: data.pollData,
         replyTo: data.replyTo
       });
       await newMessage.save();
+      
+      // Pass the plaintext to Supabase for now, or keep it encrypted there too
+      // If we encrypt it in Supabase, we send the encryptedData. Let's send the raw DB object so it stays encrypted.
       syncMessageToSupabase(newMessage);
 
       // --- Phase 1: XP & Levelling Engine ---
@@ -412,7 +439,7 @@ io.on('connection', (socket) => {
         user: broadcastUser,
         time: newMessage.time,
         type: newMessage.type,
-        text: newMessage.text,
+        text: plainTextForBroadcast, // Broadcast plaintext to active WebSockets so they can read it instantly
         mediaType: newMessage.mediaType,
         body: newMessage.body,
         pollData: newMessage.pollData,
