@@ -170,12 +170,53 @@ const Auth = () => {
     });
   };
 
+const EmojiBackground = () => {
+  const emojis = ['🚀', '👾', '✨', '📡', '🌌', '🛠️', '💻', '⛺', '🔥', '🛰️', '🪐', '🤖', '⚡'];
+  
+  // Create static array to avoid hydration/render mismatches if SSR, though this is CRA/Vite
+  const [elements, setElements] = React.useState([]);
+  
+  React.useEffect(() => {
+    const newElements = Array.from({ length: 25 }).map((_, i) => ({
+      id: i,
+      emoji: emojis[Math.floor(Math.random() * emojis.length)],
+      left: Math.random() * 100,
+      duration: 15 + Math.random() * 25,
+      delay: Math.random() * 20,
+      size: 1 + Math.random() * 1.5,
+      opacity: 0.1 + Math.random() * 0.2
+    }));
+    setElements(newElements);
+  }, []);
+
+  return (
+    <div className="emoji-background-container">
+      {elements.map((el) => (
+        <div 
+          key={el.id} 
+          className="floating-emoji"
+          style={{
+            left: `${el.left}%`,
+            animationDuration: `${el.duration}s`,
+            animationDelay: `-${el.delay}s`,
+            fontSize: `${el.size}rem`,
+            opacity: el.opacity
+          }}
+        >
+          {el.emoji}
+        </div>
+      ))}
+    </div>
+  );
+};
+
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   return (
     <div className="auth-page">
+      <EmojiBackground />
       
       <motion.div 
         className="auth-card"
