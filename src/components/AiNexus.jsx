@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, RotateCcw, Sparkles, Lock } from 'lucide-react';
+import { Send, RotateCcw, Sparkles, Lock } from 'lucide-react';
 import './AiNexus.css';
 
 const API_BASE = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
 
 const TypingIndicator = () => (
   <div className="ainex-row ainex-row-bot">
-    <div className="ainex-bot-icon">🤖</div>
+    <div className="ainex-bot-icon"><img src="/ai-scout-logo.png" alt="Ai-Scout" className="ainex-custom-logo" /></div>
     <div className="ainex-bubble ainex-bubble-bot ainex-typing">
       <span className="ainex-dot" /><span className="ainex-dot" /><span className="ainex-dot" />
     </div>
@@ -109,7 +109,7 @@ const AiNexus = ({ currentUser }) => {
       {/* Bot header strip */}
       <div className="ainex-hero">
         <div className="ainex-hero-avatar">
-          <Bot size={20} />
+          <img src="/ai-scout-logo.png" alt="Ai-Scout" className="ainex-custom-logo" />
           <span className="ainex-online-dot" />
         </div>
         <div className="ainex-hero-info">
@@ -126,7 +126,7 @@ const AiNexus = ({ currentUser }) => {
       <div className="ainex-messages">
         {messages.map((msg) => (
           <div key={msg.id} className={`ainex-row ${msg.role === 'user' ? 'ainex-row-user' : 'ainex-row-bot'}`}>
-            {msg.role === 'bot' && <div className="ainex-bot-icon">🤖</div>}
+            {msg.role === 'bot' && <div className="ainex-bot-icon"><img src="/ai-scout-logo.png" alt="Ai-Scout" className="ainex-custom-logo" /></div>}
             <div className={`ainex-bubble ${msg.role === 'user' ? 'ainex-bubble-user' : 'ainex-bubble-bot'} ${msg.isError ? 'ainex-bubble-error' : ''}`}>
               <div className="ainex-bubble-text">{msg.text}</div>
               <div className="ainex-bubble-time">{msg.time}</div>
