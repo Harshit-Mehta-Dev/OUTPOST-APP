@@ -348,11 +348,15 @@ router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
-    const user = await User.findOne({ email });
+    // Case-insensitive exact match for email
+    const user = await User.findOne({ email: new RegExp('^' + email + '$', 'i') });
     // Always return a generic success message to prevent email enumeration
     res.json({ message: 'If that email exists in our system, a password reset link has been sent.' });
 
-    if (!user || !user.password) return; // Don't send if they use Google Auth (no password)
+    if (!user || !user.password) {
+      console.log(`[Forgot Password] User not found or uses Google Auth. Skipping email for: ${email}`);
+      return;
+    }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
     user.resetPasswordToken = resetToken;
