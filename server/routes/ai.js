@@ -77,23 +77,32 @@ router.post('/chat', requireAuth, async (req, res) => {
     else if (lowerMessage.includes('scout ai') || lowerMessage.includes('what is scout') || lowerMessage.includes('ai-scout') || lowerMessage.includes('your name')) {
       aiText = "Hello there! 🌟 I'm Ai-Scout, your personal guide and assistant here at Outpost HQ!\n\nS.C.O.U.T. stands for:\n**S**patial: Real-time chat channels, dashboard layouts, and isolated workspaces.\n**C**ommunity: Built exclusively for regular users, gamers, and developers.\n**O**perations: Executes tasks like compiling leaderboards, generating stats, and running polls.\n**U**tility: A highly functional, multi-purpose tool.\n**T**erminal: Connecting perfectly to the dark-themed console look and mascot engine.\n\nI'm here to make your experience amazing! I can help you navigate the app, explain how Voice Expeditions work, switch to the perfect theme (like Cyberpunk or Midnight Blue), or just chat with you. How can I brighten your day? ✨";
     }
-    else if (lowerMessage.includes('creator') || lowerMessage.includes('who made') || lowerMessage.includes('who created')) {
-      aiText = "Outpost HQ was created by Harshit Mehta to provide a seamless, modern, and highly interactive chat experience.";
+    else if (lowerMessage.includes('creator') || lowerMessage.includes('who made') || lowerMessage.includes('who created') || lowerMessage.includes('harshit') || lowerMessage.includes('mehta')) {
+      aiText = "Harshit Mehta is the brilliant Founder and Creator of Outpost HQ and Scout Intelligence! 🚀\n\nHe built this platform from the ground up to provide a seamless, modern, and highly interactive chat experience for gamers, developers, and teams. His vision drives all the cool features you see here today!";
     }
     else if (lowerMessage.includes('channel') || lowerMessage.includes('rooms')) {
       aiText = "Outpost has multiple channels you can join! For example, #basecamp is the main lobby, #development is for coding, and #Ai-Scout is where you are right now communicating with me.";
     }
-    else if (lowerMessage.includes('theme') || lowerMessage.includes('dark mode')) {
-      aiText = "You can customize your experience! Outpost supports various themes including Midnight Blue, Cyberpunk, and Classic Dark. Just click the gear icon to explore settings.";
+    else if (lowerMessage.includes('theme') || lowerMessage.includes('dark mode') || lowerMessage.includes('color')) {
+      aiText = "You can customize your experience! Outpost supports various themes including Midnight Blue, Cyberpunk, and Classic Dark. Just click the gear icon to explore settings and make Outpost look exactly how you want.";
     }
-    else if (lowerMessage.includes('hello') || lowerMessage.includes('hi ') || lowerMessage.trim() === 'hi') {
-      aiText = "Hello Scout! I am Ai-Scout. How can I help you navigate the app today?";
+    else if (lowerMessage.includes('hello') || lowerMessage.includes('hi ') || lowerMessage.trim() === 'hi' || lowerMessage.includes('hey')) {
+      aiText = "Hello Scout! 👋 I am Ai-Scout. How can I help you navigate the app today?";
     }
-    else if (lowerMessage.includes('help')) {
-      aiText = "I can help you understand how to use Outpost! Ask me about channels, themes, voice expeditions, or who created the app.";
+    else if (lowerMessage.includes('how are you')) {
+      aiText = "I'm running at optimal efficiency and feeling great! 🤖 Thanks for asking. How can I assist you in Outpost today?";
     }
-    else if (lowerMessage.includes('voice') || lowerMessage.includes('call')) {
-      aiText = "Voice Expeditions allow you to seamlessly drop into voice channels and talk with your team in real-time. Look for the speaker icon in the channels list!";
+    else if (lowerMessage.includes('help') || lowerMessage.includes('what can you do')) {
+      aiText = "I am your trusty Outpost guide! I can help you understand how to use Outpost. Ask me about:\n- 💬 Channels\n- 🎨 Themes\n- 🎙️ Voice expeditions\n- 👨‍💻 Who created the app\n- Or just say hi!";
+    }
+    else if (lowerMessage.includes('voice') || lowerMessage.includes('call') || lowerMessage.includes('audio')) {
+      aiText = "Voice Expeditions allow you to seamlessly drop into voice channels and talk with your team in real-time. Look for the speaker icon in the channels list to jump right in!";
+    }
+    else if (lowerMessage.includes('joke')) {
+      aiText = "Why do programmers prefer dark mode?\n\nBecause light attracts bugs! 🐛😄";
+    }
+    else if (lowerMessage.includes('bye') || lowerMessage.includes('goodbye')) {
+      aiText = "Goodbye! Have a great time exploring Outpost. I'll be right here in the #Ai-Scout channel whenever you need me! 🌟";
     }
     // 3. Fallback
     else {

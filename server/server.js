@@ -115,8 +115,15 @@ if (process.env.REDIS_URL) {
 }
 
 // Security Middleware
-// 1. Helmet to secure HTTP headers
-app.use(helmet());
+// 1. Helmet to secure HTTP headers with strict policies
+app.use(helmet({
+  contentSecurityPolicy: false, // Turn off if it blocks your frontend dev server, but ideally configure it.
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  xssFilter: true,
+  noSniff: true,
+  hidePoweredBy: true,
+  frameguard: { action: 'deny' },
+}));
 
 // 2. Trust Proxy (Required if hosting on Render, Heroku, or behind NGINX/K8s)
 app.set('trust proxy', 1);
@@ -174,11 +181,11 @@ const globalLimiter = rateLimit({
   store: getStore(),
 });
 
-// Layer 2: Anti-Brute Force for Auth (5 requests per minute)
+// Layer 2: Anti-Brute Force for Auth (5 requests per 15 minutes)
 const authLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, 
-  max: 10, 
-  message: 'Too many login attempts from this IP, please try again after a minute',
+  windowMs: 15 * 60 * 1000, 
+  max: 5, 
+  message: 'Too many login attempts from this IP, please try again after 15 minutes',
   store: getStore(),
 });
 

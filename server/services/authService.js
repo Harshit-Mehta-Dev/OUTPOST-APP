@@ -29,8 +29,8 @@ const docsAuth = basicAuth({
 });
 app.use('/api-docs', docsAuth, swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Limiters
-const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, message: 'Too many login attempts' });
+// Limiters: Strict limits for authentication to prevent brute-force attacks (5 attempts per 15 minutes)
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: 'Too many login attempts. Please try again after 15 minutes.' });
 app.use('/api/users/login', authLimiter);
 app.use('/api/users/register', authLimiter);
 
