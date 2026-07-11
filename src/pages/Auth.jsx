@@ -96,7 +96,7 @@ const Auth = () => {
     setIsLoading(true);
     setTimeout(() => {
       navigate('/app');
-    }, 5000); // 5 seconds loading screen
+    }, 1000); // reduced from 5s for snappier experience
   };
 
 

@@ -134,7 +134,7 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         >
             <canvas
                 ref={canvasRef}
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", filter: "blur(45px)", transform: "translateZ(0)" }}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", transform: "translateZ(0)" }}
             />
             <motion.div
                 style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.05)" }}
