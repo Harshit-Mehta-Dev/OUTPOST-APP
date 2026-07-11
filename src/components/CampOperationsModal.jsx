@@ -30,7 +30,7 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
 
   const handleRecruit = () => {
     if (recruitName.trim()) {
-      onUpdateCampsite(campsite.id, { 
+      onUpdateCampsite((campsite.id || campsite._id), { 
         members: [...members, recruitName.trim()] 
       });
       setRecruitName('');
@@ -40,20 +40,20 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
   const handleForgeRole = async () => {
     if (newRoleName.trim()) {
       try {
-        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites/${campsite.id}/roles`, {
+        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites/${campsite.id || campsite._id}/roles`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: newRoleName.trim(), color: newRoleColor })
         });
         if (response.ok) {
           const updated = await response.json();
-          onUpdateCampsite(campsite.id, { roles: updated.roles });
+          onUpdateCampsite((campsite.id || campsite._id), { roles: updated.roles });
         } else {
           throw new Error('Backend failed');
         }
       } catch (err) {
         console.warn("Backend offline, forging role locally:", err);
-        onUpdateCampsite(campsite.id, { roles: [...roles, { name: newRoleName.trim(), color: newRoleColor }] });
+        onUpdateCampsite((campsite.id || campsite._id), { roles: [...roles, { name: newRoleName.trim(), color: newRoleColor }] });
       } finally {
         setNewRoleName('');
         setIsForgingRole(false);
@@ -63,14 +63,14 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
 
   const handleAssignRole = async (username, roleName) => {
     try {
-      const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites/${campsite.id}/roles/assign`, {
+      const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites/${campsite.id || campsite._id}/roles/assign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, roleName })
       });
       if (response.ok) {
         const updated = await response.json();
-        onUpdateCampsite(campsite.id, { memberRoles: updated.memberRoles });
+        onUpdateCampsite((campsite.id || campsite._id), { memberRoles: updated.memberRoles });
       } else {
         throw new Error('Backend failed');
       }
@@ -82,18 +82,18 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
       } else {
         updatedRoles[username] = roleName;
       }
-      onUpdateCampsite(campsite.id, { memberRoles: updatedRoles });
+      onUpdateCampsite((campsite.id || campsite._id), { memberRoles: updatedRoles });
     } finally {
       setAssignDropdownFor(null);
     }
   };
 
   const toggleGlobalAgeGate = () => {
-    onUpdateCampsite(campsite.id, { globalAgeGate: !globalAgeGate });
+    onUpdateCampsite((campsite.id || campsite._id), { globalAgeGate: !globalAgeGate });
   };
 
   const toggleChannelOverride = (channelId) => {
-    onUpdateCampsite(campsite.id, {
+    onUpdateCampsite((campsite.id || campsite._id), {
       channelOverrides: {
         ...channelOverrides,
         [channelId]: !channelOverrides[channelId]
@@ -102,13 +102,13 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
   };
 
   const removeMember = (name) => {
-    onUpdateCampsite(campsite.id, {
+    onUpdateCampsite((campsite.id || campsite._id), {
       members: members.filter(m => m !== name)
     });
   };
 
   const removeRole = (name) => {
-    onUpdateCampsite(campsite.id, {
+    onUpdateCampsite((campsite.id || campsite._id), {
       roles: roles.filter(r => r.name !== name)
     });
   };
@@ -215,7 +215,7 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
                         <input 
                           type="text" 
                           readOnly 
-                          value={`${window.location.origin}/invite/${campsite.id || '1'}`} 
+                          value={`${window.location.origin}/invite/${campsite.id || campsite._id || '1'}`} 
                           style={{ border: 'none', background: 'transparent', flex: 1, padding: '10px 12px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }}
                         />
                         <button 
@@ -223,7 +223,7 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
                           onMouseOver={(e) => e.target.style.opacity = '0.9'}
                           onMouseOut={(e) => e.target.style.opacity = '1'}
                           onClick={(e) => {
-                            navigator.clipboard.writeText(`${window.location.origin}/invite/${campsite.id || '1'}`);
+                            navigator.clipboard.writeText(`${window.location.origin}/invite/${campsite.id || campsite._id || '1'}`);
                             const originalText = e.target.innerText;
                             e.target.innerText = 'Copied!';
                             setTimeout(() => e.target.innerText = originalText, 2000);

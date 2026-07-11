@@ -411,7 +411,6 @@ const HelpDesk = () => {
                     <button 
                       type="submit" 
                       className="btn-primary submit-btn"
-                      disabled={!isConfirmed || !message.trim() || !userName.trim() || !email.trim()}
                     >
                       Submit Request <Send size={18} />
                     </button>

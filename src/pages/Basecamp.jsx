@@ -1190,7 +1190,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleUpdateCampsite = (campId, updates) => {
     setCampsites(prev => prev.map(c => {
-      if (c.id === campId) {
+      if (c.id === campId || c._id === campId) {
         return { ...c, ...updates };
       }
       return c;
