@@ -207,8 +207,8 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
               {requests.map(req => (
                 <div 
                   key={req._id} 
-                  className={`ticket-card ${activeRequest?._id === req._id ? 'active' : ''} ${req.status === 'Closed' ? 'closed' : ''}`}
-                  onClick={() => openTicket(req._id)}
+                  className={`ticket-card ${activeRequest?._id === req._id || activeRequest?.ticketId === req.ticketId ? 'active' : ''} ${req.status === 'Closed' ? 'closed' : ''}`}
+                  onClick={() => openTicket(req.ticketId || req._id)}
                 >
                   <div className="ticket-card-header">
                     <span className="ticket-user">{req.userName}</span>
