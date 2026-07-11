@@ -377,13 +377,15 @@ router.post('/forgot-password', async (req, res) => {
     };
 
     if (process.env.EMAIL_APP_PASSWORD) {
-      await transporter.sendMail(mailOptions);
+      console.log(`[Forgot Password] Attempting to send email to ${user.email} using App Password...`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`[Forgot Password] Email sent successfully! Message ID: ${info.messageId}`);
     } else {
-      console.log("Mock Email Sent (No EMAIL_APP_PASSWORD set):", mailOptions);
+      console.log("[Forgot Password] ERROR: EMAIL_APP_PASSWORD is not set in environment variables! Mock Email Sent:", mailOptions);
     }
 
   } catch (err) {
-    console.error('Forgot password error:', err);
+    console.error('[Forgot Password] ERROR during email sending:', err);
     // Don't send 500 to user to maintain generic response
   }
 });
