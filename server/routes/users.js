@@ -350,8 +350,6 @@ router.post('/forgot-password', async (req, res) => {
 
     // Case-insensitive exact match for email
     const user = await User.findOne({ email: new RegExp('^' + email + '$', 'i') });
-    // Always return a generic success message to prevent email enumeration
-    res.json({ message: 'If that email exists in our system, a password reset link has been sent.' });
 
     if (!user) {
       console.log(`[Forgot Password] User not found in database. Skipping email for: ${email}`);
@@ -388,9 +386,13 @@ router.post('/forgot-password', async (req, res) => {
       console.log("[Forgot Password] ERROR: EMAIL_APP_PASSWORD is not set in environment variables! Mock Email Sent:", mailOptions);
     }
 
+    // Always return a generic success message to prevent email enumeration (unless debugging)
+    res.json({ message: 'If that email exists in our system, a password reset link has been sent.' });
+
   } catch (err) {
     console.error('[Forgot Password] ERROR during email sending:', err);
-    // Don't send 500 to user to maintain generic response
+    // TEMPORARILY send 500 to user for debugging
+    return res.status(500).json({ error: `Developer Debug Error: ${err.message}` });
   }
 });
 
