@@ -10,6 +10,7 @@ const Landing = lazy(() => import('./pages/Landing'));
 const Auth = lazy(() => import('./pages/Auth'));
 const Basecamp = lazy(() => import('./pages/Basecamp'));
 const Invite = lazy(() => import('./pages/Invite'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 // Lazy-loaded routes
 
 // Fallback loader
@@ -127,6 +128,7 @@ function App() {
                 </RequireAuth>
               } />
               
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

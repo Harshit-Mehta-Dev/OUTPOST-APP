@@ -8,11 +8,14 @@ import './Auth.css';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [failedAttempts, setFailedAttempts] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
   const [username, setUsername] = useState('');
   const navigate = useNavigate();
 
@@ -101,6 +104,30 @@ const Auth = () => {
 
   const sanitizeInput = (input) => {
     return input ? input.replace(/[$<>{}]/g, '') : ''; // Basic NoSQL & HTML sanitation
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!email) {
+      setError("Please enter your email address first.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}/api/users/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: sanitizeInput(email.toLowerCase().trim()) })
+      });
+      const data = await res.json();
+      setForgotPasswordMessage(data.message || 'If that email exists in our system, a password reset link has been sent.');
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setForgotPasswordMessage("Failed to send request. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAuthSubmit = (e) => {
@@ -322,8 +349,21 @@ const EmojiBackground = () => {
                 }}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            
+            {isLogin && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-10px', marginBottom: '15px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setIsForgotPassword(true)}
+                  style={{ background: 'none', border: 'none', color: '#3498db', fontSize: '0.85rem', cursor: 'pointer' }}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
 
             <button type="submit" className="btn-primary auth-submit flex-center">
               {isLogin ? 'Enter Outpost' : 'Create Account'}
@@ -346,6 +386,45 @@ const EmojiBackground = () => {
           </button>
         </div>
       </motion.div>
+      
+      {/* Forgot Password Modal */}
+      <AnimatePresence>
+        {isForgotPassword && (
+          <motion.div 
+            className="auth-card" 
+            style={{ position: 'absolute', zIndex: 100, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '30px' }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <h2 style={{ marginBottom: '15px' }}>Reset Password</h2>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
+              Enter your email address to receive a password reset link.
+            </p>
+            <form onSubmit={handleForgotPassword}>
+              <div className="form-group">
+                <input 
+                  type="email" 
+                  placeholder="dev@example.com" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              {forgotPasswordMessage && (
+                <div style={{ color: '#2ecc71', fontSize: '0.85rem', marginBottom: '15px', textAlign: 'center' }}>
+                  {forgotPasswordMessage}
+                </div>
+              )}
+              {error && <div style={{ color: '#e74c3c', fontSize: '0.85rem', marginBottom: '15px', textAlign: 'center' }}>{error}</div>}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="button" onClick={() => { setIsForgotPassword(false); setForgotPasswordMessage(""); setError(""); }} className="btn-primary" style={{ background: '#555', flex: 1 }}>Cancel</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1 }}>Send Link</button>
+              </div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

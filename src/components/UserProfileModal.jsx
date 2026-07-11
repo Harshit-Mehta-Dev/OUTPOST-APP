@@ -29,6 +29,12 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
+  // 2FA State
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorMessage, setTwoFactorMessage] = useState('');
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(user?.isTwoFactorEnabled || false);
+  
   const fileInputRef = useRef(null);
 
   // Update internal state if user prop changes
@@ -40,6 +46,39 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
   }, [user]);
 
   if (!isOpen) return null;
+
+  const setup2FA = async () => {
+    try {
+      const res = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/users/2fa/setup`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` }
+      });
+      const data = await res.json();
+      if (res.ok) setQrCodeUrl(data.qrCodeUrl);
+      else setTwoFactorMessage(data.error);
+    } catch (err) {
+      setTwoFactorMessage('Failed to setup 2FA');
+    }
+  };
+
+  const verify2FA = async () => {
+    try {
+      const res = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/users/2fa/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('outpost_token')}` },
+        body: JSON.stringify({ token: twoFactorCode })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTwoFactorMessage('2FA Enabled Successfully!');
+        setIsTwoFactorEnabled(true);
+      } else {
+        setTwoFactorMessage(data.error);
+      }
+    } catch (err) {
+      setTwoFactorMessage('Failed to verify 2FA');
+    }
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -309,6 +348,37 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
                           </div>
                           {confirmPassword && newPassword !== confirmPassword && (
                             <span className="error-text">Passwords do not match</span>
+                          )}
+                        </div>
+                        </div>
+                        
+                        <div className="form-group password-group" style={{ marginTop: '20px', borderTop: '1px solid #3a3f55', paddingTop: '15px' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Shield size={16} /> Two-Factor Authentication (2FA)
+                          </label>
+                          {isTwoFactorEnabled ? (
+                            <div style={{ color: '#2ecc71', fontWeight: 'bold' }}>✅ 2FA is currently enabled on your account.</div>
+                          ) : (
+                            <div className="two-factor-setup">
+                              <p style={{ fontSize: '0.85rem', color: '#a0a5b5', marginBottom: '10px' }}>Enable 2FA to protect your account and allow password resets.</p>
+                              {!qrCodeUrl ? (
+                                <button type="button" onClick={setup2FA} className="save-btn" style={{ background: '#3498db' }}>Setup 2FA with Google Authenticator</button>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                  <img src={qrCodeUrl} alt="2FA QR Code" style={{ width: '150px', height: '150px', borderRadius: '8px', alignSelf: 'center' }} />
+                                  <input 
+                                    type="text" 
+                                    placeholder="Enter 6-digit code" 
+                                    value={twoFactorCode} 
+                                    onChange={e => setTwoFactorCode(e.target.value)} 
+                                    maxLength={6}
+                                    style={{ textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem' }}
+                                  />
+                                  <button type="button" onClick={verify2FA} className="save-btn">Verify and Enable</button>
+                                </div>
+                              )}
+                              {twoFactorMessage && <div style={{ marginTop: '10px', fontSize: '0.9rem', color: twoFactorMessage.includes('Success') ? '#2ecc71' : '#e74c3c' }}>{twoFactorMessage}</div>}
+                            </div>
                           )}
                         </div>
                       </motion.div>

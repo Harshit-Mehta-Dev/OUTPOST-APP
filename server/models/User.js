@@ -8,6 +8,10 @@ const userSchema = new mongoose.Schema({
   level: { type: Number, default: 1 },
   xp: { type: Number, default: 0 },
   isGloballyRestricted: { type: Boolean, default: false },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
+  twoFactorSecret: { type: String },
+  isTwoFactorEnabled: { type: Boolean, default: false },
   systemAlerts: [{
     campsiteName: String,
     message: String,
