@@ -349,7 +349,6 @@ const EmojiBackground = () => {
                 }}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             
@@ -390,39 +389,41 @@ const EmojiBackground = () => {
       {/* Forgot Password Modal */}
       <AnimatePresence>
         {isForgotPassword && (
-          <motion.div 
-            className="auth-card" 
-            style={{ position: 'absolute', zIndex: 100, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '30px' }}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
-            <h2 style={{ marginBottom: '15px' }}>Reset Password</h2>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
-              Enter your email address to receive a password reset link.
-            </p>
-            <form onSubmit={handleForgotPassword}>
-              <div className="form-group">
-                <input 
-                  type="email" 
-                  placeholder="dev@example.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              {forgotPasswordMessage && (
-                <div style={{ color: '#2ecc71', fontSize: '0.85rem', marginBottom: '15px', textAlign: 'center' }}>
-                  {forgotPasswordMessage}
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 99, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div 
+              className="auth-card" 
+              style={{ position: 'relative', zIndex: 100, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '30px', maxWidth: '400px', width: '90%' }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <h2 style={{ marginBottom: '15px' }}>Reset Password</h2>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
+                Enter your email address to receive a password reset link.
+              </p>
+              <form onSubmit={handleForgotPassword}>
+                <div className="form-group">
+                  <input 
+                    type="email" 
+                    placeholder="dev@example.com" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
-              )}
-              {error && <div style={{ color: '#e74c3c', fontSize: '0.85rem', marginBottom: '15px', textAlign: 'center' }}>{error}</div>}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="button" onClick={() => { setIsForgotPassword(false); setForgotPasswordMessage(""); setError(""); }} className="btn-primary" style={{ background: '#555', flex: 1 }}>Cancel</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1 }}>Send Link</button>
-              </div>
-            </form>
-          </motion.div>
+                {forgotPasswordMessage && (
+                  <div style={{ color: '#2ecc71', fontSize: '0.85rem', marginBottom: '15px', textAlign: 'center' }}>
+                    {forgotPasswordMessage}
+                  </div>
+                )}
+                {error && <div style={{ color: '#e74c3c', fontSize: '0.85rem', marginBottom: '15px', textAlign: 'center' }}>{error}</div>}
+                <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+                  <button type="button" onClick={() => { setIsForgotPassword(false); setForgotPasswordMessage(""); setError(""); }} className="btn-primary" style={{ background: '#555', flex: 1, padding: '12px' }}>Cancel</button>
+                  <button type="submit" className="btn-primary" style={{ flex: 1, padding: '12px' }}>Send Link</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
