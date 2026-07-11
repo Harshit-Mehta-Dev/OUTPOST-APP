@@ -391,8 +391,7 @@ router.post('/forgot-password', async (req, res) => {
 
   } catch (err) {
     console.error('[Forgot Password] ERROR during email sending:', err);
-    // TEMPORARILY send 500 to user for debugging
-    return res.status(500).json({ error: `Developer Debug Error: ${err.message}` });
+    // Don't send 500 to user to maintain generic response
   }
 });
 

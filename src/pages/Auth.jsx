@@ -120,14 +120,11 @@ const Auth = () => {
         body: JSON.stringify({ email: sanitizeInput(email.toLowerCase().trim()) })
       });
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to send reset link.");
-      }
       setForgotPasswordMessage(data.message || 'If that email exists in our system, a password reset link has been sent.');
       setError("");
     } catch (err) {
       console.error(err);
-      setForgotPasswordMessage(err.message || "Failed to send request. Please try again.");
+      setForgotPasswordMessage("Failed to send request. Please try again.");
     } finally {
       setIsLoading(false);
     }
