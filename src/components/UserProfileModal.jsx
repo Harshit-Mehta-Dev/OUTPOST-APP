@@ -72,6 +72,10 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
       if (res.ok) {
         setTwoFactorMessage('2FA Enabled Successfully!');
         setIsTwoFactorEnabled(true);
+        if (data.user) {
+          localStorage.setItem('outpost_user', JSON.stringify(data.user));
+          if (onSave) onSave(data.user);
+        }
       } else {
         setTwoFactorMessage(data.error);
       }

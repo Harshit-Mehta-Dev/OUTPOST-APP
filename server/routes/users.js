@@ -326,13 +326,19 @@ router.post('/2fa/verify', requireAuth, async (req, res) => {
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorSecret,
       encoding: 'base32',
-      token
+      token,
+      window: 1 // Allow 1 step (30 seconds) before or after to account for time drift
     });
 
     if (verified) {
       user.isTwoFactorEnabled = true;
       await user.save();
-      res.json({ message: '2FA enabled successfully' });
+      syncToSupabase(user);
+      
+      const userToReturn = user.toObject();
+      delete userToReturn.password;
+      
+      res.json({ message: '2FA enabled successfully', user: userToReturn });
     } else {
       res.status(400).json({ error: 'Invalid 2FA code' });
     }
