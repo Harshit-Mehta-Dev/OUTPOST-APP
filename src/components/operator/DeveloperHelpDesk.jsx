@@ -4,7 +4,7 @@ import { X, Send, Image as ImageIcon, CheckCircle, MessageSquare, Paperclip, Use
 import { io } from 'socket.io-client';
 import './DeveloperHelpDesk.css';
 
-const socket = io((import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003')), {
+const socket = io((import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002')), {
   auth: { token: localStorage.getItem('outpost_token') }
 });
 

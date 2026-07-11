@@ -27,7 +27,7 @@ const DeveloperFeedback = ({ onClose }) => {
   useEffect(() => {
     fetchFeedbacks();
 
-    const socket = io((import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003')), { 
+    const socket = io((import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002')), { 
       transports: ['websocket', 'polling'],
       auth: { token: localStorage.getItem('outpost_token') }
     });
