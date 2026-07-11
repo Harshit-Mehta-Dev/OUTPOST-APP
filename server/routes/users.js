@@ -353,8 +353,8 @@ router.post('/forgot-password', async (req, res) => {
     // Always return a generic success message to prevent email enumeration
     res.json({ message: 'If that email exists in our system, a password reset link has been sent.' });
 
-    if (!user || !user.password) {
-      console.log(`[Forgot Password] User not found or uses Google Auth. Skipping email for: ${email}`);
+    if (!user) {
+      console.log(`[Forgot Password] User not found in database. Skipping email for: ${email}`);
       return;
     }
 
@@ -416,19 +416,20 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
     }
 
-    // Verify 2FA
-    if (!user.isTwoFactorEnabled || !user.twoFactorSecret) {
-      return res.status(400).json({ error: '2FA is not enabled on this account. Password reset blocked.' });
-    }
+    // Verify 2FA only if it's enabled for this user
+    if (user.isTwoFactorEnabled && user.twoFactorSecret) {
+      if (!twoFactorCode) {
+        return res.status(400).json({ error: '2FA code is required' });
+      }
+      const verified = speakeasy.totp.verify({
+        secret: user.twoFactorSecret,
+        encoding: 'base32',
+        token: twoFactorCode
+      });
 
-    const verified = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
-      encoding: 'base32',
-      token: twoFactorCode
-    });
-
-    if (!verified) {
-      return res.status(400).json({ error: 'Invalid 2FA code' });
+      if (!verified) {
+        return res.status(400).json({ error: 'Invalid 2FA code' });
+      }
     }
 
     // Hash new password
