@@ -34,3 +34,9 @@ dist-ssr
 .env.production
 *.log
 .wrangler/
+
+
+
+.nx/cache
+.nx/workspace-data
+.nx/migrate-runs

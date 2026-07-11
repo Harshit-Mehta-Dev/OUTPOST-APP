@@ -16,7 +16,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@google/genai": "^2.10.0",
     "@socket.io/redis-adapter": "^8.3.0",
     "@supabase/supabase-js": "^2.108.2",
     "bcryptjs": "^3.0.3",
@@ -35,7 +34,6 @@
     "mongoose": "^9.7.0",
     "morgan": "^1.11.0",
     "node-fetch": "^2.7.0",
-    "openai": "^6.46.0",
     "rate-limit-redis": "^5.0.0",
     "redis": "^6.0.0",
     "sharp": "^0.35.0",

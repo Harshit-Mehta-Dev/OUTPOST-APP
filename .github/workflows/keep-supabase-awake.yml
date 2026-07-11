@@ -1,0 +1,19 @@
+name: Keep Supabase Awake
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every 3 days
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # Allows you to run this manually from the Actions tab
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+          -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkaXZkZWd3eGd3dWRneGN1YXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNTkwMjYsImV4cCI6MjA5NjczNTAyNn0.bxyYJo0oyNa18J0wfBu8w4byLAosnggM5u2XvkPObco" \
+          -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkaXZkZWd3eGd3dWRneGN1YXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNTkwMjYsImV4cCI6MjA5NjczNTAyNn0.bxyYJo0oyNa18J0wfBu8w4byLAosnggM5u2XvkPObco" \
+          "https://idivdegwxgwudgxcuaso.supabase.co/rest/v1/"
+          echo "Supabase successfully pinged!"

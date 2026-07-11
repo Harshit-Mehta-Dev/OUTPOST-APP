@@ -41,7 +41,9 @@ const broadcastAiMessage = async (text, io) => {
     
     io.to('1_Ai-Scout').emit('receive_message', { ...broadcastPayload, receivedAt: Date.now() });
   }
-  return saved;
+  const result = saved.toObject();
+  result.text = text;
+  return result;
 };
 
 router.post('/chat', requireAuth, async (req, res) => {
