@@ -1,6 +1,3 @@
-const dns = require('dns');
-dns.setDefaultResultOrder('ipv4first'); // Fix for Render outbound IPv6 ENETUNREACH errors
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
