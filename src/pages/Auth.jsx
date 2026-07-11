@@ -96,7 +96,7 @@ const Auth = () => {
     setIsLoading(true);
     setTimeout(() => {
       navigate('/app');
-    }, 1000); // reduced from 5s for snappier experience
+    }, 3500); // Increased to 3.5s so the loading animation is visible and enjoyable
   };
 
 
