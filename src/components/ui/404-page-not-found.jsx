@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "./button";
 
 export function NotFoundPage() {
   const navigate = useNavigate();
+
+  // SECURE LOOPHOLE FIX: 
+  // Instantly log them out the moment the 404 page loads.
+  // This prevents them from using the browser's "Back" button to return to the dashboard.
+  useEffect(() => {
+    localStorage.removeItem('outpost_user');
+    localStorage.removeItem('outpost_token');
+  }, []);
 
   return (
     <section className="bg-white font-serif min-h-screen flex items-center justify-center" style={{ backgroundColor: '#fff', width: '100vw' }}>
