@@ -39,11 +39,16 @@ export function NotFoundPage() {
 
               <Button
                 variant="default"
-                onClick={() => navigate("/")}
+                onClick={() => {
+                  // For security, if they get lost, log them out and force re-authentication
+                  localStorage.removeItem('outpost_user');
+                  localStorage.removeItem('outpost_token');
+                  navigate("/auth");
+                }}
                 className="my-5 bg-green-600 hover:bg-green-700"
                 style={{ backgroundColor: '#16a34a', color: 'white', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', border: 'none', fontSize: '1rem' }}
               >
-                Go to Home
+                Return to Login
               </Button>
             </div>
           </div>
