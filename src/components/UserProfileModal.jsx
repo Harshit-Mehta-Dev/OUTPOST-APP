@@ -350,7 +350,6 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
                             <span className="error-text">Passwords do not match</span>
                           )}
                         </div>
-                        </div>
                         
                         <div className="form-group password-group" style={{ marginTop: '20px', borderTop: '1px solid #3a3f55', paddingTop: '15px' }}>
                           <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

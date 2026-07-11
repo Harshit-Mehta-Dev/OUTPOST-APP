@@ -99,7 +99,7 @@ const Auth = () => {
     }, 5000); // 5 seconds loading screen
   };
 
-  const [failedAttempts, setFailedAttempts] = useState(0);
+
   const [lockoutUntil, setLockoutUntil] = useState(null);
 
   const sanitizeInput = (input) => {
