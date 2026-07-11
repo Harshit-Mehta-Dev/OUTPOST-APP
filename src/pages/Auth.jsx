@@ -147,7 +147,7 @@ const Auth = () => {
 
     // Frontend Input Sanitization (Defense in Depth)
     const sanitizedEmail = sanitizeInput(email.toLowerCase().trim());
-    const sanitizedUsername = sanitizeInput(isLogin ? sanitizedEmail.split('@')[0] : username);
+    const sanitizedUsername = sanitizeInput(username); // Don't fake the username from the email
 
     const endpoint = isLogin ? '/api/users/login' : '/api/users/register';
     const payload = isLogin ? { email: sanitizedEmail, password } : { email: sanitizedEmail, username: sanitizedUsername, password };
@@ -160,30 +160,23 @@ const Auth = () => {
       body: JSON.stringify(payload)
     })
     .then(async res => {
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error('Authentication failed');
+        throw new Error(data.error || 'Authentication failed. Please check your credentials.');
       }
-      return res.json();
+      return data;
     })
     .then(syncedUser => {
       setFailedAttempts(0);
       localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
       if (syncedUser.token) localStorage.setItem('outpost_token', syncedUser.token);
-      setTimeout(() => { navigate('/app'); }, 4000);
+      setTimeout(() => { navigate('/app'); }, 2000);
     })
     .catch(err => {
-      console.warn("Backend offline, simulating local login/signup:", err);
-      // Offline fallback: simulate successful login
-      const mockUser = {
-        id: 'local-' + Date.now(),
-        email: sanitizedEmail,
-        username: sanitizedUsername,
-        profilePictureUrl: '',
-        level: 1
-      };
-      setFailedAttempts(0);
-      localStorage.setItem('outpost_user', JSON.stringify(mockUser));
-      setTimeout(() => { navigate('/app'); }, 2000);
+      console.error("Auth Error:", err);
+      setError(err.message);
+      setIsLoading(false);
+      setFailedAttempts(prev => prev + 1);
     });
   };
 
