@@ -38,16 +38,21 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         if (!ctx) return;
 
         const updateCanvasSize = () => {
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
+            // Render at 15% resolution. This creates a beautiful, natural blur effect
+            // when stretched to 100% via CSS. A small CSS blur smooths it perfectly 
+            // with near-zero GPU cost compared to the original 100% res + 45px blur.
+            const scaleFactor = 0.15; 
+            canvas.width = window.innerWidth * scaleFactor;
+            canvas.height = window.innerHeight * scaleFactor;
             canvas.style.width = `${window.innerWidth}px`;
             canvas.style.height = `${window.innerHeight}px`;
-            ctx.scale(dpr, dpr);
+            
+            // Scale context so all drawing commands use logical window coordinates
+            ctx.scale(scaleFactor, scaleFactor);
 
             const totalBeams = MINIMUM_BEAMS * 1.5;
             beamsRef.current = Array.from({ length: totalBeams }, () =>
-                createBeam(canvas.width, canvas.height)
+                createBeam(window.innerWidth, window.innerHeight)
             );
         };
 
@@ -58,9 +63,11 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             if (!canvas) return beam;
             
             const column = index % 3;
-            const spacing = canvas.width / 3;
+            const logicalWidth = window.innerWidth;
+            const logicalHeight = window.innerHeight;
+            const spacing = logicalWidth / 3;
 
-            beam.y = canvas.height + 100;
+            beam.y = logicalHeight + 100;
             beam.x =
                 column * spacing +
                 spacing / 2 +
@@ -99,7 +106,8 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         function animate() {
             if (!canvas || !ctx) return;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Clear using logical coordinates because context is scaled
+            ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
             // Removed ctx.filter = "blur(35px)"; to prevent massive CPU blocking
 
             const totalBeams = beamsRef.current.length;
@@ -134,7 +142,7 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         >
             <canvas
                 ref={canvasRef}
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", transform: "translateZ(0)" }}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", filter: "blur(15px)", transform: "translateZ(0)" }}
             />
             <motion.div
                 style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.05)" }}
