@@ -351,8 +351,8 @@ router.post('/forgot-password', async (req, res) => {
     // Case-insensitive exact match for email
     const user = await User.findOne({ email: new RegExp('^' + email + '$', 'i') });
 
-    if (!user || !user.password) {
-      console.log(`[Forgot Password] User not found or uses Google Auth. Skipping email for: ${email}`);
+    if (!user) {
+      console.log(`[Forgot Password] User not found in database. Skipping email for: ${email}`);
       return;
     }
 
@@ -361,12 +361,18 @@ router.post('/forgot-password', async (req, res) => {
     user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins
     await user.save();
 
+    // Nodemailer configuration
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: 'hello.outpostbasecamp@gmail.com',
-        pass: process.env.EMAIL_APP_PASSWORD || '' // Must be set in environment
-      }
+        pass: process.env.EMAIL_APP_PASSWORD || ''
+      },
+      // Force IPv4 specifically for nodemailer to bypass Render's IPv6 block
+      // This allows the rest of the application to securely use IPv6!
+      family: 4
     });
 
     const resetUrl = `${process.env.VITE_FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
@@ -391,7 +397,10 @@ router.post('/forgot-password', async (req, res) => {
 
   } catch (err) {
     console.error('[Forgot Password] ERROR during email sending:', err);
-    // Don't send 500 to user to maintain generic response
+    // Ensure we always return a response to prevent the client from hanging forever
+    if (!res.headersSent) {
+      res.json({ message: 'If that email exists in our system, a password reset link has been sent.' });
+    }
   }
 });
 
@@ -417,19 +426,20 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
     }
 
-    // Verify 2FA
-    if (!user.isTwoFactorEnabled || !user.twoFactorSecret) {
-      return res.status(400).json({ error: '2FA is not enabled on this account. Password reset blocked.' });
-    }
+    // Verify 2FA only if it's enabled for this user
+    if (user.isTwoFactorEnabled && user.twoFactorSecret) {
+      if (!twoFactorCode) {
+        return res.status(400).json({ error: '2FA code is required' });
+      }
+      const verified = speakeasy.totp.verify({
+        secret: user.twoFactorSecret,
+        encoding: 'base32',
+        token: twoFactorCode
+      });
 
-    const verified = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
-      encoding: 'base32',
-      token: twoFactorCode
-    });
-
-    if (!verified) {
-      return res.status(400).json({ error: 'Invalid 2FA code' });
+      if (!verified) {
+        return res.status(400).json({ error: 'Invalid 2FA code' });
+      }
     }
 
     // Hash new password

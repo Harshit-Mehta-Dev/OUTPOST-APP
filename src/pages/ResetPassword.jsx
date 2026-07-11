@@ -23,7 +23,7 @@ const ResetPassword = () => {
       setError("Password must be at least 6 characters");
       return;
     }
-    if (twoFactorCode.length !== 6) {
+    if (twoFactorCode.length > 0 && twoFactorCode.length !== 6) {
       setError("Please enter a valid 6-digit 2FA code");
       return;
     }
@@ -65,12 +65,12 @@ const ResetPassword = () => {
             <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Shield size={14} /> Google Authenticator Code</label>
             <input 
               type="text" 
-              placeholder="123456" 
+              placeholder="123456 (Leave blank if 2FA disabled)" 
               value={twoFactorCode}
               onChange={(e) => setTwoFactorCode(e.target.value)}
               maxLength={6}
               style={{ textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem' }}
-              required
+              // Not required
             />
           </div>
           
