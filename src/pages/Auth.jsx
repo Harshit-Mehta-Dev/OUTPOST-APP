@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import LoadingScreen from '../components/LoadingScreen';
 import './Auth.css';
 
@@ -17,7 +18,29 @@ const Auth = () => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
   const [username, setUsername] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [svgCaptchaImage, setSvgCaptchaImage] = useState('');
+  const [svgCaptchaId, setSvgCaptchaId] = useState('');
+  const [svgCaptchaText, setSvgCaptchaText] = useState('');
   const navigate = useNavigate();
+
+  const fetchSvgCaptcha = async () => {
+    try {
+      const res = await fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}/api/auth/captcha`);
+      const data = await res.json();
+      setSvgCaptchaImage(data.image);
+      setSvgCaptchaId(data.captchaId);
+      setSvgCaptchaText('');
+    } catch (err) {
+      console.error("Failed to fetch CAPTCHA", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!import.meta.env.VITE_TURNSTILE_SITE_KEY) {
+      fetchSvgCaptcha();
+    }
+  }, []);
 
   useEffect(() => {
     // If user is already logged in, show loading screen briefly then redirect
@@ -112,12 +135,21 @@ const Auth = () => {
       setError("Please enter your email address first.");
       return;
     }
+    if (!turnstileToken && !svgCaptchaText) {
+      setError("Please complete the CAPTCHA verification.");
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}/api/users/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: sanitizeInput(email.toLowerCase().trim()) })
+        body: JSON.stringify({ 
+          email: sanitizeInput(email.toLowerCase().trim()),
+          turnstileToken,
+          captchaText: svgCaptchaText,
+          captchaId: svgCaptchaId 
+        })
       });
       const data = await res.json();
       setForgotPasswordMessage(data.message || 'If that email exists in our system, a password reset link has been sent.');
@@ -149,6 +181,10 @@ const Auth = () => {
       setError("Please fill in all required fields.");
       return;
     }
+    if (!turnstileToken && !svgCaptchaText) {
+      setError("Please complete the CAPTCHA verification.");
+      return;
+    }
 
     // Safe Regex for ReDoS mitigation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -177,7 +213,13 @@ const Auth = () => {
     const sanitizedUsername = sanitizeInput(username); // Don't fake the username from the email
 
     const endpoint = isLogin ? '/api/users/login' : '/api/users/register';
-    const payload = isLogin ? { email: sanitizedEmail, password } : { email: sanitizedEmail, username: sanitizedUsername, password };
+    let payload = isLogin ? { email: sanitizedEmail, password } : { email: sanitizedEmail, username: sanitizedUsername, password };
+    payload = {
+      ...payload,
+      turnstileToken,
+      captchaText: svgCaptchaText,
+      captchaId: svgCaptchaId
+    };
 
     // Communicate with backend
     setIsLoading(true);
@@ -204,6 +246,9 @@ const Auth = () => {
       setError(err.message);
       setIsLoading(false);
       setFailedAttempts(prev => prev + 1);
+      if (!import.meta.env.VITE_TURNSTILE_SITE_KEY) {
+        fetchSvgCaptcha();
+      }
     });
   };
 
@@ -352,6 +397,34 @@ const EmojiBackground = () => {
               </button>
             </div>
             
+            <div className="form-group captcha-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', marginBottom: '10px' }}>
+              {import.meta.env.VITE_TURNSTILE_SITE_KEY ? (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <Turnstile 
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY} 
+                    onSuccess={(token) => setTurnstileToken(token)}
+                  />
+                </div>
+              ) : (
+                svgCaptchaImage && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <div dangerouslySetInnerHTML={{ __html: svgCaptchaImage }} style={{ background: '#2d3436', borderRadius: '4px', overflow: 'hidden' }} />
+                    <button type="button" onClick={fetchSvgCaptcha} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '5px' }}>
+                      <RefreshCw size={18} />
+                    </button>
+                    <input 
+                      type="text" 
+                      placeholder="Enter text..." 
+                      value={svgCaptchaText}
+                      onChange={(e) => setSvgCaptchaText(e.target.value)}
+                      style={{ flex: 1, padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+                      maxLength={6}
+                    />
+                  </div>
+                )
+              )}
+            </div>
+
             {isLogin && (
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-10px', marginBottom: '15px' }}>
                 <button 
@@ -411,6 +484,35 @@ const EmojiBackground = () => {
                     required
                   />
                 </div>
+                
+                <div className="form-group captcha-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px', marginBottom: '15px' }}>
+                  {import.meta.env.VITE_TURNSTILE_SITE_KEY ? (
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <Turnstile 
+                        siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY} 
+                        onSuccess={(token) => setTurnstileToken(token)}
+                      />
+                    </div>
+                  ) : (
+                    svgCaptchaImage && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                        <div dangerouslySetInnerHTML={{ __html: svgCaptchaImage }} style={{ background: '#2d3436', borderRadius: '4px', overflow: 'hidden' }} />
+                        <button type="button" onClick={fetchSvgCaptcha} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '5px' }}>
+                          <RefreshCw size={18} />
+                        </button>
+                        <input 
+                          type="text" 
+                          placeholder="Enter text..." 
+                          value={svgCaptchaText}
+                          onChange={(e) => setSvgCaptchaText(e.target.value)}
+                          style={{ flex: 1, padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+                          maxLength={6}
+                        />
+                      </div>
+                    )
+                  )}
+                </div>
+
                 {forgotPasswordMessage && (
                   <div style={{ color: '#2ecc71', fontSize: '0.85rem', marginBottom: '15px', textAlign: 'center' }}>
                     {forgotPasswordMessage}

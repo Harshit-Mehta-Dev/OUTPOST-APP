@@ -7,6 +7,7 @@ const requireAuth = require('../middleware/auth');
 const jwt = require('jsonwebtoken');
 const validate = require('../middleware/validate');
 const userValidation = require('../validations/user.validation');
+const { verifyCaptcha } = require('../utils/captcha');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const speakeasy = require('speakeasy');
@@ -62,6 +63,11 @@ router.post('/sync', validate(userValidation.syncUser), async (req, res) => {
 // Register with email, username, and password
 router.post('/register', validate(userValidation.registerUser), async (req, res) => {
   try {
+    const isHuman = await verifyCaptcha(req);
+    if (!isHuman) {
+      return res.status(403).json({ message: 'CAPTCHA verification failed. Please try again.' });
+    }
+
     const { email, username, password } = req.body;
     if (!email || !username || !password) {
       return res.status(400).json({ error: 'Please provide all fields' });
@@ -96,6 +102,11 @@ router.post('/register', validate(userValidation.registerUser), async (req, res)
 // Login with email and password
 router.post('/login', validate(userValidation.loginUser), async (req, res) => {
   try {
+    const isHuman = await verifyCaptcha(req);
+    if (!isHuman) {
+      return res.status(403).json({ message: 'CAPTCHA verification failed. Please try again.' });
+    }
+
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ error: 'Please provide email and password' });
@@ -351,6 +362,11 @@ router.post('/2fa/verify', requireAuth, async (req, res) => {
 // Send password reset email
 router.post('/forgot-password', async (req, res) => {
   try {
+    const isHuman = await verifyCaptcha(req);
+    if (!isHuman) {
+      return res.status(403).json({ message: 'CAPTCHA verification failed. Please try again.' });
+    }
+
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
 

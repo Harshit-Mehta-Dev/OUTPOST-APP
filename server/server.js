@@ -8,6 +8,8 @@ const rateLimit = require('express-rate-limit');
 const { RedisStore } = require('rate-limit-redis');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger_output.json');
+const svgCaptcha = require('svg-captcha');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const basicAuth = require('express-basic-auth');
@@ -74,7 +76,6 @@ const io = new Server(server, {
 });
 
 // Socket.io JWT Authentication Middleware
-const jwt = require('jsonwebtoken');
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {
@@ -124,6 +125,15 @@ app.use(helmet({
   hidePoweredBy: true,
   frameguard: { action: 'deny' },
 }));
+
+// 1b. Basic Edge CDN Headers for GET requests (mitigates GET-based floods)
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.includes('/api/auth/captcha')) {
+    // Allow Cloudflare to cache for 30s, browser for 0s (always revalidate)
+    res.set('Cache-Control', 'public, max-age=0, s-maxage=30');
+  }
+  next();
+});
 
 // 2. Trust Proxy (Required if hosting on Render, Heroku, or behind NGINX/K8s)
 app.set('trust proxy', 1);
@@ -239,6 +249,24 @@ app.use('/api/ai', aiRoutes);
 
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
+
+// Captcha Endpoint
+app.get('/api/auth/captcha', (req, res) => {
+  const captcha = svgCaptcha.create({
+    size: 6,
+    ignoreChars: '0o1i',
+    noise: 2,
+    color: true,
+    background: '#2d3436'
+  });
+  
+  // Sign the captcha text to verify later without session state
+  const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
+  const captchaId = jwt.sign({ text: captcha.text }, secret, { expiresIn: '5m' });
+  
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.json({ image: captcha.data, captchaId });
+});
 
 // Health Check for Keep-Alive
 app.get('/api/health', (req, res) => {
