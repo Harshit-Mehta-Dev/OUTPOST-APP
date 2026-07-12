@@ -2,18 +2,18 @@ import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 
 function createBeam(width, height) {
-    const angle = -35 + Math.random() * 10;
+    const angle = -10 + Math.random() * 20; // Almost perfectly vertical, like sun rays in deep water
     return {
-        x: Math.random() * width * 1.5 - width * 0.25,
+        x: Math.random() * width * 1.2 - width * 0.1, // Spread evenly
         y: Math.random() * height * 1.5 - height * 0.25,
-        width: 30 + Math.random() * 60,
-        length: height * 2.5,
+        width: 150 + Math.random() * 150, // Much wider to blend seamlessly (no patches)
+        length: height * 1.5,
         angle: angle,
-        speed: 0.6 + Math.random() * 1.2,
-        opacity: 0.12 + Math.random() * 0.16,
+        speed: 0.3 + Math.random() * 0.4, // Extremely slow, realistic drift
+        opacity: 0.08 + Math.random() * 0.08, // Subtle opacity for smooth blending
         hue: 15 + Math.random() * 25,
         pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: 0.02 + Math.random() * 0.03,
+        pulseSpeed: 0.005 + Math.random() * 0.01, // Slow, elegant pulsing
     };
 }
 
@@ -21,9 +21,7 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
     const canvasRef = useRef(null);
     const beamsRef = useRef([]);
     const animationFrameRef = useRef(0);
-    const directionRef = useRef(1); // 1 = downward, -1 = upward
-    const lastToggleRef = useRef(Date.now());
-    const MINIMUM_BEAMS = 6; // Very few rays to avoid traffic
+    const MINIMUM_BEAMS = 15; // Increased to create a full field of light instead of sparse patches
 
     const opacityMap = {
         subtle: 0.7,
@@ -64,22 +62,18 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             const logicalHeight = window.innerHeight;
             const spacing = logicalWidth / 3;
 
-            // Spawn opposite to the current direction of travel
-            if (directionRef.current === 1) {
-                beam.y = -logicalHeight - 100; // Spawn above to flow downward
-            } else {
-                beam.y = logicalHeight + 100; // Spawn below to flow upward
-            }
+            // When resetting, spawn slightly above or below randomly to maintain coverage
+            beam.y = Math.random() > 0.5 ? -logicalHeight * 0.2 : logicalHeight * 1.2;
             
             beam.x =
                 column * spacing +
                 spacing / 2 +
                 (Math.random() - 0.5) * spacing * 0.5;
-            beam.width = 100 + Math.random() * 100;
-            beam.speed = 0.5 + Math.random() * 0.4;
+            beam.width = 150 + Math.random() * 150;
+            beam.speed = 0.3 + Math.random() * 0.4;
             beam.hue = 15 + Math.random() * 25;
-            beam.opacity = 0.2 + Math.random() * 0.1;
-            beam.angle = -35 + Math.random() * 10;
+            beam.opacity = 0.08 + Math.random() * 0.08;
+            beam.angle = -10 + Math.random() * 20;
             return beam;
         }
 
@@ -113,22 +107,20 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
 
             ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-            // Toggle the ocean tide direction every 15 seconds
             const now = Date.now();
-            if (now - lastToggleRef.current > 15000) {
-                directionRef.current *= -1;
-                lastToggleRef.current = now;
-            }
+            // Perfectly smooth sine wave tide (cycles every ~30 seconds)
+            const tideDirection = Math.sin(now / 5000);
 
             beamsRef.current.forEach((beam, index) => {
-                beam.y += beam.speed * directionRef.current;
-                beam.x -= beam.speed * Math.tan(Math.abs(beam.angle) * (Math.PI / 180)) * directionRef.current; 
+                // Smooth vertical drift matching the ocean tide
+                beam.y += beam.speed * tideDirection;
+                // Tiny, organic horizontal sway independent of the strict angle
+                beam.x += Math.cos(now / 3000 + index) * 0.2;
                 beam.pulse += beam.pulseSpeed;
 
-                if (directionRef.current === 1) {
-                    if (beam.y - beam.length > window.innerHeight + 100) resetBeam(beam, index);
-                } else {
-                    if (beam.y + beam.length < -100) resetBeam(beam, index);
+                // Reset only if it wanders extremely far off-screen
+                if (beam.y - beam.length > window.innerHeight + 300 || beam.y + beam.length < -300) {
+                    resetBeam(beam, index);
                 }
 
                 drawBeam(ctx, beam);
