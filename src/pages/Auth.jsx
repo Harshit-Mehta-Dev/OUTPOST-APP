@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
-import { Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, RefreshCw, Radio, Satellite, Shield, Globe, Wifi, Terminal, Cpu, Server, Zap, Compass, Map, Binoculars } from 'lucide-react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import LoadingScreen from '../components/LoadingScreen';
 import './Auth.css';
@@ -252,42 +252,47 @@ const Auth = () => {
     });
   };
 
-const EmojiBackground = () => {
-  const emojis = ['🚀', '👾', '✨', '📡', '🌌', '🛠️', '💻', '⛺', '🔥', '🛰️', '🪐', '🤖', '⚡'];
+const IconBackground = () => {
+  const icons = [Radio, Satellite, Shield, Globe, Wifi, Terminal, Cpu, Server, Zap, Compass, Map, Binoculars];
   
-  // Create static array to avoid hydration/render mismatches if SSR, though this is CRA/Vite
   const [elements, setElements] = React.useState([]);
   
   React.useEffect(() => {
     const newElements = Array.from({ length: 25 }).map((_, i) => ({
       id: i,
-      emoji: emojis[Math.floor(Math.random() * emojis.length)],
+      IconComponent: icons[Math.floor(Math.random() * icons.length)],
       left: Math.random() * 100,
       duration: 15 + Math.random() * 25,
       delay: Math.random() * 20,
       size: 1 + Math.random() * 1.5,
-      opacity: 0.1 + Math.random() * 0.2
+      opacity: 0.05 + Math.random() * 0.15 // Slightly lower opacity for a cleaner look
     }));
     setElements(newElements);
   }, []);
 
   return (
     <div className="emoji-background-container">
-      {elements.map((el) => (
-        <div 
-          key={el.id} 
-          className="floating-emoji"
-          style={{
-            left: `${el.left}%`,
-            animationDuration: `${el.duration}s`,
-            animationDelay: `-${el.delay}s`,
-            fontSize: `${el.size}rem`,
-            opacity: el.opacity
-          }}
-        >
-          {el.emoji}
-        </div>
-      ))}
+      {elements.map((el) => {
+        const Icon = el.IconComponent;
+        return (
+          <div 
+            key={el.id} 
+            className="floating-emoji"
+            style={{
+              left: `${el.left}%`,
+              animationDuration: `${el.duration}s`,
+              animationDelay: `-${el.delay}s`,
+              opacity: el.opacity,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--text-muted)'
+            }}
+          >
+            <Icon size={el.size * 24} />
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -298,7 +303,7 @@ const EmojiBackground = () => {
 
   return (
     <div className="auth-page">
-      <EmojiBackground />
+      <IconBackground />
       
       <motion.div 
         className="auth-card"
