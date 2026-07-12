@@ -1153,7 +1153,8 @@
 }
 
 .message-like-btn.liked {
-  color: #ff4757;
+  color: #ff4757 !important;
+  opacity: 1 !important;
 }
 
 .message-like-count {
