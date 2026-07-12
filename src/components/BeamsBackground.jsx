@@ -21,6 +21,8 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
     const canvasRef = useRef(null);
     const beamsRef = useRef([]);
     const animationFrameRef = useRef(0);
+    const directionRef = useRef(1); // 1 = downward, -1 = upward
+    const lastToggleRef = useRef(Date.now());
     const MINIMUM_BEAMS = 6; // Very few rays to avoid traffic
 
     const opacityMap = {
@@ -62,7 +64,13 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             const logicalHeight = window.innerHeight;
             const spacing = logicalWidth / 3;
 
-            beam.y = -logicalHeight - 100;
+            // Spawn opposite to the current direction of travel
+            if (directionRef.current === 1) {
+                beam.y = -logicalHeight - 100; // Spawn above to flow downward
+            } else {
+                beam.y = logicalHeight + 100; // Spawn below to flow upward
+            }
+            
             beam.x =
                 column * spacing +
                 spacing / 2 +
@@ -105,13 +113,22 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
 
             ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
+            // Toggle the ocean tide direction every 15 seconds
+            const now = Date.now();
+            if (now - lastToggleRef.current > 15000) {
+                directionRef.current *= -1;
+                lastToggleRef.current = now;
+            }
+
             beamsRef.current.forEach((beam, index) => {
-                beam.y += beam.speed;
-                beam.x -= beam.speed * Math.tan(Math.abs(beam.angle) * (Math.PI / 180)); 
+                beam.y += beam.speed * directionRef.current;
+                beam.x -= beam.speed * Math.tan(Math.abs(beam.angle) * (Math.PI / 180)) * directionRef.current; 
                 beam.pulse += beam.pulseSpeed;
 
-                if (beam.y - beam.length > window.innerHeight + 100) {
-                    resetBeam(beam, index);
+                if (directionRef.current === 1) {
+                    if (beam.y - beam.length > window.innerHeight + 100) resetBeam(beam, index);
+                } else {
+                    if (beam.y + beam.length < -100) resetBeam(beam, index);
                 }
 
                 drawBeam(ctx, beam);
