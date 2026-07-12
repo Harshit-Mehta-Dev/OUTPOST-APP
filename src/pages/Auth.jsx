@@ -253,14 +253,16 @@ const Auth = () => {
   };
 
 const IconBackground = () => {
-  const icons = [Radio, Satellite, Shield, Globe, Wifi, Terminal, Cpu, Server, Zap, Compass, Map, Binoculars];
+  // Filter out any undefined icons just in case they don't exist in the current lucide-react version
+  const rawIcons = [Radio, Satellite, Shield, Globe, Wifi, Terminal, Cpu, Server, Zap, Compass, Map, Binoculars];
+  const icons = rawIcons.filter(icon => typeof icon === 'object' || typeof icon === 'function');
   
   const [elements, setElements] = React.useState([]);
   
   React.useEffect(() => {
     const newElements = Array.from({ length: 25 }).map((_, i) => ({
       id: i,
-      IconComponent: icons[Math.floor(Math.random() * icons.length)],
+      IconComponent: icons[Math.floor(Math.random() * icons.length)] || Shield,
       left: Math.random() * 100,
       duration: 15 + Math.random() * 25,
       delay: Math.random() * 20,
@@ -273,10 +275,13 @@ const IconBackground = () => {
   return (
     <div className="emoji-background-container">
       {elements.map((el) => {
-        const Icon = el.IconComponent;
+        const Icon = el.IconComponent || Shield;
+        // Strict safety check to prevent React from crashing
+        if (typeof Icon !== 'function' && typeof Icon !== 'object') return null;
+        
         return (
           <div 
-            key={el.id} 
+            key={el.id}  
             className="floating-emoji"
             style={{
               left: `${el.left}%`,
