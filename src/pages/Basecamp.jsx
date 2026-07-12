@@ -552,6 +552,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       alert(`⚠️ ${data.message}`);
     };
 
+    const handleServerAlert = (data) => {
+      alert(`⚠️ ${data.message}`);
+    };
+
     socket.on("scout-joined-list", handleScoutJoinedList);
     socket.on("campsite-admin-notification", handleAdminNotification);
     socket.on("level_up_alert", handleLevelUp);
@@ -563,6 +567,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     socket.on("user_banned", handleBanned);
     socket.on("global-restricted", handleGlobalRestricted);
     socket.on("permission_denied", handlePermissionDenied);
+    socket.on("server_alert", handleServerAlert);
     socket.on("new_public_campsite", () => {
       setDiscoverRefreshTrigger(prev => prev + 1);
     });
@@ -582,6 +587,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("user_banned", handleBanned);
       socket.off("global-restricted", handleGlobalRestricted);
       socket.off("permission_denied", handlePermissionDenied);
+      socket.off("server_alert", handleServerAlert);
       socket.off("new_public_campsite");
     };
   }, [currentChannelKey]);

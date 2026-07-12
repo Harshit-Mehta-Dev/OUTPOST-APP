@@ -301,9 +301,76 @@ app.get('/api/messages/:channelKey', async (req, res) => {
   }
 });
 
+// Socket.io DoS Protection (Rate Limiter)
+const socketRateLimiters = new Map();
+const SOCKET_RATE_LIMIT = 15; // Max events per window
+const SOCKET_RATE_WINDOW = 10000; // 10 seconds
+
+// Memory cleanup for stale rate limiters
+setInterval(() => {
+  const now = Date.now();
+  for (const [socketId, data] of socketRateLimiters.entries()) {
+    if (now - data.startTime > SOCKET_RATE_WINDOW * 2) {
+      socketRateLimiters.delete(socketId);
+    }
+  }
+}, 60000);
+
 // Socket.io logic
 io.on('connection', (socket) => {
   console.log(`🔌 Client connected: ${socket.id}`);
+  
+  // Anti-DoS Middleware applied to all incoming packets for this socket
+  socket.use((packet, next) => {
+    const eventName = packet[0];
+    
+    // Allow internal ping/pong if they somehow pass through here
+    if (eventName === 'ping' || eventName === 'pong') return next();
+
+    const now = Date.now();
+    let rateData = socketRateLimiters.get(socket.id);
+
+    if (!rateData) {
+      rateData = { count: 1, startTime: now, warnings: 0 };
+      socketRateLimiters.set(socket.id, rateData);
+      return next();
+    }
+
+    if (now - rateData.startTime > SOCKET_RATE_WINDOW) {
+      // Reset window
+      rateData.count = 1;
+      rateData.startTime = now;
+      // Optional: decay warnings over time if they behave well
+      if (rateData.warnings > 0) rateData.warnings--; 
+      return next();
+    }
+
+    rateData.count++;
+
+    if (rateData.count > SOCKET_RATE_LIMIT) {
+      rateData.warnings++;
+      console.warn(`[SECURITY] Socket DoS limit breached by ${socket.id} on event: ${eventName} (Strikes: ${rateData.warnings})`);
+      
+      if (rateData.warnings >= 3) {
+        console.error(`[SECURITY] Auto-Disconnecting socket ${socket.id} for repeated rate limit abuse.`);
+        socket.emit("permission_denied", { message: "Security Intervention: Connection severed due to extreme event rate. Please wait before reconnecting." });
+        socket.disconnect(true);
+        return next(new Error('Rate limit exceeded. Connection severed.'));
+      }
+      
+      // Emits a warning to the user on the first/second strike
+      socket.emit("server_alert", { message: "Warning: You are sending requests too quickly! Please slow down to prevent a ban." });
+      return next(new Error('Rate limit exceeded. Request dropped.'));
+    }
+
+    next();
+  });
+  
+  // Cleanup on disconnect
+  socket.on('disconnect', () => {
+    socketRateLimiters.delete(socket.id);
+    console.log(`🛑 Client disconnected: ${socket.id}`);
+  });
 
   // Join a specific channel room
   socket.on('join_channel', (channelKey) => {
@@ -682,10 +749,6 @@ io.on('connection', (socket) => {
         scoutName
       });
     }
-  });
-
-  socket.on('disconnect', () => {
-    console.log(`🛑 Client disconnected: ${socket.id}`);
   });
 });
 
