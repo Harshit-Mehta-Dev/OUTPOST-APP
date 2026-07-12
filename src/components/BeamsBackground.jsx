@@ -2,18 +2,18 @@ import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 
 function createBeam(width, height) {
-    const angle = -15 + Math.random() * 30; // Slanted light rays
+    const angle = -35 + Math.random() * 10;
     return {
-        x: Math.random() * width * 1.5 - width * 0.25, // Start anywhere initially
-        y: -height * 0.1 - Math.random() * height * 0.2, // Originate from the top surface
-        width: 60 + Math.random() * 60, // Elegant, varied widths
-        length: height * 2.5, // Long enough to reach the ocean floor
+        x: Math.random() * width * 1.5 - width * 0.25,
+        y: Math.random() * height * 1.5 - height * 0.25,
+        width: 30 + Math.random() * 60,
+        length: height * 2.5,
         angle: angle,
-        speed: 0.6 + Math.random() * 1.2, // Sweeping speed
-        opacity: 0.1 + Math.random() * 0.15,
+        speed: 0.6 + Math.random() * 1.2,
+        opacity: 0.12 + Math.random() * 0.16,
         hue: 15 + Math.random() * 25,
         pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: 0.015 + Math.random() * 0.02,
+        pulseSpeed: 0.02 + Math.random() * 0.03,
     };
 }
 
@@ -57,17 +57,21 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         function resetBeam(beam, index) {
             if (!canvas) return beam;
             
+            const column = index % 3;
             const logicalWidth = window.innerWidth;
             const logicalHeight = window.innerHeight;
+            const spacing = logicalWidth / 3;
 
-            // Start completely off-screen to the left to sweep right
-            beam.x = -logicalWidth * 0.5 - Math.random() * logicalWidth * 0.5;
-            beam.y = -logicalHeight * 0.1 - Math.random() * logicalHeight * 0.2;
-            beam.width = 60 + Math.random() * 60;
-            beam.speed = 0.6 + Math.random() * 1.2;
+            beam.y = -logicalHeight - 100;
+            beam.x =
+                column * spacing +
+                spacing / 2 +
+                (Math.random() - 0.5) * spacing * 0.5;
+            beam.width = 100 + Math.random() * 100;
+            beam.speed = 0.5 + Math.random() * 0.4;
             beam.hue = 15 + Math.random() * 25;
-            beam.opacity = 0.1 + Math.random() * 0.15;
-            beam.angle = -15 + Math.random() * 30;
+            beam.opacity = 0.2 + Math.random() * 0.1;
+            beam.angle = -35 + Math.random() * 10;
             return beam;
         }
 
@@ -102,14 +106,11 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
             beamsRef.current.forEach((beam, index) => {
-                // Sweep horizontally from left to right
-                beam.x += beam.speed; 
-                // Very subtle downward drift mimicking water depth
-                beam.y += beam.speed * 0.15; 
+                beam.y += beam.speed;
+                beam.x -= beam.speed * Math.tan(Math.abs(beam.angle) * (Math.PI / 180)); 
                 beam.pulse += beam.pulseSpeed;
 
-                // Wipeout at the right screen edge
-                if (beam.x > window.innerWidth * 1.5) {
+                if (beam.y - beam.length > window.innerHeight + 100) {
                     resetBeam(beam, index);
                 }
 
