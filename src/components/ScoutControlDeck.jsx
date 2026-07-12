@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mic, MicOff, Headphones, LogOut, Sun, Moon, Volume2, Mic2, X, Trash2, Clock, RefreshCw, HeartPulse, Settings } from 'lucide-react';
+import { Mic, MicOff, Headphones, LogOut, Sun, Moon, Volume2, Mic2, X, Trash2, Clock, RefreshCw, HeartPulse, Settings, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import './ScoutControlDeck.css';
 
 export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, currentUser }) {
@@ -9,6 +9,13 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, cu
   const [modalView, setModalView] = useState('closed'); // 'closed', 'settings', 'logout', 'delete'
   const [isDeleteChecked, setIsDeleteChecked] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Change Username Flow State
+  const [changeUsernameStep, setChangeUsernameStep] = useState(1);
+  const [newUsername, setNewUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [usernameUpdateSuccess, setUsernameUpdateSuccess] = useState(false);
 
   // Audio Device State
   const [micSensitivity, setMicSensitivity] = useState(() => Number(localStorage.getItem('outpost_mic_sens')) || 50);
@@ -176,6 +183,26 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, cu
                   <div className="account-management-section">
                     <div className="account-action-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                       <div className="account-action-info" style={{ textAlign: 'left' }}>
+                        <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>Change Username</h4>
+                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Update your display name.</p>
+                      </div>
+                      <button 
+                        className="btn-stay" 
+                        onClick={() => {
+                          setChangeUsernameStep(1);
+                          setNewUsername('');
+                          setPassword('');
+                          setShowPassword(false);
+                          setUsernameUpdateSuccess(false);
+                          setModalView('change_username');
+                        }}
+                      >
+                        Change Username
+                      </button>
+                    </div>
+
+                    <div className="account-action-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <div className="account-action-info" style={{ textAlign: 'left' }}>
                         <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)' }}>Close your account</h4>
                         <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Permanently close your account.</p>
                       </div>
@@ -292,6 +319,102 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, cu
                       </button>
                     </div>
                   </div>
+                </>
+              )}
+
+              {modalView === 'change_username' && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h2 className="modal-header-large" style={{ color: 'var(--text-primary)' }}>Change Username</h2>
+                      <ul className="username-change-rules">
+                        <li>Users with an active strike can't change their username.</li>
+                        <li>Usernames can only be changed once every 30 days.</li>
+                      </ul>
+                    </div>
+                    <button onClick={() => setModalView('settings')} className="modal-close-btn">
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <div className="step-header">STEP 1</div>
+                  
+                  <div className="username-input-group">
+                    <label className="username-input-label">Current Username</label>
+                    <input 
+                      type="text" 
+                      className="username-input-field" 
+                      value={currentUser?.name || 'Harshit_Mehta'} 
+                      disabled 
+                    />
+                  </div>
+
+                  {changeUsernameStep === 1 && (
+                    <button 
+                      className="btn-proceed"
+                      onClick={() => setChangeUsernameStep(2)}
+                    >
+                      Proceed
+                    </button>
+                  )}
+
+                  {changeUsernameStep === 2 && (
+                    <>
+                      <div className="username-success-banner">
+                        <CheckCircle2 size={18} />
+                        You can update your username
+                      </div>
+
+                      <div className="step-header" style={{ marginTop: '32px' }}>STEP 2</div>
+                      
+                      <div className="username-input-group">
+                        <label className="username-input-label">New Username</label>
+                        <input 
+                          type="text" 
+                          className="username-input-field" 
+                          placeholder="Enter your new username"
+                          value={newUsername}
+                          onChange={(e) => setNewUsername(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="username-input-group">
+                        <label className="username-input-label">Existing Password</label>
+                        <div className="username-input-wrapper">
+                          <input 
+                            type={showPassword ? "text" : "password"}
+                            className="username-input-field" 
+                            placeholder="Enter your password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                          />
+                          <button 
+                            type="button" 
+                            className="password-toggle-btn"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{ marginTop: '32px', display: 'flow-root' }}>
+                        <button 
+                          className={`btn-update-username ${newUsername.length > 2 && password.length > 3 ? 'enabled' : ''}`}
+                          disabled={newUsername.length <= 2 || password.length <= 3}
+                          onClick={() => {
+                            if (newUsername.length > 2 && password.length > 3) {
+                              // Simulate success
+                              alert("Username updated successfully!");
+                              setModalView('settings');
+                            }
+                          }}
+                        >
+                          Update Username
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
