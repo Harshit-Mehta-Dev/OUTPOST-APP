@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { debounce } from 'lodash';
 import { 
   Compass, 
@@ -101,6 +101,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isCampOpsModalOpen, setIsCampOpsModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
+
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      setActiveDropdownId(null);
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, []);
 
   const toggleDropdown = (id) => {
     setActiveDropdownId(prev => prev === id ? null : id);
@@ -2074,7 +2082,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         )}
                       </div>
                       <div className="message-content">
-                        <div className="message-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', width: '100%', overflow: 'hidden' }}>
+                        <div className="message-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', width: '100%', overflow: 'visible' }}>
                           {(() => {
                             const username = msg.user?.username || msg.user || 'Unknown Scout';
                             const userRoleName = activeCampsite?.memberRoles?.[username];
@@ -2092,7 +2100,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           <div className="message-actions-container">
                             <button
                               className={`message-action-btn message-like-btn ${msg.likes?.includes(currentUser?.username) ? 'liked' : ''}`}
-                              onClick={() => handleLikeMessage(msg._id || msg.id, currentChannelKey)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleLikeMessage(msg._id || msg.id, currentChannelKey);
+                              }}
                               title={msg.likes?.includes(currentUser?.username) ? "Unlike" : "Like"}
                             >
                               <Heart size={14} fill={msg.likes?.includes(currentUser?.username) ? "currentColor" : "none"} />
