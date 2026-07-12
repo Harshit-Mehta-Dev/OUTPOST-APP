@@ -17,33 +17,15 @@ const syncMessageToSupabase = async (messageDoc) => {
   }
 };
 
-// Helper: save and broadcast an AI message
-const broadcastAiMessage = async (text, io) => {
-  const encryptedObj = scoutVault.encrypt(text);
-
-  const msg = new Message({
+// Helper: format AI message for frontend without saving to DB
+const broadcastAiMessage = (text) => {
+  return {
     channelKey: '1_Ai-Scout',
     user: { username: 'Ai-Scout', profilePictureUrl: AI_BOT_AVATAR, level: 99 },
-    text: null, // ScoutVault: store null for plaintext
-    encryptedData: encryptedObj.encryptedData,
-    iv: encryptedObj.iv,
+    text: text,
     time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     type: 'text'
-  });
-  const saved = await msg.save();
-  syncMessageToSupabase(saved);
-  if (io) {
-    io.to('1_Ai-Scout').emit('broadcast-typing-stop', { channelId: '1_Ai-Scout', scoutName: 'Ai-Scout' });
-    
-    // Decrypt the broadcast payload for real-time WebSockets
-    const broadcastPayload = saved.toObject();
-    broadcastPayload.text = text; 
-    
-    io.to('1_Ai-Scout').emit('receive_message', { ...broadcastPayload, receivedAt: Date.now() });
-  }
-  const result = saved.toObject();
-  result.text = text;
-  return result;
+  };
 };
 
 router.post('/chat', requireAuth, async (req, res) => {
@@ -113,16 +95,16 @@ router.post('/chat', requireAuth, async (req, res) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log('✅ Local AI responded, length:', aiText.length);
 
-    const saved = await broadcastAiMessage(aiText, io);
+    // Emit typing stop explicitly to the user's socket ID if needed, but HTTP response handles frontend.
+    const saved = broadcastAiMessage(aiText);
     return res.status(200).json({ success: true, message: saved });
 
   } catch (err) {
     console.error('❌ AI Route crash:', err.message, err.stack);
     try {
-      const saved = await broadcastAiMessage(`⚠️ Ai-Scout had an internal error: ${err.message}`, io);
+      const saved = broadcastAiMessage(`⚠️ Ai-Scout had an internal error: ${err.message}`);
       return res.status(200).json({ success: true, message: saved });
     } catch(e2) {
-      if (io) io.to('1_Ai-Scout').emit('broadcast-typing-stop', { channelId: '1_Ai-Scout', scoutName: 'Ai-Scout' });
       return res.status(500).json({ error: err.message });
     }
   }
