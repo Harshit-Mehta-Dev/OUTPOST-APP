@@ -618,7 +618,7 @@ io.on('connection', (socket) => {
         msg.likes.push(username);
       }
       
-      await msg.save();
+      await Message.updateOne({ _id: messageId }, { $set: { likes: msg.likes } });
       syncMessageToSupabase(msg);
 
       io.to(channelKey).emit("message_liked", { messageId, channelKey, likes: msg.likes });
