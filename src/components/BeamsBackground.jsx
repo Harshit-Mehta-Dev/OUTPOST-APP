@@ -1,28 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 
-function createBeam(width, height) {
-    const angle = -35 + Math.random() * 10;
-    return {
-        x: Math.random() * width * 1.5 - width * 0.25,
-        y: Math.random() * height * 1.5 - height * 0.25,
-        width: 30 + Math.random() * 60,
-        length: height * 2.5,
-        angle: angle,
-        speed: 0.6 + Math.random() * 1.2,
-        opacity: 0.12 + Math.random() * 0.16,
-        // Match the OUTPOST burnt orange palette (Hue ~15-25)
-        hue: 15 + Math.random() * 25,
-        pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: 0.02 + Math.random() * 0.03,
-    };
-}
-
 export function BeamsBackground({ className = "", intensity = "strong", fixed = false }) {
     const canvasRef = useRef(null);
     const beamsRef = useRef([]);
     const animationFrameRef = useRef(0);
-    const MINIMUM_BEAMS = 20;
+    const MINIMUM_BEAMS = 18;
 
     const opacityMap = {
         subtle: 0.7,
@@ -37,52 +20,52 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
+        const updateThemeColor = () => {
+            const rootStyle = getComputedStyle(document.documentElement);
+            return rootStyle.getPropertyValue('--brand-primary').trim() || '234, 88, 12';
+        };
+
         const updateCanvasSize = () => {
-            // Render at 50% resolution for excellent performance while remaining crisp.
-            // Native soft gradients are now used, eliminating the need for extreme downscaling.
             const scaleFactor = 0.5; 
             canvas.width = window.innerWidth * scaleFactor;
             canvas.height = window.innerHeight * scaleFactor;
             canvas.style.width = `${window.innerWidth}px`;
             canvas.style.height = `${window.innerHeight}px`;
             
-            // Scale context so all drawing commands use logical window coordinates
             ctx.scale(scaleFactor, scaleFactor);
 
-            const totalBeams = MINIMUM_BEAMS * 1.5;
-            beamsRef.current = Array.from({ length: totalBeams }, () =>
-                createBeam(window.innerWidth, window.innerHeight)
-            );
+            const themeColor = updateThemeColor();
+            
+            beamsRef.current = Array.from({ length: MINIMUM_BEAMS }, (_, i) => {
+                const spacing = window.innerWidth / MINIMUM_BEAMS;
+                return {
+                    x: (i * spacing) + (Math.random() * spacing) - (window.innerWidth * 0.2),
+                    y: Math.random() * window.innerHeight * 2 - window.innerHeight,
+                    width: 60 + Math.random() * 50,
+                    length: window.innerHeight * 2.5,
+                    angle: -35,
+                    speed: 0.6 + (i % 4) * 0.15, // Consistent and elegant speeds
+                    opacity: 0.12 + Math.random() * 0.15,
+                    pulse: Math.random() * Math.PI * 2,
+                    pulseSpeed: 0.015,
+                    colorStr: themeColor
+                };
+            });
         };
 
         updateCanvasSize();
         window.addEventListener("resize", updateCanvasSize);
 
-        function resetBeam(beam, index, totalBeams) {
-            if (!canvas) return beam;
-            
-            const column = index % 3;
-            const logicalWidth = window.innerWidth;
-            const logicalHeight = window.innerHeight;
-            const spacing = logicalWidth / 3;
-
-            beam.y = logicalHeight + 100;
-            beam.x =
-                column * spacing +
-                spacing / 2 +
-                (Math.random() - 0.5) * spacing * 0.5;
-            beam.width = 100 + Math.random() * 100;
-            beam.speed = 0.5 + Math.random() * 0.4;
-            beam.hue = 15 + Math.random() * 25; // OUTPOST Orange hue
-            beam.opacity = 0.2 + Math.random() * 0.1;
-            return beam;
-        }
+        // Listen for theme changes dynamically
+        const themeInterval = setInterval(() => {
+            const newColor = updateThemeColor();
+            beamsRef.current.forEach(beam => beam.colorStr = newColor);
+        }, 1000);
 
         function drawBeam(ctx, beam) {
             ctx.save();
             ctx.translate(beam.x, beam.y);
             ctx.rotate((beam.angle * Math.PI) / 180);
-            // Move center down to match the original fillRect starting at 0 and ending at beam.length
             ctx.translate(0, beam.length / 2);
             
             const pulsingOpacity =
@@ -90,14 +73,12 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
                 (0.8 + Math.sin(beam.pulse) * 0.2) *
                 opacityMap[intensity];
 
-            // Stretch the coordinate system to draw an elongated ellipse
-            // This creates perfectly soft edges natively without expensive CSS blur
             ctx.scale(beam.width / 2, beam.length / 2);
 
             const radGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-            radGrad.addColorStop(0, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity})`);
-            radGrad.addColorStop(0.3, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity * 0.8})`);
-            radGrad.addColorStop(1, `hsla(${beam.hue}, 85%, 65%, 0)`);
+            radGrad.addColorStop(0, `rgba(${beam.colorStr}, ${pulsingOpacity})`);
+            radGrad.addColorStop(0.3, `rgba(${beam.colorStr}, ${pulsingOpacity * 0.8})`);
+            radGrad.addColorStop(1, `rgba(${beam.colorStr}, 0)`);
 
             ctx.fillStyle = radGrad;
             ctx.beginPath();
@@ -109,17 +90,17 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         function animate() {
             if (!canvas || !ctx) return;
 
-            // Clear using logical coordinates because context is scaled
             ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            // Removed ctx.filter = "blur(35px)"; to prevent massive CPU blocking
 
-            const totalBeams = beamsRef.current.length;
-            beamsRef.current.forEach((beam, index) => {
+            beamsRef.current.forEach((beam) => {
                 beam.y -= beam.speed;
+                // Move x proportionally to the angle so it flows smoothly across the screen
+                beam.x += beam.speed * Math.tan(Math.abs(beam.angle) * (Math.PI / 180)); 
                 beam.pulse += beam.pulseSpeed;
 
                 if (beam.y + beam.length < -100) {
-                    resetBeam(beam, index, totalBeams);
+                    beam.y = window.innerHeight + 100;
+                    beam.x = Math.random() * window.innerWidth * 1.5 - window.innerWidth * 0.5;
                 }
 
                 drawBeam(ctx, beam);
@@ -132,6 +113,7 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
 
         return () => {
             window.removeEventListener("resize", updateCanvasSize);
+            clearInterval(themeInterval);
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
@@ -145,12 +127,12 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         >
             <canvas
                 ref={canvasRef}
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", transform: "translateZ(0)" }}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", transform: "translateZ(0)", pointerEvents: "none" }}
             />
             <motion.div
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.05)" }}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.02)", pointerEvents: "none" }}
                 animate={{
-                    opacity: [0.05, 0.15, 0.05],
+                    opacity: [0.02, 0.1, 0.02],
                 }}
                 transition={{
                     duration: 10,
