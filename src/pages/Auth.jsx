@@ -54,67 +54,22 @@ const Auth = () => {
     }
   }, [supabaseUser, navigate]);
 
-  const handleGoogleSignIn = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      console.log('Google login success:', tokenResponse);
-      setError(null);
-      try {
-        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        const userInfo = await res.json();
-        
-        const finalEmail = userInfo?.email || email || `scout_${Math.floor(Math.random() * 10000)}@outpost.local`;
-        const finalUsername = userInfo?.name || (finalEmail.includes('@') ? finalEmail.split('@')[0] : finalEmail);
-        
-        // Sync with backend
-        try {
-          const syncRes = await fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}/api/users/sync`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: finalEmail.toLowerCase().trim(), username: finalUsername })
-          });
-          const syncedUser = await syncRes.json();
-          // Merge local profile picture so it's not lost
-          const existing = JSON.parse(localStorage.getItem('outpost_user') || '{}');
-          syncedUser.profilePictureUrl = userInfo?.picture || syncedUser.profilePictureUrl || existing.profilePictureUrl || '';
-          
-          localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
-          if (syncedUser.token) {
-            localStorage.setItem('outpost_token', syncedUser.token);
-          } else {
-            localStorage.removeItem('outpost_token');
-          }
-        } catch (syncErr) {
-          console.error("Failed to sync user with backend", syncErr);
-          const existing = JSON.parse(localStorage.getItem('outpost_user') || '{}');
-          localStorage.setItem('outpost_user', JSON.stringify({ 
-            email: finalEmail.toLowerCase().trim(), 
-            username: finalUsername,
-            profilePictureUrl: userInfo?.picture || existing.profilePictureUrl || ''
-          }));
-          localStorage.removeItem('outpost_token');
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/app`
         }
-
-        triggerLoadingAndNavigate();
-      } catch (err) {
-        console.error('Failed to fetch user info', err);
-        const fallbackEmail = email || `scout_${Math.floor(Math.random() * 10000)}@outpost.local`;
-        const existing = JSON.parse(localStorage.getItem('outpost_user') || '{}');
-        localStorage.setItem('outpost_user', JSON.stringify({ 
-          email: fallbackEmail, 
-          username: 'GoogleUser',
-          profilePictureUrl: existing.profilePictureUrl || ''
-        }));
-        localStorage.removeItem('outpost_token');
-        triggerLoadingAndNavigate();
-      }
-    },
-    onError: error => {
-      console.error("Google sign in error:", error);
-      setError("Failed to sign in with Google. Please try again.");
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error("Google login error:", err);
+      setError(err.message);
+      setIsLoading(false);
     }
-  });
+  };
 
   const triggerLoadingAndNavigate = () => {
     setIsLoading(true);
@@ -234,15 +189,18 @@ const Auth = () => {
       if (error) throw error;
       setFailedAttempts(0);
       
-      // Store locally just in case it's still needed by other components during migration
-      localStorage.setItem('outpost_user', JSON.stringify({
-        email: data.user.email,
-        username: data.user.user_metadata?.username || data.user.email,
-        id: data.user.id
-      }));
-      localStorage.setItem('outpost_token', data.session.access_token);
-      
-      setTimeout(() => { navigate('/app'); }, 2000);
+      if (data.session) {
+        localStorage.setItem('outpost_user', JSON.stringify({
+          email: data.user.email,
+          username: data.user.user_metadata?.username || data.user.email,
+          id: data.user.id
+        }));
+        localStorage.setItem('outpost_token', data.session.access_token);
+        setTimeout(() => { navigate('/app'); }, 2000);
+      } else {
+        setError("Please check your email for a confirmation link to finish signing up.");
+        setIsLoading(false);
+      }
     })
     .catch(err => {
       console.error("Auth Error:", err);
