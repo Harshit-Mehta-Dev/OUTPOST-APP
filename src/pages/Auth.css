@@ -19,7 +19,7 @@
 
 .auth-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 850px;
   padding: 40px;
   border-radius: 24px;
   background: var(--bg-glass);
@@ -27,6 +27,27 @@
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-glass);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.auth-card-layout {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.auth-card-left,
+.auth-card-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-divider-vertical {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border-glass);
+  margin: 0;
 }
 
 .auth-header {
@@ -161,6 +182,22 @@
 .btn-social:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .auth-card {
+    max-width: 440px;
+    padding: 30px 20px;
+  }
+  
+  .auth-card-layout {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .auth-divider-vertical {
+    display: none;
+  }
 }
 
 /* Emoji Background Animation */
