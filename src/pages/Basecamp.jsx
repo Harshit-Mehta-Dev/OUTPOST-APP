@@ -35,7 +35,9 @@ import {
   Eye,
   HelpCircle,
   LifeBuoy,
-  Cpu
+  Cpu,
+  MoreVertical,
+  Heart
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -98,6 +100,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCampOpsModalOpen, setIsCampOpsModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [activeDropdownId, setActiveDropdownId] = useState(null);
+
+  const toggleDropdown = (id) => {
+    setActiveDropdownId(prev => prev === id ? null : id);
+  };
+
+  const handleLikeMessage = (msgId, channelKey) => {
+    socket.emit("like_message", { messageId: msgId, channelKey, username: currentUser.username });
+  };
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState('chat'); // Mobile Bottom Dock Tab
@@ -236,9 +247,32 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   // Fetch messages from Backend API
   useEffect(() => {
-    setIsFetchingMessages(true);
-    
-    const fetchMessages = async () => {
+      socket.off('message_deleted_for_all');
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleMessageLiked = (data) => {
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[data.channelKey] || [];
+        const existingIndex = currentMessages.findIndex(m => (m._id || m.id) === data.messageId);
+        if (existingIndex !== -1) {
+          const updatedMessages = [...currentMessages];
+          updatedMessages[existingIndex] = { ...updatedMessages[existingIndex], likes: data.likes };
+          return {
+            ...prev,
+            [data.channelKey]: updatedMessages
+          };
+        }
+        return prev;
+      });
+    };
+
+    socket.on('message_liked', handleMessageLiked);
+    return () => socket.off('message_liked', handleMessageLiked);
+  }, []);
+
+  const fetchCampsites = async () => {
       try {
         const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/messages/${currentChannelKey}`);
         if (!response.ok) throw new Error('Failed to fetch messages');
@@ -2057,45 +2091,76 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           })()}
                           {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
                           <span className="message-time" style={{ marginLeft: '10px', flexGrow: 1 }}>{msg.time}</span>
-                          <button 
-                            className="message-action-btn"
-                            onClick={() => handleCopyMessage(msg)}
-                            title="Copy"
-                          >
-                            <Copy size={14} />
-                          </button>
-                          <button 
-                            className="message-action-btn"
-                            onClick={() => setReplyingTo(msg)}
-                            title="Reply"
-                          >
-                            <Reply size={14} />
-                          </button>
-                          <button 
-                            className="message-action-btn"
-                            onClick={() => setMessageToDelete({ 
-                              id: msg._id || msg.id, 
-                              channelKey: currentChannelKey,
-                              isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username 
-                            })}
-                            title="Delete"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                          {isGlobalAdmin && !msg.isSystemDeleted && (
+                          <div className="message-actions-container">
                             <button
-                              className="operator-action-btn"
-                              onClick={() => setMessageToDelete({ 
-                                  id: msg._id || msg.id, 
-                                  channelKey: currentChannelKey,
-                                  isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username,
-                                  isOperatorMode: true
-                              })}
-                              title="Operator Override: Delete Content"
+                              className={`message-action-btn message-like-btn ${msg.likes?.includes(currentUser?.username) ? 'liked' : ''}`}
+                              onClick={() => handleLikeMessage(msg._id || msg.id, currentChannelKey)}
+                              title={msg.likes?.includes(currentUser?.username) ? "Unlike" : "Like"}
                             >
-                              <ShieldAlert size={14} />
+                              <Heart size={14} fill={msg.likes?.includes(currentUser?.username) ? "currentColor" : "none"} />
+                              {msg.likes?.length > 0 && <span className="message-like-count">{msg.likes.length}</span>}
                             </button>
-                          )}
+                            <div className="dropdown-wrapper">
+                              <button
+                                className="message-action-btn message-more-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleDropdown(msg._id || msg.id);
+                                }}
+                                title="More Options"
+                              >
+                                <MoreVertical size={14} />
+                              </button>
+                              <AnimatePresence>
+                                {activeDropdownId === (msg._id || msg.id) && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="message-dropdown-menu"
+                                  >
+                                    <button onClick={() => { handleCopyMessage(msg); setActiveDropdownId(null); }}>
+                                      <Copy size={14} /> Copy
+                                    </button>
+                                    <button onClick={() => { setReplyingTo(msg); setActiveDropdownId(null); }}>
+                                      <Reply size={14} /> Reply
+                                    </button>
+                                    <button 
+                                      onClick={() => {
+                                        setMessageToDelete({ 
+                                          id: msg._id || msg.id, 
+                                          channelKey: currentChannelKey,
+                                          isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username 
+                                        });
+                                        setActiveDropdownId(null);
+                                      }}
+                                      className="dropdown-delete"
+                                    >
+                                      <Trash2 size={14} /> Delete
+                                    </button>
+                                    {isGlobalAdmin && !msg.isSystemDeleted && (
+                                      <button 
+                                        onClick={() => {
+                                          setMessageToDelete({ 
+                                            id: msg._id || msg.id, 
+                                            channelKey: currentChannelKey,
+                                            isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username,
+                                            isOperatorMode: true
+                                          });
+                                          setActiveDropdownId(null);
+                                        }}
+                                        className="dropdown-delete"
+                                        title="Operator Override"
+                                      >
+                                        <ShieldAlert size={14} /> Override
+                                      </button>
+                                    )}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </div>
                         </div>
                         <div className="message-text">
                           {(() => {

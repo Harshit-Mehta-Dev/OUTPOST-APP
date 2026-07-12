@@ -601,6 +601,28 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on("like_message", async ({ messageId, channelKey, username }) => {
+    try {
+      if (!username) return;
+      const msg = await Message.findById(messageId);
+      if (!msg) return;
+
+      const likeIndex = msg.likes.indexOf(username);
+      if (likeIndex > -1) {
+        msg.likes.splice(likeIndex, 1);
+      } else {
+        msg.likes.push(username);
+      }
+      
+      await msg.save();
+      syncMessageToSupabase(msg);
+
+      io.to(channelKey).emit("message_liked", { messageId, channelKey, likes: msg.likes });
+    } catch (err) {
+      console.error("Error liking message:", err);
+    }
+  });
+
   socket.on("delete_message_for_all", async ({ messageId, channelKey, username }) => {
     try {
       if (!username) return; // Silent fail if no username

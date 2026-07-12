@@ -16,6 +16,7 @@ const messageSchema = new mongoose.Schema({
   body: { type: String },
   pollData: { type: mongoose.Schema.Types.Mixed },
   replyTo: { type: mongoose.Schema.Types.Mixed },
+  likes: { type: [String], default: [] },
   createdAt: { type: Date, default: Date.now }
 });
 
