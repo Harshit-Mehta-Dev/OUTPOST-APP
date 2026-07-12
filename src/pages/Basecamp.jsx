@@ -247,32 +247,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   // Fetch messages from Backend API
   useEffect(() => {
-      socket.off('message_deleted_for_all');
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleMessageLiked = (data) => {
-      setMessagesByChannel(prev => {
-        const currentMessages = prev[data.channelKey] || [];
-        const existingIndex = currentMessages.findIndex(m => (m._id || m.id) === data.messageId);
-        if (existingIndex !== -1) {
-          const updatedMessages = [...currentMessages];
-          updatedMessages[existingIndex] = { ...updatedMessages[existingIndex], likes: data.likes };
-          return {
-            ...prev,
-            [data.channelKey]: updatedMessages
-          };
-        }
-        return prev;
-      });
-    };
-
-    socket.on('message_liked', handleMessageLiked);
-    return () => socket.off('message_liked', handleMessageLiked);
-  }, []);
-
-  const fetchCampsites = async () => {
+    setIsFetchingMessages(true);
+    
+    const fetchMessages = async () => {
       try {
         const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/messages/${currentChannelKey}`);
         if (!response.ok) throw new Error('Failed to fetch messages');
@@ -314,6 +291,27 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off('connect', handleReconnect);
     };
   }, [currentChannelKey, currentUser]);
+
+  useEffect(() => {
+    const handleMessageLiked = (data) => {
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[data.channelKey] || [];
+        const existingIndex = currentMessages.findIndex(m => (m._id || m.id) === data.messageId);
+        if (existingIndex !== -1) {
+          const updatedMessages = [...currentMessages];
+          updatedMessages[existingIndex] = { ...updatedMessages[existingIndex], likes: data.likes };
+          return {
+            ...prev,
+            [data.channelKey]: updatedMessages
+          };
+        }
+        return prev;
+      });
+    };
+
+    socket.on('message_liked', handleMessageLiked);
+    return () => socket.off('message_liked', handleMessageLiked);
+  }, []);
 
   useEffect(() => {
     if (campsites && campsites.length > 0) {
