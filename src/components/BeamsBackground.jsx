@@ -22,11 +22,6 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        const updateThemeColor = () => {
-            const rootStyle = getComputedStyle(document.documentElement);
-            return rootStyle.getPropertyValue('--brand-primary').trim() || '234, 88, 12';
-        };
-
         const updateCanvasSize = () => {
             const scaleFactor = 0.5; 
             canvas.width = window.innerWidth * scaleFactor;
@@ -35,8 +30,6 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             canvas.style.height = `${window.innerHeight}px`;
             
             ctx.scale(scaleFactor, scaleFactor);
-
-            const themeColor = updateThemeColor();
             
             // Generate fewer beams, looking like underwater light rays from above
             beamsRef.current = Array.from({ length: MINIMUM_BEAMS }, (_, i) => {
@@ -51,7 +44,7 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
                     opacity: 0.15 + Math.random() * 0.15,
                     pulse: Math.random() * Math.PI * 2,
                     pulseSpeed: 0.008 + Math.random() * 0.01,
-                    colorStr: themeColor
+                    hue: 15 + Math.random() * 25
                 };
             });
         };
@@ -59,11 +52,8 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         updateCanvasSize();
         window.addEventListener("resize", updateCanvasSize);
 
-        // Listen for theme changes dynamically
-        const themeInterval = setInterval(() => {
-            const newColor = updateThemeColor();
-            beamsRef.current.forEach(beam => beam.colorStr = newColor);
-        }, 1000);
+        // Listen for window resize
+        window.addEventListener("resize", updateCanvasSize);
 
         function drawBeam(ctx, beam) {
             ctx.save();
@@ -79,9 +69,9 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             ctx.scale(beam.width / 2, beam.length / 2);
 
             const radGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-            radGrad.addColorStop(0, `rgba(${beam.colorStr}, ${pulsingOpacity})`);
-            radGrad.addColorStop(0.4, `rgba(${beam.colorStr}, ${pulsingOpacity * 0.7})`);
-            radGrad.addColorStop(1, `rgba(${beam.colorStr}, 0)`);
+            radGrad.addColorStop(0, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity})`);
+            radGrad.addColorStop(0.4, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity * 0.7})`);
+            radGrad.addColorStop(1, `hsla(${beam.hue}, 85%, 65%, 0)`);
 
             ctx.fillStyle = radGrad;
             ctx.beginPath();
@@ -119,7 +109,6 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
 
         return () => {
             window.removeEventListener("resize", updateCanvasSize);
-            clearInterval(themeInterval);
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
