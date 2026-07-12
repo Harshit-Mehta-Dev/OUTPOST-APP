@@ -6,7 +6,7 @@ import './ScoutControlDeck.css';
 export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, currentUser }) {
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
-  const [modalView, setModalView] = useState('settings'); // 'settings', 'logout', 'delete'
+  const [modalView, setModalView] = useState('closed'); // 'closed', 'settings', 'logout', 'delete'
   const [isDeleteChecked, setIsDeleteChecked] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
