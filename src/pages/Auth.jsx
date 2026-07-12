@@ -419,31 +419,12 @@ const EmojiBackground = () => {
             </div>
             
             <div className="form-group captcha-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', marginBottom: '10px' }}>
-              {import.meta.env.VITE_TURNSTILE_SITE_KEY ? (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <Turnstile 
-                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY} 
-                    onSuccess={(token) => setTurnstileToken(token)}
-                  />
-                </div>
-              ) : (
-                svgCaptchaImage && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                    <div dangerouslySetInnerHTML={{ __html: svgCaptchaImage }} style={{ background: '#2d3436', borderRadius: '4px', overflow: 'hidden' }} />
-                    <button type="button" onClick={fetchSvgCaptcha} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '5px' }}>
-                      <RefreshCw size={18} />
-                    </button>
-                    <input 
-                      type="text" 
-                      placeholder="Enter text..." 
-                      value={svgCaptchaText}
-                      onChange={(e) => setSvgCaptchaText(e.target.value)}
-                      style={{ flex: 1, padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                      maxLength={6}
-                    />
-                  </div>
-                )
-              )}
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Turnstile 
+                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAAD0VEYB6AeTVN4V2"} 
+                  onSuccess={(token) => setTurnstileToken(token)}
+                />
+              </div>
             </div>
 
             {isLogin && (
@@ -494,31 +475,12 @@ const EmojiBackground = () => {
                 </div>
                 
                 <div className="form-group captcha-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px', marginBottom: '15px' }}>
-                  {import.meta.env.VITE_TURNSTILE_SITE_KEY ? (
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <Turnstile 
-                        siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY} 
-                        onSuccess={(token) => setTurnstileToken(token)}
-                      />
-                    </div>
-                  ) : (
-                    svgCaptchaImage && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                        <div dangerouslySetInnerHTML={{ __html: svgCaptchaImage }} style={{ background: '#2d3436', borderRadius: '4px', overflow: 'hidden' }} />
-                        <button type="button" onClick={fetchSvgCaptcha} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '5px' }}>
-                          <RefreshCw size={18} />
-                        </button>
-                        <input 
-                          type="text" 
-                          placeholder="Enter text..." 
-                          value={svgCaptchaText}
-                          onChange={(e) => setSvgCaptchaText(e.target.value)}
-                          style={{ flex: 1, padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                          maxLength={6}
-                        />
-                      </div>
-                    )
-                  )}
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Turnstile 
+                      siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAAD0VEYB6AeTVN4V2"} 
+                      onSuccess={(token) => setTurnstileToken(token)}
+                    />
+                  </div>
                 </div>
 
                 {forgotPasswordMessage && (
