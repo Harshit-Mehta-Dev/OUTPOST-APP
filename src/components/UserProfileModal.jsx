@@ -250,18 +250,6 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
               </div>
 
               <div className="profile-edit-section">
-                <div className="form-group identity-input-group">
-                  <label>Display Name</label>
-                  <input 
-                    type="text" 
-                    value={username} 
-                    maxLength={32}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your scout name..."
-                  />
-                  <span className="char-counter">{username.length}/32</span>
-                </div>
-
                 <div className="security-accordion">
                   <button 
                     className="security-toggle" 
