@@ -115,6 +115,31 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   const handleLikeMessage = (msgId, channelKey) => {
+    // Optimistic UI update
+    setMessagesByChannel(prev => {
+      const currentMessages = prev[channelKey] || [];
+      const existingIndex = currentMessages.findIndex(m => (m._id || m.id) === msgId);
+      if (existingIndex !== -1) {
+        const updatedMessages = [...currentMessages];
+        const msg = updatedMessages[existingIndex];
+        const currentLikes = msg.likes || [];
+        const hasLiked = currentLikes.includes(currentUser?.username);
+        
+        updatedMessages[existingIndex] = {
+          ...msg,
+          likes: hasLiked 
+            ? currentLikes.filter(u => u !== currentUser?.username)
+            : [...currentLikes, currentUser?.username]
+        };
+        
+        return {
+          ...prev,
+          [channelKey]: updatedMessages
+        };
+      }
+      return prev;
+    });
+    
     socket.emit("like_message", { messageId: msgId, channelKey, username: currentUser.username });
   };
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
