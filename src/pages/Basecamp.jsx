@@ -2192,7 +2192,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   );
                 })
           )}
-          <div ref={messagesEndRef} />
+          {/* Spacer to prevent chat input from overlapping the bottom content (browsers ignore bottom padding on scroll containers) */}
+          <div ref={messagesEndRef} style={{ height: '32px', flexShrink: 0 }} />
         </div>
 
         {activeChannel !== 'Ai-Scout' && <AnimatePresence>
