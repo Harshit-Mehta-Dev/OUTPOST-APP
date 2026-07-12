@@ -12,7 +12,7 @@ const Hero = () => {
       
       <div className="container hero-content">
         <div className="badge glass-panel">
-          <span className="live-dot"></span> Outpost Beta v2.0 is live
+          <span className="live-dot"></span> Outpost Beta v2.1 is live
         </div>
         
         <div className="sticker-container" style={{ display: 'inline-block' }}>
@@ -24,7 +24,7 @@ const Hero = () => {
         </div>
         
         <p className="hero-subtitle">
-          The ultimate low-latency communication nexus built specifically for developers and gamers. Seamless voice, instant code sharing, zero compromises.
+          The ultimate low-latency communication nexus built for everyone. Seamless voice, instant collaboration, zero compromises.
         </p>
         
         <div className="hero-actions">
