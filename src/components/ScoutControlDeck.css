@@ -268,16 +268,17 @@
 .modal-header-large {
   font-size: 1.5rem;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 4px 0;
   display: flex;
   align-items: center;
   gap: 12px;
+  line-height: 1.2;
 }
 .modal-subtitle {
   color: var(--text-secondary, #a1a1aa);
   font-size: 0.9rem;
-  margin-top: -8px;
-  margin-bottom: 16px;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
 }
 
 /* Deletion Flow UI */

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mic, MicOff, Headphones, LogOut, Sun, Moon, Volume2, Mic2, X, Trash2, Clock, RefreshCw, HeartPulse } from 'lucide-react';
+import { Mic, MicOff, Headphones, LogOut, Sun, Moon, Volume2, Mic2, X, Trash2, Clock, RefreshCw, HeartPulse, Settings } from 'lucide-react';
 import './ScoutControlDeck.css';
 
 export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, currentUser }) {
@@ -349,6 +349,16 @@ export default function ScoutControlDeck({ isDarkMode, toggleTheme, onLogout, cu
         </button>
 
 
+
+        {/* Settings / Control Panel */}
+        <button 
+          onClick={() => setModalView(modalView === 'closed' ? 'settings' : 'closed')}
+          className="deck-btn exit-btn"
+          title="Open Scout Control Panel"
+          style={{ paddingLeft: '16px', paddingRight: '16px' }}
+        >
+          <Settings size={18} />
+        </button>
 
         {/* Safe Logout Trigger */}
         <button 
