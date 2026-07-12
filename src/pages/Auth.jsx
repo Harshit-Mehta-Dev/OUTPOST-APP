@@ -9,7 +9,7 @@ import LoadingScreen from '../components/LoadingScreen';
 import './Auth.css';
 
 const Auth = () => {
-  const { signUp, signIn } = useAuth();
+  const { signUp, signIn, user: supabaseUser } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -45,15 +45,14 @@ const Auth = () => {
   }, []);
 
   useEffect(() => {
-    // If user is already logged in, show loading screen briefly then redirect
-    const saved = localStorage.getItem('outpost_user');
-    if (saved && saved !== 'undefined' && saved !== 'null') {
+    // If user is already logged in with Supabase, redirect
+    if (supabaseUser) {
       setIsLoading(true);
       setTimeout(() => {
         navigate('/app');
       }, 1500);
     }
-  }, [navigate]);
+  }, [supabaseUser, navigate]);
 
   const handleGoogleSignIn = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
