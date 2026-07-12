@@ -1,13 +1,27 @@
 import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 
+function createBeam(width, height) {
+    const angle = -25 + Math.random() * 10;
+    return {
+        x: Math.random() * width * 1.5 - width * 0.25,
+        y: Math.random() * height * 1.5 - height * 1.5,
+        width: 40 + Math.random() * 40,
+        length: height * 2.5,
+        angle: angle,
+        speed: 0.8 + Math.random() * 1.2,
+        opacity: 0.12 + Math.random() * 0.16,
+        hue: 15 + Math.random() * 25,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.02 + Math.random() * 0.03,
+    };
+}
+
 export function BeamsBackground({ className = "", intensity = "strong", fixed = false }) {
     const canvasRef = useRef(null);
     const beamsRef = useRef([]);
     const animationFrameRef = useRef(0);
-    
-    // Fewer rays as requested by user
-    const MINIMUM_BEAMS = 10;
+    const MINIMUM_BEAMS = 8; // Less rays
 
     const opacityMap = {
         subtle: 0.7,
@@ -30,30 +44,35 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             canvas.style.height = `${window.innerHeight}px`;
             
             ctx.scale(scaleFactor, scaleFactor);
-            
-            // Generate fewer beams, looking like underwater light rays from above
-            beamsRef.current = Array.from({ length: MINIMUM_BEAMS }, (_, i) => {
-                const spacing = window.innerWidth / MINIMUM_BEAMS;
-                return {
-                    x: (i * spacing) + (Math.random() * spacing) - (window.innerWidth * 0.2),
-                    y: Math.random() * window.innerHeight * 2 - window.innerHeight,
-                    width: 80 + Math.random() * 80, // Wider, softer beams
-                    length: window.innerHeight * 2.5,
-                    angle: -15 + Math.random() * 30, // Light spreading slightly like underwater rays
-                    speed: 0.3 + (i % 3) * 0.1, // Slower, elegant floating speed
-                    opacity: 0.15 + Math.random() * 0.15,
-                    pulse: Math.random() * Math.PI * 2,
-                    pulseSpeed: 0.008 + Math.random() * 0.01,
-                    hue: 15 + Math.random() * 25
-                };
-            });
+
+            const totalBeams = MINIMUM_BEAMS;
+            beamsRef.current = Array.from({ length: totalBeams }, () =>
+                createBeam(window.innerWidth, window.innerHeight)
+            );
         };
 
         updateCanvasSize();
         window.addEventListener("resize", updateCanvasSize);
 
-        // Listen for window resize
-        window.addEventListener("resize", updateCanvasSize);
+        function resetBeam(beam, index) {
+            if (!canvas) return beam;
+            
+            const column = index % 3;
+            const logicalWidth = window.innerWidth;
+            const logicalHeight = window.innerHeight;
+            const spacing = logicalWidth / 3;
+
+            beam.y = -logicalHeight; // Start above the screen to flow downward
+            beam.x =
+                column * spacing +
+                spacing / 2 +
+                (Math.random() - 0.5) * spacing * 0.5;
+            beam.width = 40 + Math.random() * 40;
+            beam.speed = 0.8 + Math.random() * 1.2;
+            beam.hue = 15 + Math.random() * 25;
+            beam.opacity = 0.2 + Math.random() * 0.1;
+            return beam;
+        }
 
         function drawBeam(ctx, beam) {
             ctx.save();
@@ -70,7 +89,7 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
 
             const radGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
             radGrad.addColorStop(0, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity})`);
-            radGrad.addColorStop(0.4, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity * 0.7})`);
+            radGrad.addColorStop(0.3, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity * 0.8})`);
             radGrad.addColorStop(1, `hsla(${beam.hue}, 85%, 65%, 0)`);
 
             ctx.fillStyle = radGrad;
@@ -85,18 +104,14 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
 
             ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-            beamsRef.current.forEach((beam) => {
-                // Move light rays downwards to simulate light coming from upward (like underwater)
-                beam.y += beam.speed;
-                // Move x proportionally to the angle so it flows smoothly across the screen
-                beam.x -= beam.speed * Math.tan(beam.angle * (Math.PI / 180)); 
+            beamsRef.current.forEach((beam, index) => {
+                beam.y += beam.speed; // Move downward
                 beam.pulse += beam.pulseSpeed;
+                beam.x -= beam.speed * Math.tan(beam.angle * (Math.PI / 180)); // Slide horizontally based on angle
 
-                // Reset beam when it moves off-screen at the bottom
-                if (beam.y - beam.length / 2 > window.innerHeight * 1.5) {
-                    // Start way up above the screen
-                    beam.y = -window.innerHeight;
-                    beam.x = Math.random() * window.innerWidth * 1.5 - window.innerWidth * 0.5;
+                // Reset if it goes too far down
+                if (beam.y > window.innerHeight * 1.5) {
+                    resetBeam(beam, index);
                 }
 
                 drawBeam(ctx, beam);
@@ -118,14 +133,14 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
     return (
         <div
             className={`beams-container ${className}`}
-            style={{ position: fixed ? "fixed" : "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: -1 }}
+            style={{ position: fixed ? "fixed" : "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: -1, pointerEvents: "none" }}
         >
             <canvas
                 ref={canvasRef}
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", transform: "translateZ(0)", pointerEvents: "none" }}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", transform: "translateZ(0)", pointerEvents: "none", willChange: "transform" }}
             />
             <motion.div
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.02)", pointerEvents: "none" }}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.02)", pointerEvents: "none", transform: "translateZ(0)", willChange: "opacity" }}
                 animate={{
                     opacity: [0.02, 0.1, 0.02],
                 }}
