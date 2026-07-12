@@ -607,6 +607,10 @@ io.on('connection', (socket) => {
       const msg = await Message.findById(messageId);
       if (!msg) return;
 
+      if (!msg.likes) {
+        msg.likes = [];
+      }
+
       const likeIndex = msg.likes.indexOf(username);
       if (likeIndex > -1) {
         msg.likes.splice(likeIndex, 1);
