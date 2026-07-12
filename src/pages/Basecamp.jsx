@@ -284,25 +284,57 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/messages/${currentChannelKey}`);
-        if (!response.ok) throw new Error('Failed to fetch messages');
-        const data = await response.json();
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('channel', currentChannelKey)
+          .order('created_at', { ascending: true });
 
-        // Ensure receivedAt is set for the timestamp filter
-        const mappedData = data.map(m => ({ ...m, receivedAt: m.createdAt ? new Date(m.createdAt).getTime() : Date.now() }));
+        if (error) throw error;
+
+        // Map Supabase schema to frontend schema
+        const mappedData = data.map(m => ({ 
+          id: m.id,
+          channelKey: m.channel,
+          user: { username: m.username },
+          text: m.content,
+          time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          receivedAt: new Date(m.created_at).getTime()
+        }));
         
         setMessagesByChannel(prev => ({
           ...prev,
           [currentChannelKey]: mappedData
         }));
       } catch (err) {
-        console.warn("Failed to fetch messages from Backend:", err);
+        console.warn("Failed to fetch messages from Supabase:", err);
       } finally {
         setIsFetchingMessages(false);
       }
     };
 
     fetchMessages();
+
+    // Subscribe to Supabase Real-time messages
+    const messageSubscription = supabase
+      .channel('public:messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel=eq.${currentChannelKey}` }, payload => {
+        const newMsg = payload.new;
+        const mappedMsg = {
+          id: newMsg.id,
+          channelKey: newMsg.channel,
+          user: { username: newMsg.username },
+          text: newMsg.content,
+          time: new Date(newMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          receivedAt: new Date(newMsg.created_at).getTime()
+        };
+        
+        setMessagesByChannel(prev => {
+          const current = prev[currentChannelKey] || [];
+          return { ...prev, [currentChannelKey]: [...current, mappedMsg] };
+        });
+      })
+      .subscribe();
 
     // Join the socket room
     socket.emit('join_channel', currentChannelKey);
@@ -686,22 +718,26 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         } : null
       };
       
-      // Optimistic UI: Always append locally for instant feedback
-      const localMessage = { ...messageData, id: 'local-' + Date.now(), receivedAt: Date.now() };
-      setMessagesByChannel(prev => {
-        const current = prev[currentChannelKey] || [];
-        return { ...prev, [currentChannelKey]: [...current, localMessage] };
-      });
-      
-      // Emit to server
+      // Optimistic UI removed since Supabase WebSockets are zero-latency
+      // Emit to Supabase
+      if (currentUser?.id) {
+        supabase.from('messages').insert([
+          {
+            user_id: currentUser.id,
+            username: currentUser.username || 'Scout',
+            content: inputText.trim(),
+            channel: currentChannelKey
+          }
+        ]).then(({ error }) => {
+          if (error) console.error("Failed to insert message to Supabase", error);
+        });
+      }
+
       if (socket && socket.connected) {
-        socket.emit('send_message', messageData);
         socket.emit("scout-typing-stop", { 
           channelId: currentChannelKey, 
           scoutName: currentUser?.username || 'Scout' 
         });
-      } else {
-        console.warn("Socket offline, message only saved locally.");
       }
       
       // Multi-player AI Nexus Interception
