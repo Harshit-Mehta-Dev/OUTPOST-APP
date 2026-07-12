@@ -38,10 +38,9 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         if (!ctx) return;
 
         const updateCanvasSize = () => {
-            // Render at 15% resolution. This creates a beautiful, natural blur effect
-            // when stretched to 100% via CSS. A small CSS blur smooths it perfectly 
-            // with near-zero GPU cost compared to the original 100% res + 45px blur.
-            const scaleFactor = 0.15; 
+            // Render at 50% resolution for excellent performance while remaining crisp.
+            // Native soft gradients are now used, eliminating the need for extreme downscaling.
+            const scaleFactor = 0.5; 
             canvas.width = window.innerWidth * scaleFactor;
             canvas.height = window.innerHeight * scaleFactor;
             canvas.style.width = `${window.innerWidth}px`;
@@ -83,23 +82,27 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             ctx.save();
             ctx.translate(beam.x, beam.y);
             ctx.rotate((beam.angle * Math.PI) / 180);
-
+            // Move center down to match the original fillRect starting at 0 and ending at beam.length
+            ctx.translate(0, beam.length / 2);
+            
             const pulsingOpacity =
                 beam.opacity *
                 (0.8 + Math.sin(beam.pulse) * 0.2) *
                 opacityMap[intensity];
 
-            const gradient = ctx.createLinearGradient(0, 0, 0, beam.length);
+            // Stretch the coordinate system to draw an elongated ellipse
+            // This creates perfectly soft edges natively without expensive CSS blur
+            ctx.scale(beam.width / 2, beam.length / 2);
 
-            gradient.addColorStop(0, `hsla(${beam.hue}, 85%, 65%, 0)`);
-            gradient.addColorStop(0.1, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity * 0.5})`);
-            gradient.addColorStop(0.4, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity})`);
-            gradient.addColorStop(0.6, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity})`);
-            gradient.addColorStop(0.9, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity * 0.5})`);
-            gradient.addColorStop(1, `hsla(${beam.hue}, 85%, 65%, 0)`);
+            const radGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+            radGrad.addColorStop(0, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity})`);
+            radGrad.addColorStop(0.3, `hsla(${beam.hue}, 85%, 65%, ${pulsingOpacity * 0.8})`);
+            radGrad.addColorStop(1, `hsla(${beam.hue}, 85%, 65%, 0)`);
 
-            ctx.fillStyle = gradient;
-            ctx.fillRect(-beam.width / 2, 0, beam.width, beam.length);
+            ctx.fillStyle = radGrad;
+            ctx.beginPath();
+            ctx.arc(0, 0, 1, 0, Math.PI * 2);
+            ctx.fill();
             ctx.restore();
         }
 
@@ -142,7 +145,7 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
         >
             <canvas
                 ref={canvasRef}
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", filter: "blur(15px)", transform: "translateZ(0)" }}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", transform: "translateZ(0)" }}
             />
             <motion.div
                 style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.05)" }}
