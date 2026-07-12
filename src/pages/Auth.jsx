@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, RefreshCw, Radio, Satellite, Shield, Globe, Wifi, Terminal, Cpu, Server, Zap, Compass, Map, Binoculars } from 'lucide-react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import LoadingScreen from '../components/LoadingScreen';
 import './Auth.css';
 
 const Auth = () => {
+  const { signUp, signIn } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -221,24 +223,26 @@ const Auth = () => {
       captchaId: svgCaptchaId
     };
 
-    // Communicate with backend
+    // Communicate with Supabase
     setIsLoading(true);
-    fetch(`${(import.meta.env.VITE_AUTH_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5001'))}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-    .then(async res => {
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || 'Authentication failed. Please check your credentials.');
-      }
-      return data;
-    })
-    .then(syncedUser => {
+    const authAction = isLogin ? signIn : signUp;
+    const authData = isLogin 
+      ? { email: sanitizedEmail, password }
+      : { email: sanitizedEmail, password, options: { data: { username: sanitizedUsername } } };
+
+    authAction(authData)
+    .then(async ({ data, error }) => {
+      if (error) throw error;
       setFailedAttempts(0);
-      localStorage.setItem('outpost_user', JSON.stringify(syncedUser));
-      if (syncedUser.token) localStorage.setItem('outpost_token', syncedUser.token);
+      
+      // Store locally just in case it's still needed by other components during migration
+      localStorage.setItem('outpost_user', JSON.stringify({
+        email: data.user.email,
+        username: data.user.user_metadata?.username || data.user.email,
+        id: data.user.id
+      }));
+      localStorage.setItem('outpost_token', data.session.access_token);
+      
       setTimeout(() => { navigate('/app'); }, 2000);
     })
     .catch(err => {

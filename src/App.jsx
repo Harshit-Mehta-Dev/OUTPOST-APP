@@ -4,6 +4,8 @@ import Header from './components/Header';
 import { BeamsBackground } from './components/BeamsBackground';
 import { useSoundEngine } from './hooks/useSoundEngine';
 import { GeometricBorder } from './components/ui/GeometricBorder'; // Loading indicator placeholder
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy-loaded routes
 const Landing = lazy(() => import('./pages/Landing'));
@@ -24,16 +26,6 @@ const PageLoader = () => (
 const NotFoundPage = lazy(() => import('./components/ui/404-page-not-found').then(module => ({ default: module.NotFoundPage })));
 
 import { ScoutGuardian } from './components/security/ScoutGuardian';
-
-const RequireAuth = ({ children }) => {
-  if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('outpost_user');
-    if (!saved || saved === 'undefined' || saved === 'null') {
-      return <Navigate to="/auth" replace />;
-    }
-  }
-  return children;
-};
 
 function App() {
   // Initialize Global Sound Engine
@@ -108,7 +100,7 @@ function App() {
   };
 
   return (
-    <>
+    <AuthProvider>
       <BeamsBackground fixed={true} intensity="medium" />
       {!hideHeaderFooter && <Header isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}
       <ScoutGuardian>
@@ -118,14 +110,14 @@ function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/app" element={
-                <RequireAuth>
+                <ProtectedRoute>
                   <Basecamp isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-                </RequireAuth>
+                </ProtectedRoute>
               } />
               <Route path="/invite/:id" element={
-                <RequireAuth>
+                <ProtectedRoute>
                   <Invite />
-                </RequireAuth>
+                </ProtectedRoute>
               } />
               
               <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -135,7 +127,7 @@ function App() {
           </Suspense>
         </main>
       </ScoutGuardian>
-    </>
+    </AuthProvider>
   );
 }
 
