@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -45,12 +45,13 @@ const Auth = () => {
     }
   }, []);
 
+  // Keep track of whether we returned from OAuth so we don't lose it when Supabase strips the hash
+  const returningFromOAuth = useRef(typeof window !== 'undefined' && window.location.hash.includes('access_token'));
+
   useEffect(() => {
     // ONLY automatically redirect if we are returning from a fresh Google OAuth flow.
     // If the user just visits the site normally, we DO NOT automatically bypass the login page!
-    const isReturningFromOAuth = window.location.hash.includes('access_token');
-    
-    if (supabaseUser && isReturningFromOAuth) {
+    if (supabaseUser && returningFromOAuth.current) {
       if (!localStorage.getItem('outpost_user')) {
         localStorage.setItem('outpost_user', JSON.stringify({
           email: supabaseUser.email,
