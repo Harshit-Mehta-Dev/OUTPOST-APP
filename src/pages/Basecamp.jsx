@@ -719,18 +719,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       };
       
       // Optimistic UI removed since Supabase WebSockets are zero-latency
-      // Emit to Supabase
-      if (currentUser?.id) {
-        supabase.from('messages').insert([
-          {
-            user_id: currentUser.id,
-            username: currentUser.username || 'Scout',
-            content: inputText.trim(),
-            channel: currentChannelKey
-          }
-        ]).then(({ error }) => {
-          if (error) console.error("Failed to insert message to Supabase", error);
-        });
+      if (socket && socket.connected) {
+        socket.emit("send_message", messageData);
+      } else {
+        alert("Transmission Error: Socket disconnected. Please refresh.");
       }
 
       if (socket && socket.connected) {

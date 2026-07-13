@@ -55,11 +55,16 @@ process.on('unhandledRejection', (err) => {
 const syncMessageToSupabase = async (messageDoc) => {
   try {
     if (!supabase) return;
-    const { _id, __v, ...data } = messageDoc.toObject ? messageDoc.toObject() : messageDoc;
-    const { error } = await supabase.from('messages').upsert(
-      { id: _id.toString(), ...data }, 
-      { onConflict: 'id' }
-    );
+    const data = messageDoc.toObject ? messageDoc.toObject() : messageDoc;
+    
+    const { error } = await supabase.from('messages').insert([
+      {
+        user_id: data.user?.id || '00000000-0000-0000-0000-000000000000', // Mock UUID if none
+        username: data.user?.username || 'Scout',
+        content: data.text || '[Media/Poll]',
+        channel: data.channelKey || 'community-chat'
+      }
+    ]);
     if (error) console.error('Supabase Message Backup Error:', error.message);
   } catch (err) {
     console.error('Supabase Message Backup Exception:', err.message);
@@ -504,7 +509,7 @@ io.on('connection', (socket) => {
         iv = encryptedObj.iv;
       }
 
-      // 1. Save to MongoDB
+      // 1. Save to MongoDB (Optional fallback/legacy)
       const newMessage = new Message({
         channelKey: data.channelKey,
         user: data.user,
@@ -518,7 +523,11 @@ io.on('connection', (socket) => {
         pollData: data.pollData,
         replyTo: data.replyTo
       });
-      await newMessage.save();
+      try {
+        await newMessage.save();
+      } catch (mongoErr) {
+        console.warn('MongoDB offline or save failed. Proceeding with Supabase sync.');
+      }
       
       // Pass the plaintext to Supabase for now, or keep it encrypted there too
       // If we encrypt it in Supabase, we send the encryptedData. Let's send the raw DB object so it stays encrypted.
