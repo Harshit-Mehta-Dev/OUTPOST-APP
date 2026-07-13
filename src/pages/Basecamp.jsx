@@ -140,7 +140,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       return prev;
     });
     
-    socket.emit("like_message", { messageId: msgId, channelKey, username: currentUser.username });
+    socket.emit("like_message", { messageId: msgId, channelKey, username: currentUser?.username || 'Scout' });
   };
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
@@ -344,10 +344,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     const handleReconnect = () => {
       socket.emit('join_channel', currentChannelKey);
       if (currentUser?.email) {
-        socket.emit('join_admin_room', currentUser.email);
+        socket.emit('join_admin_room', currentUser?.email);
       }
       if (currentUser?.username) {
-        socket.emit('join_user_room', currentUser.username);
+        socket.emit('join_user_room', currentUser?.username);
       }
     };
     socket.on('connect', handleReconnect);
@@ -1443,7 +1443,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         socket.emit("delete_message_for_all", { 
                           messageId: messageToDelete.id, 
                           channelKey: messageToDelete.channelKey,
-                          username: currentUser.username
+                          username: currentUser?.username || 'Scout'
                         });
                       }
                       setMessageToDelete(null);
@@ -1703,7 +1703,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           <div className="user-info" onClick={() => setIsProfileModalOpen(true)} style={{ cursor: 'pointer' }}>
             <div className="user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
               {currentUser?.profilePictureUrl ? (
-                <img src={currentUser.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={currentUser?.profilePictureUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Scout'} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : null}
               <span className="status-dot online"></span>
             </div>
@@ -2515,7 +2515,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     <div className="user-avatar">
                       {currentUser?.profilePictureUrl ? (
                         <img 
-                          src={currentUser.profilePictureUrl} 
+                          src={currentUser?.profilePictureUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Scout'} 
                           alt="Profile" 
                           style={{width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover'}}
                         />

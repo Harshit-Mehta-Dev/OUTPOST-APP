@@ -46,8 +46,11 @@ const Auth = () => {
   }, []);
 
   useEffect(() => {
-    // If user is already logged in with Supabase, redirect
-    if (supabaseUser) {
+    // ONLY automatically redirect if we are returning from a fresh Google OAuth flow.
+    // If the user just visits the site normally, we DO NOT automatically bypass the login page!
+    const isReturningFromOAuth = window.location.hash.includes('access_token');
+    
+    if (supabaseUser && isReturningFromOAuth) {
       if (!localStorage.getItem('outpost_user')) {
         localStorage.setItem('outpost_user', JSON.stringify({
           email: supabaseUser.email,
