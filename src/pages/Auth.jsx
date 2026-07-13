@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 import { Eye, EyeOff, RefreshCw, Radio, Satellite, Shield, Globe, Wifi, Terminal, Cpu, Server, Zap, Compass, Map, Binoculars } from 'lucide-react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import LoadingScreen from '../components/LoadingScreen';
