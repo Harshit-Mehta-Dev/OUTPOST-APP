@@ -45,19 +45,22 @@ const Auth = () => {
   }, []);
 
   const [isSessionResolving, setIsSessionResolving] = useState(() => {
-    // Check if returning from OAuth (PKCE code, implicit access_token, or error)
     if (typeof window === 'undefined') return false;
     const hasHashToken = window.location.hash.includes('access_token');
     const hasQueryCode = window.location.search.includes('code=');
     const hasError = window.location.search.includes('error') || window.location.hash.includes('error');
-    return hasHashToken || hasQueryCode || hasError;
+    const hasOauthFlag = localStorage.getItem('oauth_in_progress') === 'true';
+    return hasHashToken || hasQueryCode || hasError || hasOauthFlag;
   });
 
   const [isLoading, setIsLoading] = useState(isSessionResolving);
 
   useEffect(() => {
-    // Once Supabase resolves the user, if we were waiting for it, navigate to the app smoothly
-    if (supabaseUser && isSessionResolving) {
+    // If the user is logged in, navigate to the app smoothly
+    if (supabaseUser) {
+      setIsLoading(true); // Show loading screen while we transition
+      localStorage.removeItem('oauth_in_progress'); // Clean up the flag
+      
       if (!localStorage.getItem('outpost_user')) {
         localStorage.setItem('outpost_user', JSON.stringify({
           email: supabaseUser.email,
@@ -66,7 +69,6 @@ const Auth = () => {
           profilePictureUrl: supabaseUser.user_metadata?.picture || supabaseUser.user_metadata?.avatar_url || ("https://api.dicebear.com/7.x/avataaars/svg?seed=" + (supabaseUser.email?.split('@')[0] || 'Scout'))
         }));
       }
-      // Guarantee at least 2 seconds of the cool loading screen for effect, then navigate
       setTimeout(() => {
         navigate('/app');
       }, 2000);
@@ -74,6 +76,8 @@ const Auth = () => {
   }, [supabaseUser, isSessionResolving, navigate]);
 
   const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    localStorage.setItem('oauth_in_progress', 'true');
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
