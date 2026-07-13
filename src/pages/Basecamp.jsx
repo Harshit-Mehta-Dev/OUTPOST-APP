@@ -344,9 +344,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
     fetchMessages();
 
-    // Subscribe to Supabase Real-time messages
+    // Subscribe to Supabase Real-time messages with a unique channel name
     const messageSubscription = supabase
-      .channel('public:messages')
+      .channel(`public:messages:${currentChannelKey}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `channelKey=eq.${currentChannelKey}` }, payload => {
         const newMsg = payload.new;
         
@@ -407,6 +407,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     
     return () => {
       socket.off('connect', handleReconnect);
+      supabase.removeChannel(messageSubscription);
     };
   }, [currentChannelKey, currentUser]);
 
