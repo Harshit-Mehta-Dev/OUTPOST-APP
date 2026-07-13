@@ -56,7 +56,7 @@ const Auth = () => {
           email: supabaseUser.email,
           username: supabaseUser.user_metadata?.username || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Scout',
           id: supabaseUser.id,
-          profilePictureUrl: supabaseUser.user_metadata?.avatar_url || ("https://api.dicebear.com/7.x/avataaars/svg?seed=" + (supabaseUser.email?.split('@')[0] || 'Scout'))
+          profilePictureUrl: supabaseUser.user_metadata?.picture || supabaseUser.user_metadata?.avatar_url || ("https://api.dicebear.com/7.x/avataaars/svg?seed=" + (supabaseUser.email?.split('@')[0] || 'Scout'))
         }));
       }
       triggerLoadingAndNavigate();
@@ -64,12 +64,11 @@ const Auth = () => {
   }, [supabaseUser, navigate]);
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app`
+          redirectTo: `${window.location.origin}/auth`
         }
       });
       if (error) throw error;
