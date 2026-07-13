@@ -8,9 +8,9 @@ export default function ProtectedRoute({ children }) {
 
   // Check both React Context and localStorage to prevent race conditions
   // where the context hasn't updated yet immediately after a login redirect.
-  const hasToken = typeof window !== 'undefined' && localStorage.getItem('outpost_token');
+  const hasUserLocal = typeof window !== 'undefined' && localStorage.getItem('outpost_user');
   
-  if (!user && !hasToken) {
+  if (!user && !hasUserLocal) {
     // Redirect to the login page, but save the current location they were
     // trying to go to when they were redirected. This allows us to send them
     // along to that page after they login, which is a nicer user experience
