@@ -75,7 +75,6 @@ const io = new Server(server, {
 
 // Socket.io JWT Authentication Middleware
 const jwt = require('jsonwebtoken');
-const supabase = require('../supabaseClient');
 
 io.use(async (socket, next) => {
   const token = socket.handshake.auth.token;
