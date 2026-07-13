@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 
-function requireAuth(req, res, next) {
+const supabase = require('../supabaseClient');
+
+async function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Access Denied: No token provided' });
@@ -9,9 +11,17 @@ function requireAuth(req, res, next) {
   const token = authHeader.split(' ')[1];
 
   try {
-    const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
-    const decoded = jwt.verify(token, secret);
-    req.user = decoded; // Attach user payload to request
+    if (supabase) {
+      const { data, error } = await supabase.auth.getUser(token);
+      if (error || !data.user) {
+        throw new Error('Supabase token invalid');
+      }
+      req.user = data.user;
+    } else {
+      const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
+      const decoded = jwt.verify(token, secret);
+      req.user = decoded;
+    }
     next();
   } catch (err) {
     return res.status(403).json({ error: 'Access Denied: Invalid or expired token' });

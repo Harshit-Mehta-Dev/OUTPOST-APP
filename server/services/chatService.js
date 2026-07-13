@@ -75,15 +75,25 @@ const io = new Server(server, {
 
 // Socket.io JWT Authentication Middleware
 const jwt = require('jsonwebtoken');
-io.use((socket, next) => {
+const supabase = require('../supabaseClient');
+
+io.use(async (socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {
     return next(new Error('Authentication error: No token provided'));
   }
   try {
-    const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
-    const decoded = jwt.verify(token, secret);
-    socket.user = decoded;
+    if (supabase) {
+      const { data, error } = await supabase.auth.getUser(token);
+      if (error || !data.user) {
+        throw new Error('Supabase token invalid');
+      }
+      socket.user = data.user;
+    } else {
+      const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
+      const decoded = jwt.verify(token, secret);
+      socket.user = decoded;
+    }
     next();
   } catch (err) {
     return next(new Error('Authentication error: Invalid token'));
