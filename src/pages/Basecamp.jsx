@@ -292,20 +292,44 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
         if (error) throw error;
 
-        // Map Supabase schema to frontend schema
-        const mappedData = data.map(m => ({ 
-          id: m.id,
-          channelKey: m.channelKey,
-          user: m.user,
-          text: m.text,
-          time: m.time || new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          receivedAt: new Date(m.createdAt).getTime(),
-          type: m.type,
-          mediaType: m.mediaType,
-          body: m.body,
-          pollData: m.pollData,
-          replyTo: m.replyTo
-        }));
+        // Map Supabase schema to frontend schema safely
+        const mappedData = data.map(m => {
+          let safeTime = m.time || '';
+          let safeReceivedAt = Date.now();
+          
+          try {
+            if (!m.time && m.createdAt) {
+              const d = new Date(m.createdAt);
+              if (!isNaN(d.getTime())) {
+                safeTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                safeReceivedAt = d.getTime();
+              }
+            }
+          } catch(e) {
+             // Fallback if date parsing fails entirely
+          }
+
+          // Ensure user object exists to prevent crashes
+          let safeUser = m.user;
+          if (!safeUser) {
+             // Handle cases where the DB inserted a flat structure
+             safeUser = { username: m.username || 'Scout', profilePictureUrl: m.profilePictureUrl || null };
+          }
+
+          return { 
+            id: m.id || m._id || Math.random().toString(),
+            channelKey: m.channelKey || m.channel || currentChannelKey,
+            user: safeUser,
+            text: m.text || m.content || '',
+            time: safeTime,
+            receivedAt: safeReceivedAt,
+            type: m.type,
+            mediaType: m.mediaType,
+            body: m.body,
+            pollData: m.pollData,
+            replyTo: m.replyTo
+          };
+        });
         
         setMessagesByChannel(prev => ({
           ...prev,
@@ -325,13 +349,32 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       .channel('public:messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `channelKey=eq.${currentChannelKey}` }, payload => {
         const newMsg = payload.new;
+        
+        let safeTime = newMsg.time || '';
+        let safeReceivedAt = Date.now();
+        
+        try {
+          if (!newMsg.time && newMsg.createdAt) {
+            const d = new Date(newMsg.createdAt);
+            if (!isNaN(d.getTime())) {
+              safeTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              safeReceivedAt = d.getTime();
+            }
+          }
+        } catch(e) {}
+
+        let safeUser = newMsg.user;
+        if (!safeUser) {
+           safeUser = { username: newMsg.username || 'Scout', profilePictureUrl: newMsg.profilePictureUrl || null };
+        }
+
         const mappedMsg = {
-          id: newMsg.id,
-          channelKey: newMsg.channelKey,
-          user: newMsg.user,
-          text: newMsg.text,
-          time: newMsg.time || new Date(newMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          receivedAt: new Date(newMsg.createdAt).getTime(),
+          id: newMsg.id || newMsg._id || Math.random().toString(),
+          channelKey: newMsg.channelKey || newMsg.channel || currentChannelKey,
+          user: safeUser,
+          text: newMsg.text || newMsg.content || '',
+          time: safeTime,
+          receivedAt: safeReceivedAt,
           type: newMsg.type,
           mediaType: newMsg.mediaType,
           body: newMsg.body,
