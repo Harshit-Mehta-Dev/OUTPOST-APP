@@ -12,6 +12,9 @@ export const AuthProvider = ({ children }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+    }).catch(err => {
+      console.error("Supabase connection failed (Project might be paused):", err);
+      setLoading(false);
     });
 
     // Listen for changes on auth state (logged in, signed out, etc.)
