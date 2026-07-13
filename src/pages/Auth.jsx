@@ -48,10 +48,15 @@ const Auth = () => {
   useEffect(() => {
     // If user is already logged in with Supabase, redirect
     if (supabaseUser) {
-      setIsLoading(true);
-      setTimeout(() => {
-        navigate('/app');
-      }, 1500);
+      if (!localStorage.getItem('outpost_user')) {
+        localStorage.setItem('outpost_user', JSON.stringify({
+          email: supabaseUser.email,
+          username: supabaseUser.user_metadata?.username || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Scout',
+          id: supabaseUser.id,
+          profilePictureUrl: supabaseUser.user_metadata?.avatar_url || ("https://api.dicebear.com/7.x/avataaars/svg?seed=" + (supabaseUser.email?.split('@')[0] || 'Scout'))
+        }));
+      }
+      triggerLoadingAndNavigate();
     }
   }, [supabaseUser, navigate]);
 
