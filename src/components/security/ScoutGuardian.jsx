@@ -78,7 +78,11 @@ export class ScoutGuardian extends Component {
             <ShieldCheck size={48} className="scout-guardian-icon critical-icon" />
             <h2 className="scout-guardian-title">Scout-Guardian: Security Halt</h2>
             <p className="scout-guardian-text">Multiple fatal errors detected. System locked for your protection.</p>
-            <button className="scout-guardian-btn" onClick={() => window.location.reload()}>Reboot Terminal</button>
+            <button className="scout-guardian-btn" onClick={() => {
+              localStorage.removeItem('outpost_user');
+              localStorage.removeItem('outpost_token');
+              window.location.href = '/auth';
+            }}>Reboot Terminal</button>
           </div>
         </div>
       );
