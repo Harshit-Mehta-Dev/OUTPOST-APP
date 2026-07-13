@@ -13,7 +13,6 @@ const Auth = () => {
   const { signUp, signIn, user: supabaseUser } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(() => typeof window !== 'undefined' && window.location.hash.includes('access_token'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [failedAttempts, setFailedAttempts] = useState(0);
