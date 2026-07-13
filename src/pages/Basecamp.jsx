@@ -287,19 +287,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         const { data, error } = await supabase
           .from('messages')
           .select('*')
-          .eq('channel', currentChannelKey)
-          .order('created_at', { ascending: true });
+          .eq('channelKey', currentChannelKey)
+          .order('createdAt', { ascending: true });
 
         if (error) throw error;
 
         // Map Supabase schema to frontend schema
         const mappedData = data.map(m => ({ 
           id: m.id,
-          channelKey: m.channel,
-          user: { username: m.username },
-          text: m.content,
-          time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          receivedAt: new Date(m.created_at).getTime()
+          channelKey: m.channelKey,
+          user: m.user,
+          text: m.text,
+          time: m.time || new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          receivedAt: new Date(m.createdAt).getTime(),
+          type: m.type,
+          mediaType: m.mediaType,
+          body: m.body,
+          pollData: m.pollData,
+          replyTo: m.replyTo
         }));
         
         setMessagesByChannel(prev => ({
@@ -318,15 +323,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     // Subscribe to Supabase Real-time messages
     const messageSubscription = supabase
       .channel('public:messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel=eq.${currentChannelKey}` }, payload => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `channelKey=eq.${currentChannelKey}` }, payload => {
         const newMsg = payload.new;
         const mappedMsg = {
           id: newMsg.id,
-          channelKey: newMsg.channel,
-          user: { username: newMsg.username },
-          text: newMsg.content,
-          time: new Date(newMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          receivedAt: new Date(newMsg.created_at).getTime()
+          channelKey: newMsg.channelKey,
+          user: newMsg.user,
+          text: newMsg.text,
+          time: newMsg.time || new Date(newMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          receivedAt: new Date(newMsg.createdAt).getTime(),
+          type: newMsg.type,
+          mediaType: newMsg.mediaType,
+          body: newMsg.body,
+          pollData: newMsg.pollData,
+          replyTo: newMsg.replyTo
         };
         
         setMessagesByChannel(prev => {
@@ -1363,11 +1373,17 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     ? isGlobalAdmin 
     : (activeCampsite?.adminEmail?.toLowerCase()?.trim() === normalizedUserEmail || isGlobalAdmin);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('outpost_user'); 
     localStorage.removeItem('outpost_token');
     localStorage.removeItem('outpost_campsites');
     localStorage.removeItem('outpost_messages');
+    localStorage.removeItem('oauth_in_progress');
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn("Supabase signout failed:", e);
+    }
     navigate('/'); 
   };
 

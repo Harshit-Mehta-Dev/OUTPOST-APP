@@ -56,6 +56,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(isSessionResolving);
 
   useEffect(() => {
+    let timeout;
     // If the user is logged in, navigate to the app smoothly
     if (supabaseUser) {
       setIsLoading(true); // Show loading screen while we transition
@@ -72,8 +73,19 @@ const Auth = () => {
       setTimeout(() => {
         navigate('/app');
       }, 2000);
+    } else {
+      // If we are showing loading screen due to oauth flag, but session is null,
+      // wait 3 seconds to see if it resolves. If not, reset it so they aren't stuck.
+      if (isLoading) {
+        timeout = setTimeout(() => {
+          localStorage.removeItem('oauth_in_progress');
+          setIsLoading(false);
+        }, 3000);
+      }
     }
-  }, [supabaseUser, isSessionResolving, navigate]);
+    
+    return () => clearTimeout(timeout);
+  }, [supabaseUser, isLoading, navigate]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
