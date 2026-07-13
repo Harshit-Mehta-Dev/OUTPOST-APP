@@ -44,10 +44,13 @@ const Auth = () => {
     }
   }, []);
 
-  // State to track if we're waiting for the session to resolve
   const [isSessionResolving, setIsSessionResolving] = useState(() => {
-    // If the URL has an access token or error, we're returning from OAuth and should show the loading screen
-    return typeof window !== 'undefined' && (window.location.hash.includes('access_token') || window.location.search.includes('error'));
+    // Check if returning from OAuth (PKCE code, implicit access_token, or error)
+    if (typeof window === 'undefined') return false;
+    const hasHashToken = window.location.hash.includes('access_token');
+    const hasQueryCode = window.location.search.includes('code=');
+    const hasError = window.location.search.includes('error') || window.location.hash.includes('error');
+    return hasHashToken || hasQueryCode || hasError;
   });
 
   const [isLoading, setIsLoading] = useState(isSessionResolving);
