@@ -45,13 +45,17 @@ const Auth = () => {
     }
   }, []);
 
-  // Keep track of whether we returned from OAuth so we don't lose it when Supabase strips the hash
-  const returningFromOAuth = useRef(typeof window !== 'undefined' && window.location.hash.includes('access_token'));
+  // State to track if we're waiting for the session to resolve
+  const [isSessionResolving, setIsSessionResolving] = useState(() => {
+    // If the URL has an access token or error, we're returning from OAuth and should show the loading screen
+    return typeof window !== 'undefined' && (window.location.hash.includes('access_token') || window.location.search.includes('error'));
+  });
+
+  const [isLoading, setIsLoading] = useState(isSessionResolving);
 
   useEffect(() => {
-    // ONLY automatically redirect if we are returning from a fresh Google OAuth flow.
-    // If the user just visits the site normally, we DO NOT automatically bypass the login page!
-    if (supabaseUser && returningFromOAuth.current) {
+    // Once Supabase resolves the user, if we were waiting for it, navigate to the app smoothly
+    if (supabaseUser && isSessionResolving) {
       if (!localStorage.getItem('outpost_user')) {
         localStorage.setItem('outpost_user', JSON.stringify({
           email: supabaseUser.email,
@@ -60,9 +64,12 @@ const Auth = () => {
           profilePictureUrl: supabaseUser.user_metadata?.picture || supabaseUser.user_metadata?.avatar_url || ("https://api.dicebear.com/7.x/avataaars/svg?seed=" + (supabaseUser.email?.split('@')[0] || 'Scout'))
         }));
       }
-      triggerLoadingAndNavigate();
+      // Guarantee at least 2 seconds of the cool loading screen for effect, then navigate
+      setTimeout(() => {
+        navigate('/app');
+      }, 2000);
     }
-  }, [supabaseUser, navigate]);
+  }, [supabaseUser, isSessionResolving, navigate]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -80,12 +87,7 @@ const Auth = () => {
     }
   };
 
-  const triggerLoadingAndNavigate = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      navigate('/app');
-    }, 3500); // Increased to 3.5s so the loading animation is visible and enjoyable
-  };
+
 
 
   const [lockoutUntil, setLockoutUntil] = useState(null);
