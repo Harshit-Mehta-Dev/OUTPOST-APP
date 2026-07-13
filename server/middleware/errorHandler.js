@@ -29,9 +29,13 @@ const errorHandler = (err, req, res, next) => {
     return res.status(401).json({ error: 'Your token has expired. Please log in again.' });
   }
 
+  if (statusCode === 500) {
+    errorMsg = 'An unexpected internal error occurred.';
+  }
+
   res.status(statusCode).json({
     error: errorMsg,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack, raw: err.message })
   });
 };
 

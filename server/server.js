@@ -197,7 +197,7 @@ const getStore = () => redisClientForLimits ? new RedisStore({ sendCommand: (...
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 1000, 
+  max: parseInt(process.env.RATE_LIMIT_GLOBAL || 1000, 10), 
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
@@ -207,7 +207,7 @@ const globalLimiter = rateLimit({
 // Layer 2: Anti-Brute Force for Auth (5 requests per 15 minutes)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 5, 
+  max: parseInt(process.env.RATE_LIMIT_AUTH || 5, 10), 
   message: 'Too many login attempts from this IP, please try again after 15 minutes',
   store: getStore(),
 });
@@ -215,7 +215,7 @@ const authLimiter = rateLimit({
 // Layer 3: Database Strain Prevention for Searching/Fetching (30 requests per minute)
 const dataLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
-  max: 300, 
+  max: parseInt(process.env.RATE_LIMIT_DATA || 300, 10), 
   message: 'Too many data requests from this IP, please try again after a minute',
   store: getStore(),
 });
@@ -223,7 +223,7 @@ const dataLimiter = rateLimit({
 // Layer 4: Anti-Spam for Forms/Joining (10 requests per minute)
 const actionLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
-  max: 10, 
+  max: parseInt(process.env.RATE_LIMIT_ACTION || 10, 10), 
   message: 'Too many actions from this IP, please try again after a minute',
   store: getStore(),
 });
@@ -503,6 +503,18 @@ io.on('connection', (socket) => {
     try {
       // --- Phase 5: Media Compression Engine ---
       if (data.type === 'media' && data.body) {
+        // Enforce max 10MB payload size
+        const payloadSize = Buffer.byteLength(data.body, 'utf8');
+        if (payloadSize > 10 * 1024 * 1024) {
+          return socket.emit('error', { message: 'Payload too large. Maximum size is 10MB.' });
+        }
+        
+        // Strict MIME-type validation (magic bytes / regex)
+        const matches = data.body.match(/^data:(image\/[a-zA-Z0-9.-]+|audio\/[a-zA-Z0-9.-]+);base64,/);
+        if (!matches) {
+          return socket.emit('error', { message: 'Invalid media format.' });
+        }
+        
         // data.body = await compressMediaPayload(data.body, data.mediaType);
       }
 

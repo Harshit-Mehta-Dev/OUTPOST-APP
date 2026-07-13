@@ -315,7 +315,18 @@ io.on('connection', (socket) => {
     try {
       // --- Phase 5: Media Compression Engine ---
       if (data.type === 'media' && data.body) {
-        // compressMediaPayload is missing, bypassing for now
+        // Enforce max 10MB payload size
+        const payloadSize = Buffer.byteLength(data.body, 'utf8');
+        if (payloadSize > 10 * 1024 * 1024) {
+          return socket.emit('error', { message: 'Payload too large. Maximum size is 10MB.' });
+        }
+        
+        // Strict MIME-type validation (magic bytes / regex)
+        const matches = data.body.match(/^data:(image\/[a-zA-Z0-9.-]+|audio\/[a-zA-Z0-9.-]+);base64,/);
+        if (!matches) {
+          return socket.emit('error', { message: 'Invalid media format.' });
+        }
+        
         // data.body = await compressMediaPayload(data.body, data.mediaType);
       }
 
