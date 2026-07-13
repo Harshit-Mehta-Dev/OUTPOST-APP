@@ -57,12 +57,17 @@ const Auth = () => {
 
   useEffect(() => {
     let timeout;
-    // If the user is logged in, navigate to the app smoothly
     if (supabaseUser) {
-      setIsLoading(true); // Show loading screen while we transition
-      localStorage.removeItem('oauth_in_progress'); // Clean up the flag
-      
-      if (!localStorage.getItem('outpost_user')) {
+      if (localStorage.getItem('oauth_in_progress') === 'true') {
+        localStorage.removeItem('oauth_in_progress');
+        
+        // Ensure we grab the token from Supabase session for Socket.io auth
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.access_token) {
+            localStorage.setItem('outpost_token', session.access_token);
+          }
+        });
+        
         localStorage.setItem('outpost_user', JSON.stringify({
           email: supabaseUser.email,
           username: supabaseUser.user_metadata?.username || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Scout',
@@ -70,7 +75,7 @@ const Auth = () => {
           profilePictureUrl: supabaseUser.user_metadata?.picture || supabaseUser.user_metadata?.avatar_url || ("https://api.dicebear.com/7.x/avataaars/svg?seed=" + (supabaseUser.email?.split('@')[0] || 'Scout'))
         }));
       }
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         navigate('/app');
       }, 2000);
     } else {

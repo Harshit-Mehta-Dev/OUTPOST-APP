@@ -4,7 +4,7 @@ const syncUser = {
   body: Joi.object().keys({
     email: Joi.string().email().max(255).required(),
     username: Joi.string().min(3).max(50).pattern(/^[a-zA-Z0-9_\-\s]+$/).required()
-  })
+  }).unknown(true)
 };
 
 const registerUser = {
@@ -12,14 +12,14 @@ const registerUser = {
     email: Joi.string().email().max(255).required(),
     username: Joi.string().min(3).max(50).pattern(/^[a-zA-Z0-9_\-\s]+$/).required(),
     password: Joi.string().min(8).max(128).required()
-  })
+  }).unknown(true)
 };
 
 const loginUser = {
   body: Joi.object().keys({
     email: Joi.string().email().max(255).required(),
     password: Joi.string().max(128).required()
-  })
+  }).unknown(true)
 };
 
 const updateProfile = {
@@ -29,7 +29,7 @@ const updateProfile = {
     profilePictureUrl: Joi.string().uri().max(1024).allow(''),
     currentPassword: Joi.string().max(128),
     newPassword: Joi.string().min(8).max(128)
-  }).with('newPassword', 'currentPassword')
+  }).with('newPassword', 'currentPassword').unknown(true)
 };
 
 module.exports = {
