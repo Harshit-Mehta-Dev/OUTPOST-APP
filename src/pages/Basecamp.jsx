@@ -193,7 +193,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     navigator.clipboard.writeText(textToCopy).catch(err => console.error("Failed to copy", err));
   };
 
-  // User identity  // Validate session on mount
+  // User identity
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('outpost_user');
+    if (!saved || saved === 'undefined' || saved === 'null') return null;
+    try { return JSON.parse(saved); } catch (e) { return null; }
+  });
+
+  // Validate session on mount
   useEffect(() => {
     const saved = localStorage.getItem('outpost_user');
     if (saved) {
@@ -214,13 +221,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         .catch(err => console.error("Error fetching user status:", err));
     }
   }, []);
-
-  // User identity
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('outpost_user');
-    if (!saved || saved === 'undefined' || saved === 'null') return null;
-    try { return JSON.parse(saved); } catch (e) { return null; }
-  });
 
   // Keep currentUser fresh from localStorage/backend syncs
   useEffect(() => {
@@ -373,7 +373,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             mediaType: m.mediaType,
             body: m.body,
             pollData: m.pollData,
-            replyTo: m.replyTo
+            replyTo: m.replyTo,
+            isPinned: m.isPinned || false,
+            likes: m.likes || []
           };
         });
         
@@ -425,7 +427,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           mediaType: newMsg.mediaType,
           body: newMsg.body,
           pollData: newMsg.pollData,
-          replyTo: newMsg.replyTo
+          replyTo: newMsg.replyTo,
+          isPinned: newMsg.isPinned || false,
+          likes: newMsg.likes || []
         };
         
         setMessagesByChannel(prev => {
@@ -832,7 +836,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         } : null
       };
       
-      // Optimistic UI removed since Supabase WebSockets are zero-latency
+      // Optimistic UI logic re-enabled to fix delay issue
+      const optimisticMsg = { ...messageData, id: 'local-' + Date.now(), receivedAt: Date.now() };
+      setMessagesByChannel(prev => {
+        const current = prev[currentChannelKey] || [];
+        return { ...prev, [currentChannelKey]: [...current, optimisticMsg] };
+      });
+      
       if (socket && socket.connected) {
         socket.emit("send_message", messageData);
       } else {
@@ -2183,8 +2193,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                       <div className="skeleton-name"></div>
                       <div className="skeleton-time"></div>
                     </div>
-                    <div className="skeleton-text" style={{ width: `${Math.random() * 40 + 40}%` }}></div>
-                    {i % 2 === 0 && <div className="skeleton-text" style={{ width: `${Math.random() * 30 + 30}%` }}></div>}
+                    <div className="skeleton-text" style={{ width: `${(i * 15) % 40 + 40}%` }}></div>
+                    {i % 2 === 0 && <div className="skeleton-text" style={{ width: `${(i * 10) % 30 + 30}%` }}></div>}
                   </div>
                 </div>
               ))}
@@ -2582,7 +2592,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     key={camp.id}
                     className={`campsite-item ${activeCampsite?.id === camp.id ? 'active' : ''}`}
                     onClick={() => {
-                      handleSelectCampsite(camp);
+                      handleCampsiteClick(camp.id);
+                      setIsMobileDrawerOpen(false);
                     }}
                     title={camp.name}
                   >

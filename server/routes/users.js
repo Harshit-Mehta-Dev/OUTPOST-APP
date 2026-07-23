@@ -481,4 +481,19 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+// Developer-only: Purge test messages (HELLO etc.) from all channels
+router.delete('/admin/purge-test-messages', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.username.toLowerCase() !== 'harshit mehta') {
+      return res.status(403).json({ error: 'Developer access only.' });
+    }
+    const Message = require('../models/Message');
+    const result = await Message.deleteMany({ text: /^hello$/i });
+    res.json({ message: `Purged ${result.deletedCount} test message(s).` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
