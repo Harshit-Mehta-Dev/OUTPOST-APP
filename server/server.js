@@ -751,6 +751,21 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on("pin_message", async ({ messageId, channelKey, isPinned }) => {
+    try {
+      const msg = await Message.findById(messageId);
+      if (!msg) return;
+      
+      msg.isPinned = isPinned;
+      await Message.updateOne({ _id: messageId }, { $set: { isPinned } });
+      syncMessageToSupabase(msg);
+
+      io.to(channelKey).emit("message_pinned", { messageId, channelKey, isPinned });
+    } catch (err) {
+      console.error("Error pinning message:", err);
+    }
+  });
+
   socket.on("delete_message_for_all", async ({ messageId, channelKey, username }) => {
     try {
       if (!username) return; // Silent fail if no username

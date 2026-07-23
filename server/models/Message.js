@@ -17,6 +17,7 @@ const messageSchema = new mongoose.Schema({
   pollData: { type: mongoose.Schema.Types.Mixed },
   replyTo: { type: mongoose.Schema.Types.Mixed },
   likes: { type: [String], default: [] },
+  isPinned: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -37,7 +37,8 @@ import {
   LifeBuoy,
   Cpu,
   MoreVertical,
-  Heart
+  Heart,
+  Pin
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -155,6 +156,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     });
     
     socket.emit("like_message", { messageId: msgId, channelKey, username: currentUser?.username || 'Scout' });
+  };
+
+  const handlePinMessage = (msg, channelKey) => {
+    const isPinnedNow = !msg.isPinned;
+    const msgId = msg._id || msg.id;
+    setMessagesByChannel(prev => {
+      const currentMessages = prev[channelKey] || [];
+      const existingIndex = currentMessages.findIndex(m => (m._id || m.id) === msgId);
+      if (existingIndex !== -1) {
+        const updatedMessages = [...currentMessages];
+        updatedMessages[existingIndex] = { ...msg, isPinned: isPinnedNow };
+        return { ...prev, [channelKey]: updatedMessages };
+      }
+      return prev;
+    });
+    socket.emit("pin_message", { messageId: msgId, channelKey, isPinned: isPinnedNow });
   };
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
@@ -599,6 +616,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         return { ...prev, [channelKey]: updated };
       });
     };
+
+    const handleMessagePinned = ({ messageId, channelKey, isPinned }) => {
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[channelKey] || [];
+        const updated = currentMessages.map(msg => {
+          if ((msg._id || msg.id) === messageId) {
+            return { ...msg, isPinned };
+          }
+          return msg;
+        });
+        return { ...prev, [channelKey]: updated };
+      });
+    };
+    socket.on("message_pinned", handleMessagePinned);
 
     const handleMessageDeleted = ({ messageId, channelKey }) => {
       setMessagesByChannel(prev => {
@@ -2243,13 +2274,19 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         <div className="message-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', width: '100%', overflow: 'visible' }}>
                           {(() => {
                             const username = msg.user?.username || msg.user || 'Unknown Scout';
+                            const userEmail = msg.user?.email || '';
                             const userRoleName = activeCampsite?.memberRoles?.[username];
                             const userRoleColor = activeCampsite?.roles?.find(r => r.name === userRoleName)?.color || 'var(--text-primary)';
+                            
+                            const isDeveloper = msg.user?.isGlobalAdmin || username.toLowerCase().includes('harshit mehta');
+                            const isAdmin = !isDeveloper && ((activeCampsite?.adminUsername && username === activeCampsite?.adminUsername) || (activeCampsite?.adminEmail && userEmail === activeCampsite?.adminEmail) || userRoleName?.toUpperCase() === 'ADMIN');
+                            
                             return (
                               <span className="message-author" style={{ color: userRoleColor, fontWeight: userRoleName ? 'bold' : 'normal', display: 'flex', alignItems: 'center', flexShrink: 1, minWidth: 0, overflow: 'hidden' }}>
                                 <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</span>
-                                {username.toLowerCase() === 'harshit mehta' && <span className="role-tag developer" style={{flexShrink: 0}}>DEVELOPER</span>}
-                                {((activeCampsite?.adminUsername && username === activeCampsite?.adminUsername) || (activeCampsite?.adminEmail === currentUser?.email && username === currentUser?.username)) && username.toLowerCase() !== 'harshit mehta' && <span className="role-tag admin" style={{flexShrink: 0}}>ADMIN</span>}
+                                {isDeveloper && <span className="role-tag developer" style={{flexShrink: 0}}>DEVELOPER</span>}
+                                {isAdmin && <span className="role-tag admin" style={{flexShrink: 0}}>ADMIN</span>}
+                                {msg.isPinned && <span className="role-tag" style={{flexShrink: 0, background: 'rgba(255, 193, 7, 0.2)', color: '#ffc107', marginLeft: '6px', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', display: 'flex', alignItems: 'center', gap: '4px'}}><Pin size={10} /> PINNED</span>}
                               </span>
                             );
                           })()}
@@ -2292,6 +2329,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                                     </button>
                                     <button onClick={() => { setReplyingTo(msg); setActiveDropdownId(null); }}>
                                       <Reply size={14} /> Reply
+                                    </button>
+                                    <button onClick={() => { handlePinMessage(msg, currentChannelKey); setActiveDropdownId(null); }}>
+                                      <Pin size={14} /> {msg.isPinned ? "Unpin" : "Pin"}
                                     </button>
                                     <button 
                                       onClick={() => {
