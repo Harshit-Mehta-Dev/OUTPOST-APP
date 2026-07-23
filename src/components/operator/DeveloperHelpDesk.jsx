@@ -4,11 +4,14 @@ import { X, Send, Image as ImageIcon, CheckCircle, MessageSquare, Paperclip, Use
 import { io } from 'socket.io-client';
 import './DeveloperHelpDesk.css';
 
-const socket = io((import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002')), {
-  auth: { token: localStorage.getItem('outpost_token') }
-});
+const DEV_HELPDESK_SOCKET_URL = import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
 
 const DeveloperHelpDesk = ({ onClose, currentUser }) => {
+  const socketRef = useRef(null);
+  if (!socketRef.current) {
+    socketRef.current = io(DEV_HELPDESK_SOCKET_URL, { auth: { token: localStorage.getItem('outpost_token') || '' } });
+  }
+  const socket = socketRef.current;
   const [requests, setRequests] = useState([]);
   const [activeRequest, setActiveRequest] = useState(null);
   const [messages, setMessages] = useState([]);

@@ -67,13 +67,27 @@ import HelpDesk from '../components/HelpDesk';
 import FeedbackForm from '../components/FeedbackForm';
 import GroupAdminPanelModal from '../components/modals/GroupAdminPanelModal';
 
-const socket = io((import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003')), {
-  auth: { token: localStorage.getItem('outpost_token') }
-});
+// Socket is created lazily inside the component so it always has a fresh token.
+// Creating it at module level causes authentication failures because the token
+// is not yet in localStorage at import time.
+const CHAT_URL = import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
 
 const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const navigate = useNavigate();
   const { activeTheme } = useTheme();
+
+  // Socket ref — initialized once with the real token so it never connects with null auth
+  const socketRef = useRef(null);
+  if (!socketRef.current) {
+    const token = localStorage.getItem('outpost_token');
+    socketRef.current = io(CHAT_URL, {
+      auth: { token: token || '' },
+      reconnectionAttempts: 10,
+      reconnectionDelay: 2000,
+    });
+  }
+  const socket = socketRef.current;
+
   const [activeChannel, setActiveChannel] = useState('community-chat');
   const [showWelcome, setShowWelcome] = useState(true);
   const [showDiscover, setShowDiscover] = useState(false);
@@ -209,6 +223,21 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     }, 2000);
     return () => clearInterval(interval);
   }, [currentUser]);
+
+  // Refresh socket auth token when it changes (e.g., after OAuth login)
+  // This ensures the socket always connects with a valid JWT, never with null
+  useEffect(() => {
+    const token = localStorage.getItem('outpost_token');
+    if (!token || !socket) return;
+
+    if (socket.auth.token !== token) {
+      socket.auth.token = token;
+      // If currently disconnected, reconnect with fresh credentials
+      if (!socket.connected) {
+        socket.connect();
+      }
+    }
+  }, [currentUser, socket]);
 
   // Wait for component init
   const [campsites, setCampsites] = useState(() => {
@@ -776,7 +805,17 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       if (socket && socket.connected) {
         socket.emit("send_message", messageData);
       } else {
-        alert("Transmission Error: Socket disconnected. Please refresh.");
+        // Socket not connected — try to reconnect with a fresh token and queue the message
+        console.warn('[Outpost] Socket disconnected when sending message. Reconnecting...');
+        const freshToken = localStorage.getItem('outpost_token');
+        if (freshToken && socket) {
+          socket.auth.token = freshToken;
+          socket.connect();
+          // Retry after reconnect
+          socket.once('connect', () => {
+            socket.emit('send_message', messageData);
+          });
+        }
       }
 
       if (socket && socket.connected) {

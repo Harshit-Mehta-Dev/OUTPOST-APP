@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import { ShieldAlert, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import './ScoutGuardian.css';
 
 /**
  * Scout-Guardian Frontend Aegis
- * Protects the UI from fatal crashes, automatically recovers, and monitors for tampering.
+ * Catches truly catastrophic UI crashes and provides recovery.
+ * Does NOT treat normal network errors or API failures as security threats.
+ * Does NOT wipe user sessions or force logout on recoverable errors.
  */
 export class ScoutGuardian extends Component {
   constructor(props) {
@@ -13,47 +15,31 @@ export class ScoutGuardian extends Component {
       hasError: false,
       errorCount: 0,
       isRecovering: false,
-      tamperDetected: false
+      lastError: null,
     };
   }
 
   static getDerivedStateFromError(error) {
-    // Intercept crash and prepare to auto-recover
-    return { hasError: true };
+    return { hasError: true, lastError: error?.message || 'Unknown error' };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log the glitch silently for analytics without bringing down the whole app
-    console.error("[Scout-Guardian] 🛡️ Intercepted UI Glitch:", error);
-    
-    // Auto-Recovery Mechanism
-    if (this.state.errorCount < 3) {
-      this.setState({ isRecovering: true, errorCount: this.state.errorCount + 1 });
-      
-      // Attempt to silently reboot the corrupted component after 2 seconds
+    // Log the crash for debugging — never show raw error to users
+    console.error('[Scout-Guardian] UI crash intercepted:', error.message);
+
+    const newCount = this.state.errorCount + 1;
+
+    // Auto-recover for the first 2 crashes — most are transient render issues
+    if (newCount <= 2) {
+      this.setState({ isRecovering: true, errorCount: newCount });
       setTimeout(() => {
         this.setState({ hasError: false, isRecovering: false });
-        console.log("[Scout-Guardian] 🛡️ Auto-Recovery Successful.");
+        console.log('[Scout-Guardian] Auto-recovery successful.');
       }, 2000);
+    } else {
+      // After 3 crashes, show the halt screen but DO NOT log out the user
+      this.setState({ errorCount: newCount });
     }
-  }
-
-  componentDidMount() {
-    // Basic Anti-Tamper: Detect if someone opens DevTools (simplified check via screen resize metrics)
-    const devToolsCheck = setInterval(() => {
-      if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-        if (!this.state.tamperDetected) {
-          console.warn("[Scout-Guardian] ⚠️ Environment Tampering / Inspection Detected.");
-          // We don't block them, but we flag it locally
-          this.setState({ tamperDetected: true });
-        }
-      }
-    }, 3000);
-    this.devToolsCheck = devToolsCheck;
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.devToolsCheck);
   }
 
   render() {
@@ -62,42 +48,43 @@ export class ScoutGuardian extends Component {
         return (
           <div className="scout-guardian-overlay">
             <div className="scout-guardian-box">
-              <ShieldAlert size={48} className="scout-guardian-icon pulse" />
-              <h2 className="scout-guardian-title">Scout-Guardian: Glitch Intercepted</h2>
-              <p className="scout-guardian-text">A UI anomaly was detected. Auto-recovering system...</p>
+              <ShieldCheck size={48} className="scout-guardian-icon pulse" />
+              <h2 className="scout-guardian-title">Restoring Systems...</h2>
+              <p className="scout-guardian-text">A display glitch was detected. Auto-recovering...</p>
               <div className="scout-guardian-loader"></div>
             </div>
           </div>
         );
       }
-      
-      // Ultimate failure if auto-recovery failed 3 times
+
+      // Persistent crash — offer a reload, but keep the user's session intact
       return (
         <div className="scout-guardian-overlay critical">
           <div className="scout-guardian-box">
             <ShieldCheck size={48} className="scout-guardian-icon critical-icon" />
-            <h2 className="scout-guardian-title">Scout-Guardian: Security Halt</h2>
-            <p className="scout-guardian-text">Multiple fatal errors detected. System locked for your protection.</p>
-            <button className="scout-guardian-btn" onClick={() => {
-              localStorage.removeItem('outpost_user');
-              localStorage.removeItem('outpost_token');
-              window.location.href = '/auth';
-            }}>Reboot Terminal</button>
+            <h2 className="scout-guardian-title">Scout-Guardian: System Error</h2>
+            <p className="scout-guardian-text">
+              A persistent display error occurred. Click below to reload the page.
+              Your account and data are safe.
+            </p>
+            <button
+              className="scout-guardian-btn"
+              onClick={() => window.location.reload()}
+            >
+              Reload Application
+            </button>
+            <button
+              className="scout-guardian-btn"
+              style={{ marginTop: '8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#aaa' }}
+              onClick={() => this.setState({ hasError: false, errorCount: 0, isRecovering: false })}
+            >
+              Try Without Reload
+            </button>
           </div>
         </div>
       );
     }
 
-    return (
-      <>
-        {/* Silent global indicator if tampering was detected */}
-        {this.state.tamperDetected && (
-          <div className="scout-guardian-stealth-indicator" title="Scout-Guardian is monitoring.">
-            <ShieldCheck size={14} color="var(--brand-primary)" />
-          </div>
-        )}
-        {this.props.children}
-      </>
-    );
+    return this.props.children;
   }
 }

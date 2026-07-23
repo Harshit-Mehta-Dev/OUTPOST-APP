@@ -58,26 +58,48 @@ const Auth = () => {
   useEffect(() => {
     let timeout;
     if (supabaseUser) {
-      if (localStorage.getItem('oauth_in_progress') === 'true') {
-        localStorage.removeItem('oauth_in_progress');
-        
-        // Ensure we grab the token from Supabase session for Socket.io auth
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          if (session?.access_token) {
-            localStorage.setItem('outpost_token', session.access_token);
-          }
-        });
-        
+      // Always clean up the oauth flag
+      localStorage.removeItem('oauth_in_progress');
+
+      // Always save/refresh the token from Supabase — covers Google OAuth AND email/password logins.
+      // Without this, the socket in Basecamp gets null token and disconnects.
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.access_token) {
+          localStorage.setItem('outpost_token', session.access_token);
+        }
+
+        // Always save/update the real user profile to localStorage.
+        // This eliminates the "dummy Scout account" bug where OAuth users
+        // didn't get their real name/avatar saved.
+        const existingUser = (() => {
+          try { return JSON.parse(localStorage.getItem('outpost_user') || 'null'); } catch { return null; }
+        })();
+
+        // Prefer existing username if already synced from backend, fall back to Google metadata
+        const savedUsername = existingUser?.username;
+        const metaUsername = supabaseUser.user_metadata?.username
+          || supabaseUser.user_metadata?.name
+          || supabaseUser.user_metadata?.full_name
+          || supabaseUser.email?.split('@')[0]
+          || 'Scout';
+
         localStorage.setItem('outpost_user', JSON.stringify({
           email: supabaseUser.email,
-          username: supabaseUser.user_metadata?.username || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Scout',
+          username: savedUsername || metaUsername,
           id: supabaseUser.id,
-          profilePictureUrl: supabaseUser.user_metadata?.picture || supabaseUser.user_metadata?.avatar_url || ("https://api.dicebear.com/7.x/avataaars/svg?seed=" + (supabaseUser.email?.split('@')[0] || 'Scout'))
+          profilePictureUrl: existingUser?.profilePictureUrl
+            || supabaseUser.user_metadata?.picture
+            || supabaseUser.user_metadata?.avatar_url
+            || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + (supabaseUser.email?.split('@')[0] || 'Scout')),
+          level: existingUser?.level,
+          xp: existingUser?.xp,
+          isGloballyRestricted: existingUser?.isGloballyRestricted,
         }));
-      }
+      });
+
       timeout = setTimeout(() => {
         navigate('/app');
-      }, 2000);
+      }, 1500);
     } else {
       // If we are showing loading screen due to oauth flag, but session is null,
       // wait 3 seconds to see if it resolves. If not, reset it so they aren't stuck.
@@ -88,7 +110,7 @@ const Auth = () => {
         }, 3000);
       }
     }
-    
+
     return () => clearTimeout(timeout);
   }, [supabaseUser, isLoading, navigate]);
 

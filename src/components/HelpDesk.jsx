@@ -4,12 +4,15 @@ import { UploadCloud, CheckCircle, Send, Image as ImageIcon, X, Clock, Lock, Mes
 import { io } from 'socket.io-client';
 import './HelpDesk.css';
 
-const socket = io((import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003')), {
-  auth: { token: localStorage.getItem('outpost_token') }
-});
+const HELPDESK_SOCKET_URL = import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
 
 const HelpDesk = () => {
   const [viewMode, setViewMode] = useState('submit'); // 'submit' or 'status'
+  const socketRef = useRef(null);
+  if (!socketRef.current) {
+    socketRef.current = io(HELPDESK_SOCKET_URL, { auth: { token: localStorage.getItem('outpost_token') || '' } });
+  }
+  const socket = socketRef.current;
   
   // Form State
   const [userName, setUserName] = useState('');
