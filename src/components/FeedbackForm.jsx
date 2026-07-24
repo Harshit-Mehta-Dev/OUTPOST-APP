@@ -44,17 +44,22 @@ const FeedbackForm = () => {
       <div className="sideways-overlay">
         {[...Array(15)].map((_, i) => {
           const Icon = feedbackIcons[i % feedbackIcons.length];
+          const getRandom = () => {
+            const arr = new Uint32Array(1);
+            window.crypto.getRandomValues(arr);
+            return arr[0] / (0xFFFFFFFF + 1);
+          };
           return (
             <div
               key={`sideways-sticker-${i}`}
               className="sideways-sticker"
               style={{
-                top: `${10 + Math.random() * 80}%`,
-                animationDelay: `${Math.random() * 10}s`,
-                animationDuration: `${10 + Math.random() * 15}s`
+                top: `${10 + getRandom() * 80}%`,
+                animationDelay: `${getRandom() * 10}s`,
+                animationDuration: `${10 + getRandom() * 15}s`
               }}
             >
-              <Icon size={24 + Math.random() * 32} />
+              <Icon size={24 + getRandom() * 32} />
             </div>
           );
         })}

@@ -1,19 +1,28 @@
 import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 
+function getRandom() {
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+        const arr = new Uint32Array(1);
+        window.crypto.getRandomValues(arr);
+        return arr[0] / (0xFFFFFFFF + 1);
+    }
+    return 0.5;
+}
+
 function createBeam(width, height) {
-    const angle = -10 + Math.random() * 20; // Almost perfectly vertical, like sun rays in deep water
+    const angle = -10 + getRandom() * 20; // Almost perfectly vertical, like sun rays in deep water
     return {
-        x: Math.random() * width * 1.2 - width * 0.1, // Spread evenly
-        y: Math.random() * height * 1.5 - height * 0.25,
-        width: 150 + Math.random() * 150, // Much wider to blend seamlessly (no patches)
+        x: getRandom() * width * 1.2 - width * 0.1, // Spread evenly
+        y: getRandom() * height * 1.5 - height * 0.25,
+        width: 150 + getRandom() * 150, // Much wider to blend seamlessly (no patches)
         length: height * 1.5,
         angle: angle,
-        speed: 0.3 + Math.random() * 0.4, // Extremely slow, realistic drift
-        opacity: 0.08 + Math.random() * 0.08, // Subtle opacity for smooth blending
-        hue: 15 + Math.random() * 25,
-        pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: 0.005 + Math.random() * 0.01, // Slow, elegant pulsing
+        speed: 0.3 + getRandom() * 0.4, // Extremely slow, realistic drift
+        opacity: 0.08 + getRandom() * 0.08, // Subtle opacity for smooth blending
+        hue: 15 + getRandom() * 25,
+        pulse: getRandom() * Math.PI * 2,
+        pulseSpeed: 0.005 + getRandom() * 0.01, // Slow, elegant pulsing
     };
 }
 
@@ -63,17 +72,17 @@ export function BeamsBackground({ className = "", intensity = "strong", fixed = 
             const spacing = logicalWidth / 3;
 
             // When resetting, spawn slightly above or below randomly to maintain coverage
-            beam.y = Math.random() > 0.5 ? -logicalHeight * 0.2 : logicalHeight * 1.2;
+            beam.y = getRandom() > 0.5 ? -logicalHeight * 0.2 : logicalHeight * 1.2;
             
             beam.x =
                 column * spacing +
                 spacing / 2 +
-                (Math.random() - 0.5) * spacing * 0.5;
-            beam.width = 150 + Math.random() * 150;
-            beam.speed = 0.3 + Math.random() * 0.4;
-            beam.hue = 15 + Math.random() * 25;
-            beam.opacity = 0.08 + Math.random() * 0.08;
-            beam.angle = -10 + Math.random() * 20;
+                (getRandom() - 0.5) * spacing * 0.5;
+            beam.width = 150 + getRandom() * 150;
+            beam.speed = 0.3 + getRandom() * 0.4;
+            beam.hue = 15 + getRandom() * 25;
+            beam.opacity = 0.08 + getRandom() * 0.08;
+            beam.angle = -10 + getRandom() * 20;
             return beam;
         }
 

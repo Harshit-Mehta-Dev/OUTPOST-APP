@@ -277,14 +277,19 @@ const IconBackground = () => {
   const [elements, setElements] = React.useState([]);
   
   React.useEffect(() => {
+    const getRandom = () => {
+      const arr = new Uint32Array(1);
+      window.crypto.getRandomValues(arr);
+      return arr[0] / (0xFFFFFFFF + 1);
+    };
     const newElements = Array.from({ length: 25 }).map((_, i) => ({
       id: i,
-      IconComponent: icons[Math.floor(Math.random() * icons.length)] || Shield,
-      left: Math.random() * 100,
-      duration: 15 + Math.random() * 25,
-      delay: Math.random() * 20,
-      size: 1 + Math.random() * 1.5,
-      opacity: 0.05 + Math.random() * 0.15 // Slightly lower opacity for a cleaner look
+      IconComponent: icons[Math.floor(getRandom() * icons.length)] || Shield,
+      left: getRandom() * 100,
+      duration: 15 + getRandom() * 25,
+      delay: getRandom() * 20,
+      size: 1 + getRandom() * 1.5,
+      opacity: 0.05 + getRandom() * 0.15
     }));
     setElements(newElements);
   }, []);

@@ -207,65 +207,89 @@ const HelpDesk = () => {
       {/* Waterfall Animation Overlay */}
       <div className="waterfall-overlay">
         <div className="waterfall-side left">
-          {[...Array(20)].map((_, i) => (
-            <div 
-              key={`left-${i}`} 
-              className="waterfall-drop"
-              style={{
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${1.5 + Math.random() * 2.5}s`,
-                height: `${100 + Math.random() * 200}px`,
-                width: `${1 + Math.random() * 6}px`,
-                opacity: 0.2 + Math.random() * 0.8
-              }}
-            />
-          ))}
+          {[...Array(20)].map((_, i) => {
+            const getRandom = () => {
+              const arr = new Uint32Array(1);
+              window.crypto.getRandomValues(arr);
+              return arr[0] / (0xFFFFFFFF + 1);
+            };
+            return (
+              <div 
+                key={`left-${i}`} 
+                className="waterfall-drop"
+                style={{
+                  left: `${getRandom() * 100}%`,
+                  animationDelay: `${getRandom() * 3}s`,
+                  animationDuration: `${1.5 + getRandom() * 2.5}s`,
+                  height: `${100 + getRandom() * 200}px`,
+                  width: `${1 + getRandom() * 6}px`,
+                  opacity: 0.2 + getRandom() * 0.8
+                }}
+              />
+            );
+          })}
           {[...Array(5)].map((_, i) => {
             const Icon = waterfallIcons[i % waterfallIcons.length];
+            const getRandom = () => {
+              const arr = new Uint32Array(1);
+              window.crypto.getRandomValues(arr);
+              return arr[0] / (0xFFFFFFFF + 1);
+            };
             return (
               <div
                 key={`sticker-left-${i}`}
                 className="waterfall-sticker-drop"
                 style={{
-                  left: `${10 + Math.random() * 80}%`,
-                  animationDelay: `${Math.random() * 5}s`,
-                  animationDuration: `${5 + Math.random() * 5}s`
+                  left: `${10 + getRandom() * 80}%`,
+                  animationDelay: `${getRandom() * 5}s`,
+                  animationDuration: `${5 + getRandom() * 5}s`
                 }}
               >
-                <Icon size={24 + Math.random() * 16} />
+                <Icon size={24 + getRandom() * 16} />
               </div>
             );
           })}
         </div>
         <div className="waterfall-side right">
-          {[...Array(20)].map((_, i) => (
-            <div 
-              key={`right-${i}`} 
-              className="waterfall-drop"
-              style={{
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${1.5 + Math.random() * 2.5}s`,
-                height: `${100 + Math.random() * 200}px`,
-                width: `${1 + Math.random() * 6}px`,
-                opacity: 0.2 + Math.random() * 0.8
-              }}
-            />
-          ))}
+          {[...Array(20)].map((_, i) => {
+            const getRandom = () => {
+              const arr = new Uint32Array(1);
+              window.crypto.getRandomValues(arr);
+              return arr[0] / (0xFFFFFFFF + 1);
+            };
+            return (
+              <div 
+                key={`right-${i}`} 
+                className="waterfall-drop"
+                style={{
+                  left: `${getRandom() * 100}%`,
+                  animationDelay: `${getRandom() * 3}s`,
+                  animationDuration: `${1.5 + getRandom() * 2.5}s`,
+                  height: `${100 + getRandom() * 200}px`,
+                  width: `${1 + getRandom() * 6}px`,
+                  opacity: 0.2 + getRandom() * 0.8
+                }}
+              />
+            );
+          })}
           {[...Array(5)].map((_, i) => {
             const Icon = waterfallIcons[(i + 3) % waterfallIcons.length];
+            const getRandom = () => {
+              const arr = new Uint32Array(1);
+              window.crypto.getRandomValues(arr);
+              return arr[0] / (0xFFFFFFFF + 1);
+            };
             return (
               <div
                 key={`sticker-right-${i}`}
                 className="waterfall-sticker-drop"
                 style={{
-                  left: `${10 + Math.random() * 80}%`,
-                  animationDelay: `${Math.random() * 5}s`,
-                  animationDuration: `${5 + Math.random() * 5}s`
+                  left: `${10 + getRandom() * 80}%`,
+                  animationDelay: `${getRandom() * 5}s`,
+                  animationDuration: `${5 + getRandom() * 5}s`
                 }}
               >
-                <Icon size={24 + Math.random() * 16} />
+                <Icon size={24 + getRandom() * 16} />
               </div>
             );
           })}
