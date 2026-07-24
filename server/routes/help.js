@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const HelpRequest = require('../models/HelpRequest');
 const { createJiraIssue } = require('../utils/jira');
@@ -12,7 +13,7 @@ router.post('/requests', async (req, res) => {
       return res.status(400).json({ error: 'Name, email, and description are required' });
     }
 
-    const ticketId = 'TK-' + Math.floor(100000 + Math.random() * 900000).toString();
+    const ticketId = 'TK-' + (100000 + crypto.randomInt(900000)).toString();
 
     const newRequest = new HelpRequest({
       ticketId,

@@ -531,7 +531,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // Reconnect logic to never lose channel assignment
   useEffect(() => {
     const onConnect = () => {
-      console.log("Socket reconnected! Re-joining rooms...");
       socket.emit('join_channel', currentChannelKey);
       if (activeCampsite) socket.emit('join_campsite_room', activeCampsite.id);
       if (currentUser?.email) socket.emit('join_admin_room', currentUser.email);
@@ -554,7 +553,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // Listen for real-time messages and member events
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {
-      console.log("RECEIVED MESSAGE:", newMessage);
       setMessagesByChannel(prev => {
         const currentMessages = prev[newMessage.channelKey] || [];
         const incomingId = newMessage._id || newMessage.id;
@@ -1167,8 +1165,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       return res.json();
     })
     .then(savedData => {
-      console.log("Campsite successfully built:", savedData);
-      
       // Instantly add to local sidebar and make it active
       setCampsites(prev => {
         const disabledPrev = prev.map(c => ({...c, active: false}));

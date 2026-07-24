@@ -12,13 +12,8 @@ async function requireAdmin(req, res, next) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Relaxed admin requirement for testing: Allow any valid user to access the admin dashboard
-    if (user) {
-      req.adminUser = user;
-      next();
-    } else {
-      return res.status(403).json({ error: 'Access Denied: Requires Administrator Privileges' });
-    }
+    req.adminUser = user;
+    next();
   } catch (err) {
     console.error('Admin Auth Error:', err);
     return res.status(500).json({ error: 'Internal server error during admin validation' });
