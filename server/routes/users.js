@@ -149,6 +149,11 @@ router.put('/profile', requireAuth, validate(userValidation.updateProfile), asyn
       return res.status(400).json({ error: 'Email is required to update profile' });
     }
 
+    // Access Control: Users can only update their own profile
+    if (req.user.email !== email && req.user.role !== 'admin' && req.user.role !== 'Commander') {
+      return res.status(403).json({ error: 'Forbidden: You can only update your own profile' });
+    }
+
     let user = await User.findOne({ email });
     if (!user) {
       // User doesn't exist in DB yet (legacy login), create them
@@ -201,6 +206,11 @@ router.patch('/:email/disable', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Email is required to disable account' });
     }
 
+    // Access Control: Users can only disable their own account unless admin
+    if (req.user.email !== email && req.user.role !== 'admin' && req.user.role !== 'Commander') {
+      return res.status(403).json({ error: 'Forbidden: You can only disable your own account' });
+    }
+
     const disabledUser = await User.findOneAndUpdate(
       { email },
       { $set: { disabled: true } },
@@ -224,6 +234,11 @@ router.delete('/:email', requireAuth, async (req, res) => {
     const { email } = req.params;
     if (!email) {
       return res.status(400).json({ error: 'Email is required to delete profile' });
+    }
+
+    // Access Control: Users can only delete their own account unless admin
+    if (req.user.email !== email && req.user.role !== 'admin' && req.user.role !== 'Commander') {
+      return res.status(403).json({ error: 'Forbidden: You can only delete your own account' });
     }
 
     const deletedUser = await User.findOneAndDelete({ email });
