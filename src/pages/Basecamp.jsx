@@ -291,7 +291,31 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     }
   }, [campsites]);
 
-  const [messagesByChannel, setMessagesByChannel] = useState({});
+  const [messagesByChannel, setMessagesByChannel] = useState(() => {
+    try {
+      const saved = localStorage.getItem('outpost_cached_messages');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse cached messages from localStorage', e);
+    }
+    return {};
+  });
+
+  useEffect(() => {
+    try {
+      const trimmed = {};
+      Object.keys(messagesByChannel).forEach(key => {
+        const msgs = messagesByChannel[key];
+        if (Array.isArray(msgs)) {
+          trimmed[key] = msgs.slice(-100);
+        }
+      });
+      localStorage.setItem('outpost_cached_messages', JSON.stringify(trimmed));
+    } catch (e) {
+      console.error('Failed to cache messages to localStorage', e);
+    }
+  }, [messagesByChannel]);
+
   const [discoverRefreshTrigger, setDiscoverRefreshTrigger] = useState(0);
 
 
@@ -324,70 +348,97 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const { alerts, setAlerts, handleSelectNotification } = useSignalRadar(socket, currentChannelKey, setSelectedPopupAlert, currentUser);
 
-  // Fetch messages from Backend API
+  // Helper to map DB/Socket payload into unified frontend message structure with accurate timestamp
+  const parseIncomingMessage = (m, fallbackChannelKey = currentChannelKey) => {
+    let safeTime = m.time || '';
+    let safeReceivedAt = Date.now();
+
+    if (m.createdAt) {
+      const d = new Date(m.createdAt);
+      if (!isNaN(d.getTime())) {
+        if (!safeTime) {
+          safeTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        safeReceivedAt = d.getTime();
+      }
+    } else if (m.receivedAt && !isNaN(new Date(m.receivedAt).getTime())) {
+      safeReceivedAt = new Date(m.receivedAt).getTime();
+    } else if (m.timestamp && !isNaN(new Date(m.timestamp).getTime())) {
+      safeReceivedAt = new Date(m.timestamp).getTime();
+    }
+
+    let safeUser = m.user;
+    if (!safeUser || typeof safeUser !== 'object') {
+      safeUser = { username: m.username || (typeof m.user === 'string' ? m.user : 'Scout'), profilePictureUrl: m.profilePictureUrl || null };
+    }
+
+    return {
+      id: m.id || m._id || Math.random().toString(),
+      channelKey: m.channelKey || m.channel || fallbackChannelKey,
+      user: safeUser,
+      text: m.text || m.content || '',
+      time: safeTime || 'Just now',
+      receivedAt: safeReceivedAt,
+      type: m.type || 'text',
+      mediaType: m.mediaType,
+      body: m.body,
+      pollData: m.pollData,
+      replyTo: m.replyTo,
+      isPinned: m.isPinned || false,
+      likes: m.likes || []
+    };
+  };
+
+  // Fetch messages using Dual-Tier Architecture (Primary Backend API + Supabase Backup)
   useEffect(() => {
     setIsFetchingMessages(true);
     
     const fetchMessages = async () => {
+      let fetchedMsgs = null;
+
+      // 1. Primary: Fetch from Node.js Chat Server REST API
       try {
-        const { data, error } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('channelKey', currentChannelKey)
-          .order('createdAt', { ascending: true });
-
-        if (error) throw error;
-
-        // Map Supabase schema to frontend schema safely
-        const mappedData = data.map(m => {
-          let safeTime = m.time || '';
-          let safeReceivedAt = Date.now();
-          
-          try {
-            if (!m.time && m.createdAt) {
-              const d = new Date(m.createdAt);
-              if (!isNaN(d.getTime())) {
-                safeTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                safeReceivedAt = d.getTime();
-              }
-            }
-          } catch(e) {
-             // Fallback if date parsing fails entirely
-          }
-
-          // Ensure user object exists to prevent crashes
-          let safeUser = m.user;
-          if (!safeUser) {
-             // Handle cases where the DB inserted a flat structure
-             safeUser = { username: m.username || 'Scout', profilePictureUrl: m.profilePictureUrl || null };
-          }
-
-          return { 
-            id: m.id || m._id || Math.random().toString(),
-            channelKey: m.channelKey || m.channel || currentChannelKey,
-            user: safeUser,
-            text: m.text || m.content || '',
-            time: safeTime,
-            receivedAt: safeReceivedAt,
-            type: m.type,
-            mediaType: m.mediaType,
-            body: m.body,
-            pollData: m.pollData,
-            replyTo: m.replyTo,
-            isPinned: m.isPinned || false,
-            likes: m.likes || []
-          };
+        const token = localStorage.getItem('outpost_token');
+        const apiBase = CHAT_URL || import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
+        const res = await fetch(`${apiBase}/api/messages/${currentChannelKey}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        
+
+        if (res.ok) {
+          const apiData = await res.json();
+          if (Array.isArray(apiData)) {
+            fetchedMsgs = apiData.map(m => parseIncomingMessage(m, currentChannelKey));
+          }
+        }
+      } catch (err) {
+        console.warn("Backend API message fetch attempt failed, trying Supabase fallback...", err);
+      }
+
+      // 2. Secondary: Fallback to Supabase if primary failed or returned null
+      if (fetchedMsgs === null) {
+        try {
+          const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('channelKey', currentChannelKey)
+            .order('createdAt', { ascending: true });
+
+          if (!error && Array.isArray(data)) {
+            fetchedMsgs = data.map(m => parseIncomingMessage(m, currentChannelKey));
+          }
+        } catch (err) {
+          console.warn("Supabase message fetch fallback failed:", err);
+        }
+      }
+
+      if (fetchedMsgs !== null) {
         setMessagesByChannel(prev => ({
           ...prev,
-          [currentChannelKey]: mappedData
+          [currentChannelKey]: fetchedMsgs
         }));
-      } catch (err) {
-        console.warn("Failed to fetch messages from Supabase:", err);
-      } finally {
-        setIsFetchingMessages(false);
       }
+
+      setIsFetchingMessages(false);
     };
 
     fetchMessages();
@@ -396,44 +447,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     const messageSubscription = supabase
       .channel(`public:messages:${currentChannelKey}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `channelKey=eq.${currentChannelKey}` }, payload => {
-        const newMsg = payload.new;
-        
-        let safeTime = newMsg.time || '';
-        let safeReceivedAt = Date.now();
-        
-        try {
-          if (!newMsg.time && newMsg.createdAt) {
-            const d = new Date(newMsg.createdAt);
-            if (!isNaN(d.getTime())) {
-              safeTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-              safeReceivedAt = d.getTime();
-            }
-          }
-        } catch(e) {}
-
-        let safeUser = newMsg.user;
-        if (!safeUser) {
-           safeUser = { username: newMsg.username || 'Scout', profilePictureUrl: newMsg.profilePictureUrl || null };
-        }
-
-        const mappedMsg = {
-          id: newMsg.id || newMsg._id || Math.random().toString(),
-          channelKey: newMsg.channelKey || newMsg.channel || currentChannelKey,
-          user: safeUser,
-          text: newMsg.text || newMsg.content || '',
-          time: safeTime,
-          receivedAt: safeReceivedAt,
-          type: newMsg.type,
-          mediaType: newMsg.mediaType,
-          body: newMsg.body,
-          pollData: newMsg.pollData,
-          replyTo: newMsg.replyTo,
-          isPinned: newMsg.isPinned || false,
-          likes: newMsg.likes || []
-        };
+        const mappedMsg = parseIncomingMessage(payload.new, currentChannelKey);
         
         setMessagesByChannel(prev => {
           const current = prev[currentChannelKey] || [];
+          const exists = current.some(m => (m._id === mappedMsg.id || m.id === mappedMsg.id));
+          if (exists) return prev;
           return { ...prev, [currentChannelKey]: [...current, mappedMsg] };
         });
       })

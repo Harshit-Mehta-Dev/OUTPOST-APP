@@ -207,7 +207,7 @@ const Message = require('../models/Message');
 const Campsite = require('../models/Campsite');
 const User = require('../models/User');
 const HelpRequest = require('../models/HelpRequest');
-const cache = require('../middleware/cache');
+const scoutVault = require('../utils/scoutVault');
 
 // Messages Route
 app.get('/api/messages/:channelKey', cache(15), async (req, res) => {
@@ -215,7 +215,16 @@ app.get('/api/messages/:channelKey', cache(15), async (req, res) => {
     const messages = await Message.find({ channelKey: req.params.channelKey })
       .sort({ createdAt: 1 })
       .limit(100);
-    res.json(messages);
+      
+    const decryptedMessages = messages.map(msg => {
+      const doc = msg.toObject ? msg.toObject() : msg;
+      if (doc.encryptedData && doc.iv) {
+        doc.text = scoutVault.decrypt(doc.encryptedData, doc.iv);
+      }
+      return doc;
+    });
+    
+    res.json(decryptedMessages);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
