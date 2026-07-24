@@ -372,8 +372,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       safeUser = { username: m.username || (typeof m.user === 'string' ? m.user : 'Scout'), profilePictureUrl: m.profilePictureUrl || null };
     }
 
+    const generateSecureId = () => {
+      if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+        return window.crypto.randomUUID();
+      }
+      return Date.now().toString(36) + Math.abs(Date.now() ^ 0x12345678).toString(36);
+    };
+
     return {
-      id: m.id || m._id || Math.random().toString(),
+      id: m.id || m._id || generateSecureId(),
       channelKey: m.channelKey || m.channel || fallbackChannelKey,
       user: safeUser,
       text: m.text || m.content || '',
