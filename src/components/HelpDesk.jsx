@@ -146,8 +146,9 @@ const HelpDesk = () => {
           setIsConfirmed(false);
         }
       } catch (err) {
-        console.warn("Backend offline, simulating local help request:", err);
-        const localId = 'REQ-' + Math.floor(Math.random() * 100000);
+        const array = new Uint32Array(1);
+        window.crypto.getRandomValues(array);
+        const localId = 'REQ-' + (array[0] % 900000 + 100000);
         setRequestId(localId);
         localStorage.setItem('outpost_help_requestId', localId);
         localStorage.setItem('outpost_help_userName', userName);
