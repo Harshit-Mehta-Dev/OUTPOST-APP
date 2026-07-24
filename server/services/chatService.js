@@ -35,6 +35,7 @@ const { checkScoutPermission } = require('../utils/rbac');
 const Notification = require('../models/Notification');
 const { compressMediaPayload } = require('../utils/compression');
 
+const cache = require('../middleware/cache');
 const xss = require('xss-clean');
 const morgan = require('morgan');
 
@@ -610,7 +611,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('✅ Connected to MongoDB Atlas'))
 .catch(err => console.error('❌ Failed to connect to MongoDB', err));
 
-const PORT = process.env.PORT_CHAT || 5003;
+const PORT = process.env.PORT || process.env.PORT_CHAT || 10000;
 if (require.main === module) {
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Chat Service running on port ${PORT}`);
