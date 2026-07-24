@@ -21,7 +21,7 @@
     "@marsidev/react-turnstile": "^1.5.3",
     "@radix-ui/react-slot": "^1.3.0",
     "@react-oauth/google": "^0.13.5",
-    "@supabase/supabase-js": "^2.108.2",
+    "@supabase/supabase-js": "^2.110.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "compression": "^1.8.1",
