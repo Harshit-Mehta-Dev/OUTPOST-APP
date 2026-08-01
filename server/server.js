@@ -848,16 +848,13 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 const { trainModel } = require('./ai/nlpEngine');
 
+// Trigger background training globally so it works for ALL microservices (apiService, chatService, etc)
+trainModel().catch(err => console.error('❌ Failed to train NLP model in background:', err));
+
 const PORT = process.env.PORT || 5000;
 if (require.main === module) {
-  // Train NLP engine before starting server
-  trainModel().then(() => {
-    server.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  }).catch(err => {
-    console.error('❌ Failed to train NLP model', err);
-    process.exit(1);
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
   });
 }
 
