@@ -611,16 +611,29 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     const handleLevelUp = ({ newLevel, xp }) => {
       setLevelUpData({ newLevel, xp });
       
-      // Update local storage so the new level persists across refresh
+      // Update localStorage and state so the new level persists across refresh
       const saved = localStorage.getItem('outpost_user');
       if (saved) {
         const parsed = JSON.parse(saved);
         parsed.level = newLevel;
         parsed.xp = xp;
         localStorage.setItem('outpost_user', JSON.stringify(parsed));
+        setCurrentUser(prev => ({ ...prev, level: newLevel, xp }));
       }
       
       setTimeout(() => setLevelUpData(null), 6000); // hide celebration after 6 seconds
+    };
+
+    // Sync XP + Level on every message (not just on level-up)
+    const handleXpUpdate = ({ level, xp }) => {
+      const saved = localStorage.getItem('outpost_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        parsed.level = level;
+        parsed.xp = xp;
+        localStorage.setItem('outpost_user', JSON.stringify(parsed));
+        setCurrentUser(prev => ({ ...prev, level, xp }));
+      }
     };
 
     const handleUpdatedVote = ({ messageId, optionIndex, scoutId, channelKey }) => {
@@ -733,6 +746,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     socket.on("scout-joined-list", handleScoutJoinedList);
     socket.on("campsite-admin-notification", handleAdminNotification);
     socket.on("level_up_alert", handleLevelUp);
+    socket.on("xp_update", handleXpUpdate);
     socket.on("broadcast-updated-vote", handleUpdatedVote);
     socket.on("message_deleted", handleMessageDeleted);
     socket.on("operator-erasure-cascade", handleOperatorErasure);
@@ -753,6 +767,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("scout-joined-list", handleScoutJoinedList);
       socket.off("campsite-admin-notification", handleAdminNotification);
       socket.off("level_up_alert", handleLevelUp);
+      socket.off("xp_update", handleXpUpdate);
       socket.off("broadcast-updated-vote", handleUpdatedVote);
       socket.off("message_deleted", handleMessageDeleted);
       socket.off("operator-erasure-cascade", handleOperatorErasure);
@@ -2986,6 +3001,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
           user={currentUser}
+          onFreshData={({ level, xp }) => {
+            setCurrentUser(prev => ({ ...prev, level, xp }));
+          }}
           onSave={(updatedUser, didChangePassword) => {
             if (didChangePassword) {
               // Log the user out immediately

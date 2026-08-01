@@ -14,7 +14,7 @@ const PRESET_AVATARS = [
   'https://api.dicebear.com/7.x/micah/svg?seed=Sniper&backgroundColor=f39c12'
 ];
 
-const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
+const UserProfileModal = ({ isOpen, onClose, user, onSave, onFreshData }) => {
   const [username, setUsername] = useState(user?.username || '');
   const [profilePictureUrl, setProfilePictureUrl] = useState(user?.profilePictureUrl || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -37,13 +37,41 @@ const UserProfileModal = ({ isOpen, onClose, user, onSave }) => {
   
   const fileInputRef = useRef(null);
 
-  // Update internal state if user prop changes
+  // Fetch fresh user data (XP, Level) from DB whenever modal opens
   useEffect(() => {
-    if (user) {
+    if (user && isOpen) {
       setUsername(user.username || '');
       setProfilePictureUrl(user.profilePictureUrl || '');
+      
+      // Fetch the latest XP/level from the server
+      const token = localStorage.getItem('outpost_token');
+      const API_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CORE_API_URL) 
+        ? import.meta.env.VITE_CORE_API_URL 
+        : (window.location.hostname === 'localhost' ? 'http://localhost:5002' : 'https://outpost-app.onrender.com');
+      
+      if (token) {
+        fetch(`${API_URL}/api/users/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(res => res.ok ? res.json() : null)
+          .then(freshData => {
+            if (freshData && (freshData.xp !== undefined || freshData.level !== undefined)) {
+              // Update localStorage so the sidebar badge syncs too
+              const saved = localStorage.getItem('outpost_user');
+              if (saved) {
+                const parsed = JSON.parse(saved);
+                parsed.level = freshData.level;
+                parsed.xp = freshData.xp;
+                localStorage.setItem('outpost_user', JSON.stringify(parsed));
+              }
+              // Trigger re-render of stat badges with fresh data
+              if (onFreshData) onFreshData({ level: freshData.level, xp: freshData.xp });
+            }
+          })
+          .catch(() => {}); // silent fail — show stale data if offline
+      }
     }
-  }, [user]);
+  }, [user, isOpen]);
 
   if (!isOpen) return null;
 

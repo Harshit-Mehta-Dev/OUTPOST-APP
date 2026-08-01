@@ -310,6 +310,23 @@ router.put('/global-restrict', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/users/me
+// Fetch the currently logged-in user's fresh data (XP, Level, etc.)
+router.get('/me', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id || req.user.sub).select('-password -twoFactorSecret -resetPasswordToken -resetPasswordExpires');
+    if (!user) {
+      // Fallback: find by email if ID doesn't work (e.g. Supabase auth)
+      const userByEmail = await User.findOne({ email: req.user.email }).select('-password -twoFactorSecret -resetPasswordToken -resetPasswordExpires');
+      if (!userByEmail) return res.status(404).json({ error: 'User not found' });
+      return res.json(userByEmail);
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/users
 // Fetch all users (for Outpost HQ Developer access)
 router.get('/', requireAuth, async (req, res) => {

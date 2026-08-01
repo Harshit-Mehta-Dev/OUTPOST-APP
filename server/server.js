@@ -599,6 +599,13 @@ io.on('connection', (socket) => {
               xp: userDoc.xp
             });
           }
+          
+          // Always emit xp_update to keep Scout Registry and sidebar in sync
+          // This fires on EVERY message, not just level-ups
+          io.to(`user-room-${userDoc.username}`).emit('xp_update', {
+            level: userDoc.level,
+            xp: userDoc.xp
+          });
         }
       } catch (xpErr) {
         console.error("XP Calculation Error:", xpErr);
