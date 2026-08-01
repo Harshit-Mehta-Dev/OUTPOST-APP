@@ -87,17 +87,9 @@ io.use(async (socket, next) => {
     return next(new Error('Authentication error: No token provided'));
   }
   try {
-    if (supabase) {
-      const { data, error } = await supabase.auth.getUser(token);
-      if (error || !data.user) {
-        throw new Error('Supabase token invalid');
-      }
-      socket.user = data.user;
-    } else {
-      const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
-      const decoded = jwt.verify(token, secret);
-      socket.user = decoded;
-    }
+    const secret = process.env.JWT_SECRET || 'your_fallback_super_secure_sha256_string_here';
+    const decoded = jwt.verify(token, secret);
+    socket.user = decoded;
     next();
   } catch (err) {
     return next(new Error('Authentication error: Invalid token'));
