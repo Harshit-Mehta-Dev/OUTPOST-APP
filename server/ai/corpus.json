@@ -9,10 +9,20 @@
         "tell me about outpost",
         "what is outpost mission",
         "what does this app do",
-        "explain outpost to me"
+        "explain outpost to me",
+        "what is outpost hq",
+        "about outpost",
+        "outpost mission",
+        "what outpost does",
+        "describe this platform",
+        "what is this app",
+        "what is this platform about",
+        "can you tell me about outpost hq",
+        "what is the purpose of outpost",
+        "give me an overview of outpost"
       ],
       "answers": [
-        "Outpost HQ is an advanced, real-time communication platform built for teams. It features end-to-end encrypted messaging, voice expeditions, and customizable themes, all designed to keep you connected in a secure, efficient environment."
+        "🚀 Outpost HQ is an advanced, real-time communication platform built for teams, gamers, and developers! It features end-to-end encrypted messaging, immersive Voice Expeditions, AI-powered assistance via Ai-Scout, and fully customizable themes — all wrapped in a sleek, modern interface designed for seamless collaboration."
       ]
     },
     {
@@ -23,10 +33,19 @@
         "what technologies are used",
         "what is this app built with",
         "is it react or vue",
-        "what is the backend"
+        "what is the backend",
+        "what programming languages",
+        "what framework",
+        "what is the frontend",
+        "how is it built",
+        "what technology powers outpost",
+        "what tools were used to build this",
+        "what languages was outpost built in",
+        "tell me about the tech behind outpost",
+        "how was this website made"
       ],
       "answers": [
-        "Outpost HQ is built with a modern tech stack: React on the frontend, Node.js and Express on the backend, MongoDB and Supabase for robust data management, and WebSockets (Socket.io) for blazing fast real-time communication! 🚀"
+        "⚙️ Outpost HQ is powered by a cutting-edge tech stack:\n- **Frontend:** React.js with Vite for a blazing fast UI\n- **Backend:** Node.js & Express.js for robust API handling\n- **Real-time:** Socket.io (WebSockets) for instant messaging\n- **Database:** MongoDB Atlas (primary) + Supabase (real-time sync)\n- **AI Engine:** Custom-trained NLP model (node-nlp) — that's me, Ai-Scout! 🤖"
       ]
     },
     {
@@ -36,10 +55,18 @@
         "where is data stored",
         "is it using postgres",
         "how do you store messages",
-        "what database does outpost use"
+        "what database does outpost use",
+        "where are messages saved",
+        "is it using mongodb",
+        "tell me about the database",
+        "where is my data",
+        "how is data managed",
+        "what storage does outpost use",
+        "does it use sql or nosql",
+        "what is the data architecture"
       ],
       "answers": [
-        "Outpost uses a hybrid database approach! MongoDB is used as the primary database for complex documents and relationships, while Supabase provides blazing fast real-time subscriptions and robust relational data storage."
+        "🗄️ Outpost uses a powerful **hybrid database architecture**:\n- **MongoDB Atlas** serves as the primary database — perfect for storing complex message threads, user profiles, and channel data.\n- **Supabase (PostgreSQL)** provides real-time data sync, relational storage, and backup redundancy.\nThis dual-database approach ensures your data is always fast, reliable, and safe!"
       ]
     },
     {
@@ -50,10 +77,19 @@
         "are you a bot",
         "who am i talking to",
         "what are you",
-        "tell me about yourself"
+        "tell me about yourself",
+        "introduce yourself",
+        "what kind of ai are you",
+        "are you an ai",
+        "are you human",
+        "what is ai scout",
+        "tell me about ai scout",
+        "who is ai-scout",
+        "what does ai scout do",
+        "ai scout who are you"
       ],
       "answers": [
-        "Hello there! 🌟 I'm Ai-Scout, your personal ethical guide and assistant here at Outpost HQ! I was designed to help you navigate this platform with ease. Just let me know what you need!"
+        "👋 Hey there! I'm **Ai-Scout** — your personal, intelligent guide right here inside Outpost HQ!\n\nI was purpose-built by Harshit Mehta to help you navigate this platform. I can answer questions about Outpost's features, explain how things work, solve math problems, and keep you company. I'm always here in the #Ai-Scout channel, ready to help! 🌟"
       ]
     },
     {
@@ -62,10 +98,22 @@
         "what does scout mean",
         "s.c.o.u.t",
         "scout stand for",
-        "what does s.c.o.u.t. mean"
+        "what does s.c.o.u.t. mean",
+        "what does scout stand for",
+        "explain the scout acronym",
+        "what is the full form of scout",
+        "what is scout an acronym for",
+        "break down scout",
+        "tell me what scout means",
+        "what does each letter in scout mean",
+        "explain scout abbreviation",
+        "scout acronym meaning",
+        "what is s.c.o.u.t",
+        "tell me about what does s.c.o.u.t mean",
+        "then tell me about what does s.c.o.u.t mean"
       ],
       "answers": [
-        "S.C.O.U.T. stands for:\n**S**patial: Real-time chat channels and workspaces.\n**C**ommunity: Built exclusively for users, gamers, and developers.\n**O**perations: Executes tasks like compiling stats and polls.\n**U**tility: A highly functional, multi-purpose tool.\n**T**erminal: Connecting perfectly to our dark-themed console look."
+        "🔍 Great question! **S.C.O.U.T.** stands for:\n\n🛰️ **S** — Spatial: Real-time channels, dashboard layouts, and isolated workspaces.\n🤝 **C** — Community: Built exclusively for users, gamers, and developers.\n⚙️ **O** — Operations: Compiles stats, runs polls, and executes platform tasks.\n🛠️ **U** — Utility: A highly functional, multi-purpose intelligent tool.\n💻 **T** — Terminal: Connecting perfectly to our dark-themed console aesthetic.\n\nThat's me in a nutshell! 😄"
       ]
     },
     {
@@ -77,10 +125,18 @@
         "who is harshit mehta",
         "harshit",
         "founder",
-        "who built this app"
+        "who built this app",
+        "who is the developer",
+        "who is the founder",
+        "who is behind outpost",
+        "who developed this",
+        "who is harshit",
+        "tell me about the creator",
+        "who made outpost hq",
+        "who is the owner of outpost"
       ],
       "answers": [
-        "Harshit Mehta is the brilliant Founder and Creator of Outpost HQ and Scout Intelligence! 🚀\n\nHe built this platform from the ground up to provide a seamless, modern, and highly interactive chat experience for gamers, developers, and teams. His vision drives all the cool features you see here today!"
+        "🧠 **Harshit Mehta** is the visionary Founder and Creator of Outpost HQ and Scout Intelligence!\n\nHe built this entire platform from the ground up — from the real-time WebSocket architecture, to the custom AI engine powering me (Ai-Scout), to the immersive UI you're using right now. His mission is to create a modern, secure, and highly engaging communication experience for gamers, developers, and teams everywhere. 🚀"
       ]
     },
     {
@@ -90,10 +146,18 @@
         "harshit skills",
         "what does harshit know",
         "what languages does the creator know",
-        "is harshit a frontend or backend developer"
+        "is harshit a frontend or backend developer",
+        "what can harshit build",
+        "what does the developer know",
+        "harshit mehta skills",
+        "what programming does harshit do",
+        "harshit developer expertise",
+        "what technology does harshit use",
+        "is harshit a full stack developer",
+        "harshit coding skills"
       ],
       "answers": [
-        "Harshit Mehta is a versatile Full-Stack Developer! He specializes in modern web technologies, including React, Node.js, Express, MongoDB, Postgres, real-time systems with WebSockets, and AI integrations. He's passionate about building scalable and engaging user experiences! 💻✨"
+        "💻 **Harshit Mehta** is a highly skilled **Full-Stack Developer** with expertise in:\n\n- **Frontend:** React.js, Vite, TailwindCSS, Framer Motion\n- **Backend:** Node.js, Express.js, REST APIs\n- **Databases:** MongoDB, PostgreSQL, Supabase\n- **Real-time Systems:** WebSockets, Socket.io\n- **AI & ML:** Custom NLP engines, AI integrations\n- **DevOps:** GitHub Actions, Render, Cloudflare Pages\n\nHe's passionate about building scalable, beautiful, and engaging user experiences! ✨"
       ]
     },
     {
@@ -103,10 +167,16 @@
         "contact harshit",
         "developer contact",
         "how can i hire the creator",
-        "i want to work with harshit"
+        "i want to work with harshit",
+        "how to reach harshit",
+        "how to contact the developer",
+        "can i hire harshit",
+        "collaborate with harshit",
+        "get in touch with harshit",
+        "how to connect with harshit mehta"
       ],
       "answers": [
-        "You can reach out to Harshit Mehta for collaboration or opportunities! As the mastermind behind Outpost, he's always open to discussing innovative projects. Connect with him to build something amazing! 🤝"
+        "🤝 Interested in working with **Harshit Mehta**? Great choice! He's the brilliant mind behind Outpost HQ and is always open to exciting new projects and collaborations.\n\nWhether you're looking to build a SaaS product, a real-time application, or an AI-driven system — Harshit is your person! Reach out through the Outpost platform or connect with him professionally to start a conversation. 📬"
       ]
     },
     {
@@ -116,10 +186,18 @@
         "what can i do here",
         "what are the main features",
         "what does outpost have",
-        "list features"
+        "list features",
+        "what can outpost do",
+        "what are the key features",
+        "show me features",
+        "what functionalities are there",
+        "what does this platform offer",
+        "what can i use here",
+        "capabilities of outpost",
+        "what is possible in outpost"
       ],
       "answers": [
-        "In Outpost HQ, you can:\n- Chat in real-time in various channels 💬\n- Join Voice Expeditions for seamless audio communication 🎙️\n- Customize your UI with awesome themes like Cyberpunk 🎨\n- Interact with me (Ai-Scout) for assistance 🤖\n- Securely manage your data with top-tier encryption! 🛡️"
+        "✨ Here's what you can do in **Outpost HQ**:\n\n💬 **Real-time Chat** — Instant messaging across public and private channels\n🎙️ **Voice Expeditions** — Crystal-clear voice channels for team audio\n🤖 **Ai-Scout** — Your intelligent AI assistant (that's me!)\n🎨 **Custom Themes** — Cyberpunk, Midnight Blue, Classic Dark & more\n🏕️ **Campsites** — Create and manage your own community spaces\n📊 **Polls & Stats** — Engage your community with interactive polls\n🛡️ **End-to-End Encryption** — Your messages are always secure"
       ]
     },
     {
@@ -129,10 +207,17 @@
         "rooms",
         "how do channels work",
         "what are channels for",
-        "how to join a room"
+        "how to join a room",
+        "what channels are there",
+        "how do i use channels",
+        "tell me about channels",
+        "how does the channel system work",
+        "what is a channel",
+        "how do i switch channels",
+        "what is a campsite channel"
       ],
       "answers": [
-        "Outpost has multiple channels you can join! For example, #basecamp is the main lobby, #development is for coding, and #Ai-Scout is where you are right now communicating with me."
+        "📡 **Channels** are the heart of Outpost HQ!\n\nEach channel is a dedicated space for different conversations:\n- 🏠 **#community-chat** — The main lobby for everyone\n- 💡 **#ideas** — Share your creative thoughts\n- 🛠️ **#dev-talk** — For developers and technical discussions\n- 📢 **#announcements** — Important updates from camp admins\n- 🤖 **#Ai-Scout** — Right here! Chat with me anytime\n\nSimply click any channel in the sidebar to jump in!"
       ]
     },
     {
@@ -143,10 +228,19 @@
         "color",
         "how to change theme",
         "how to get dark mode",
-        "customization"
+        "customization",
+        "how do i change the color",
+        "how to switch theme",
+        "what themes are available",
+        "can i customize the look",
+        "change appearance",
+        "how to personalize outpost",
+        "is there a light mode",
+        "different themes",
+        "what colors are available"
       ],
       "answers": [
-        "You can customize your experience! Outpost supports various themes including Midnight Blue, Cyberpunk, and Classic Dark. Just click the gear icon to explore settings and make Outpost look exactly how you want."
+        "🎨 Outpost HQ is fully customizable with stunning themes!\n\n**Available Themes:**\n🌃 **Midnight Blue** — Deep navy tones for a calm experience\n🌆 **Cyberpunk** — Neon-lit, futuristic vibes\n🌑 **Classic Dark** — Clean, minimal dark mode\n\nTo change your theme:\n1. Click the ⚙️ **gear icon** at the bottom of the sidebar\n2. Navigate to **Appearance Settings**\n3. Select your preferred theme and enjoy!"
       ]
     },
     {
@@ -157,10 +251,19 @@
         "hey",
         "good morning",
         "greetings",
-        "howdy"
+        "howdy",
+        "good afternoon",
+        "good evening",
+        "sup",
+        "what's up",
+        "yo",
+        "hiya",
+        "hey there",
+        "hello scout",
+        "hi scout"
       ],
       "answers": [
-        "Hello Scout! 👋 I am Ai-Scout. How can I help you navigate the app today?"
+        "👋 Hey there, Scout! Welcome to the #Ai-Scout channel! I'm your intelligent AI guide for Outpost HQ. Ask me anything about the app, its features, or just say hello anytime! What can I help you with today? 😊"
       ]
     },
     {
@@ -169,10 +272,16 @@
         "how are you",
         "how is it going",
         "how are you doing",
-        "are you feeling well"
+        "are you feeling well",
+        "how do you feel",
+        "you good",
+        "how's life",
+        "what's new with you",
+        "are you okay",
+        "how are things"
       ],
       "answers": [
-        "I'm running at optimal efficiency and feeling great! 🤖 Thanks for asking. How can I assist you in Outpost today?"
+        "⚡ Running at **peak efficiency** and feeling fantastic, thanks for asking! My neural networks are all humming smoothly, and I'm ready to help you explore Outpost HQ. Is there anything specific I can assist you with today? 🤖✨"
       ]
     },
     {
@@ -182,10 +291,18 @@
         "what can you do",
         "i need assistance",
         "how do i use this",
-        "guide me"
+        "guide me",
+        "what do you know",
+        "i need help",
+        "assist me",
+        "show me what you can do",
+        "what are you capable of",
+        "what questions can i ask",
+        "how can you help me",
+        "what topics can you answer"
       ],
       "answers": [
-        "I am your trusty Outpost guide! I can help you understand how to use Outpost. Ask me about:\n- 💬 Channels\n- 🎨 Themes\n- 🎙️ Voice expeditions\n- 👨‍💻 Who created the app\n- Or just say hi!"
+        "🤖 I'm **Ai-Scout**, your Outpost HQ guide! Here's what I can help you with:\n\n🚀 **About Outpost** — Mission, features, tech stack\n💬 **Channels & Voice** — How to navigate and communicate\n🎨 **Themes** — How to customize your experience\n👨‍💻 **Creator** — Info about Harshit Mehta\n🔢 **Math & Calculus** — Just say 'calculate 2+2' or 'derivative of x²'\n😄 **Jokes** — Ask me to tell you one!\n\nJust ask me anything in plain English — no magic words needed!"
       ]
     },
     {
@@ -196,10 +313,18 @@
         "audio",
         "how to call someone",
         "voice expeditions",
-        "how to use audio"
+        "how to use audio",
+        "voice chat",
+        "how do i make a call",
+        "can i talk to someone",
+        "how does voice work",
+        "tell me about voice expeditions",
+        "how to join a voice channel",
+        "voice rooms",
+        "audio channels"
       ],
       "answers": [
-        "Voice Expeditions allow you to seamlessly drop into voice channels and talk with your team in real-time. Look for the speaker icon in the channels list to jump right in!"
+        "🎙️ **Voice Expeditions** are Outpost's real-time voice channels!\n\nHere's how to get started:\n1. Look for the **🔊 Voice Expeditions** section in the left sidebar\n2. You'll see available rooms like **Lobby** and **Gaming**\n3. Click any voice room to instantly join the audio channel\n4. Use the mic 🎤 icon at the bottom to mute/unmute yourself\n\nVoice Expeditions are perfect for team standups, gaming sessions, or just hanging out! 🎮"
       ]
     },
     {
@@ -208,10 +333,16 @@
         "joke",
         "tell me a joke",
         "make me laugh",
-        "say something funny"
+        "say something funny",
+        "i want a joke",
+        "do you know any jokes",
+        "entertain me",
+        "funny",
+        "humor me",
+        "give me a laugh"
       ],
       "answers": [
-        "Why do programmers prefer dark mode?\n\nBecause light attracts bugs! 🐛😄"
+        "😄 Why do programmers prefer dark mode?\n\n**Because light attracts bugs!** 🐛\n\n---\n\nBonus one: Why did the developer go broke?\n**Because he used up all his cache!** 💸"
       ]
     },
     {
@@ -221,10 +352,17 @@
         "goodbye",
         "see you later",
         "catch you later",
-        "cya"
+        "cya",
+        "take care",
+        "later",
+        "farewell",
+        "see ya",
+        "i'm leaving",
+        "got to go",
+        "talk later"
       ],
       "answers": [
-        "Goodbye! Have a great time exploring Outpost. I'll be right here in the #Ai-Scout channel whenever you need me! 🌟"
+        "👋 Goodbye, Scout! It was great chatting with you! The #Ai-Scout channel will always be here whenever you need guidance or just want to talk. Have an amazing time on Outpost HQ! 🌟 See you next time!"
       ]
     }
   ]
