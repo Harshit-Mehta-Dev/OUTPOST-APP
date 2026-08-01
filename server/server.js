@@ -113,7 +113,12 @@ app.use((req, res, next) => {
 // Setup Redis Adapter for multi-container orchestration (Only if REDIS_URL is explicitly provided)
 let redisClientForLimits;
 if (process.env.REDIS_URL) {
-  const pubClient = createClient({ url: process.env.REDIS_URL });
+  const redisOptions = {
+    url: process.env.REDIS_URL,
+    pingInterval: 10000,
+    socket: { tls: process.env.REDIS_URL.startsWith('rediss://') }
+  };
+  const pubClient = createClient(redisOptions);
   const subClient = pubClient.duplicate();
   redisClientForLimits = pubClient;
 
@@ -202,6 +207,18 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: getStore(),
+  skip: (req, res) => {
+    // Prevent ERR_ERL_DOUBLE_COUNT by skipping global limit on paths with specific limits
+    const specificPaths = [
+      '/api/users/login',
+      '/api/users/register',
+      '/api/campsites/join',
+      '/api/campsites/create',
+      '/api/campsites',
+      '/api/messages'
+    ];
+    return specificPaths.some(path => req.originalUrl.startsWith(path));
+  }
 });
 
 // Layer 2: Anti-Brute Force for Auth (5 requests per 15 minutes)

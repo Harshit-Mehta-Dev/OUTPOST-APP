@@ -50,7 +50,7 @@ async function processMessage(message) {
   // 1. Security Guardrail (highest priority — before NLP)
   const isThreat = SECURITY_KEYWORDS.some(kw => lowerMsg.includes(kw));
   if (isThreat) {
-    return SECURITY_RESPONSE;
+    return { isSecurityThreat: true, answer: SECURITY_RESPONSE };
   }
 
   // 2. Math/Calculus Engine — check explicitly before NLP

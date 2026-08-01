@@ -28,6 +28,9 @@ const broadcastAiMessage = (text) => {
   };
 };
 
+// In-memory strike tracker for security guardrail
+const securityStrikes = new Map();
+
 router.post('/chat', requireAuth, async (req, res) => {
   const io = req.io;
 
@@ -41,13 +44,39 @@ router.post('/chat', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Message cannot be empty.' });
     }
 
-    const aiText = await processMessage(message);
+    const aiResult = await processMessage(message);
+    let aiText = typeof aiResult === 'object' ? aiResult.answer : aiResult;
+
+    // --- 3-STRIKE SECURITY LOGIC ---
+    if (typeof aiResult === 'object' && aiResult.isSecurityThreat) {
+      const username = req.user.username;
+      let strikes = (securityStrikes.get(username) || 0) + 1;
+      securityStrikes.set(username, strikes);
+      
+      console.warn(`[SECURITY ALERT] User ${username} triggered security guardrail. Strike ${strikes}/3`);
+
+      if (strikes >= 3) {
+        // Trigger force logout
+        io.to(`user-room-${username}`).emit('force_logout', { 
+          reason: 'Security Intervention: Multiple violations of safety protocols. You have been logged out.' 
+        });
+        
+        // Reset strikes after logout
+        securityStrikes.delete(username);
+        
+        const saved = broadcastAiMessage(`🚨 Security Protocol Activated. User ${username} has been forcefully logged out due to repeated security policy violations.`);
+        return res.status(403).json({ success: false, error: 'SECURITY_LOGOUT_TRIGGERED', message: saved });
+      } else {
+        // Add warning to AI message
+        aiText += `\n\n**[SYSTEM WARNING]: This is strike ${strikes}/3. Further violations will result in automatic logout.**`;
+      }
+    }
+    // -------------------------------
 
     // Add a slight artificial delay to make it feel like AI is "thinking"
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log('✅ Local AI responded, length:', aiText.length);
 
-    // Emit typing stop explicitly to the user's socket ID if needed, but HTTP response handles frontend.
     const saved = broadcastAiMessage(aiText);
     return res.status(200).json({ success: true, message: saved });
 

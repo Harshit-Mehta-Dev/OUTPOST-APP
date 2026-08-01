@@ -2,7 +2,11 @@ const { createClient } = require('redis');
 
 let redisClient;
 if (process.env.REDIS_URL) {
-  redisClient = createClient({ url: process.env.REDIS_URL });
+  redisClient = createClient({ 
+    url: process.env.REDIS_URL,
+    pingInterval: 10000,
+    socket: { tls: process.env.REDIS_URL.startsWith('rediss://') }
+  });
   redisClient.on('error', (err) => console.error('Redis Cache Client Error', err));
   redisClient.connect().then(() => console.log('✅ Redis Cache connected')).catch(console.error);
 }
