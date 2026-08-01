@@ -35,7 +35,7 @@
     "mongodb": "^7.3.0",
     "mongoose": "^9.7.0",
     "morgan": "^1.11.0",
-    "node-fetch": "^2.7.0",
+    "node-fetch": "^3.3.2",
     "node-nlp": "^5.0.0-alpha.5",
     "nodemailer": "^9.0.3",
     "qrcode": "^1.5.4",
