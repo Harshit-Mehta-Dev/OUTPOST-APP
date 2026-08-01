@@ -1,19 +1,41 @@
-name: Keep Supabase Awake
+name: Keep Services Awake (Render + Supabase)
 
 on:
   schedule:
-    # Runs at 00:00 UTC every 3 days
-    - cron: '0 0 */3 * *'
-  workflow_dispatch: # Allows you to run this manually from the Actions tab
+    # Runs every 10 minutes — keeps Render from spinning down (free tier sleeps after 15 min)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Run manually from GitHub Actions tab
 
 jobs:
+  ping-render:
+    name: Ping Render Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Health Endpoint
+        run: |
+          echo "Pinging Render backend to prevent cold start..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://outpost-app.onrender.com/api/health" --max-time 30)
+          echo "Render responded with HTTP $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "Render is awake and healthy!"
+          else
+            echo "Render returned $STATUS - it may be starting up."
+          fi
+
   ping-supabase:
+    name: Ping Supabase Database
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase REST API
         run: |
-          curl -s -o /dev/null -w "%{http_code}" \
-          -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkaXZkZWd3eGd3dWRneGN1YXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNTkwMjYsImV4cCI6MjA5NjczNTAyNn0.bxyYJo0oyNa18J0wfBu8w4byLAosnggM5u2XvkPObco" \
-          -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkaXZkZWd3eGd3dWRneGN1YXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNTkwMjYsImV4cCI6MjA5NjczNTAyNn0.bxyYJo0oyNa18J0wfBu8w4byLAosnggM5u2XvkPObco" \
-          "https://idivdegwxgwudgxcuaso.supabase.co/rest/v1/"
-          echo "Supabase successfully pinged!"
+          echo "Pinging Supabase to prevent free tier pause..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+          "${{ secrets.SUPABASE_URL }}/rest/v1/")
+          echo "Supabase responded with HTTP $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "Supabase is awake!"
+          else
+            echo "Supabase returned $STATUS"
+          fi
