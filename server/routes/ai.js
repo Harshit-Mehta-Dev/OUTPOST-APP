@@ -53,14 +53,29 @@ router.post('/chat', requireAuth, async (req, res) => {
       aiText = "⚠️ Security Protocol Active: I am strictly an application guide. I am not authorized to discuss system security, hacking, or vulnerabilities. Please refrain from such queries.";
     } 
     // 2. Outpost Knowledge Base
-    else if (lowerMessage.includes('what is outpost') || lowerMessage.includes('about outpost')) {
-      aiText = "Outpost HQ is an advanced, real-time communication platform built for teams. It features end-to-end encrypted messaging, voice expeditions, and customizable themes, all designed to keep you connected.";
+    else if (lowerMessage.includes('what is outpost') || lowerMessage.includes('about outpost') || lowerMessage.includes('outpost mission')) {
+      aiText = "Outpost HQ is an advanced, real-time communication platform built for teams. It features end-to-end encrypted messaging, voice expeditions, and customizable themes, all designed to keep you connected in a secure, efficient environment.";
+    }
+    else if (lowerMessage.includes('tech stack') || lowerMessage.includes('how was outpost built') || lowerMessage.includes('technologies')) {
+      aiText = "Outpost HQ is built with a modern tech stack: React on the frontend, Node.js and Express on the backend, MongoDB and Supabase for robust data management, and WebSockets (Socket.io) for blazing fast real-time communication! 🚀";
+    }
+    else if (lowerMessage.includes('database') || lowerMessage.includes('where is data stored')) {
+      aiText = "Outpost uses a hybrid database approach! MongoDB is used as the primary database for complex documents and relationships, while Supabase provides blazing fast real-time subscriptions and robust relational data storage.";
     }
     else if (lowerMessage.includes('scout ai') || lowerMessage.includes('what is scout') || lowerMessage.includes('ai-scout') || lowerMessage.includes('your name')) {
       aiText = "Hello there! 🌟 I'm Ai-Scout, your personal guide and assistant here at Outpost HQ!\n\nS.C.O.U.T. stands for:\n**S**patial: Real-time chat channels, dashboard layouts, and isolated workspaces.\n**C**ommunity: Built exclusively for regular users, gamers, and developers.\n**O**perations: Executes tasks like compiling leaderboards, generating stats, and running polls.\n**U**tility: A highly functional, multi-purpose tool.\n**T**erminal: Connecting perfectly to the dark-themed console look and mascot engine.\n\nI'm here to make your experience amazing! I can help you navigate the app, explain how Voice Expeditions work, switch to the perfect theme (like Cyberpunk or Midnight Blue), or just chat with you. How can I brighten your day? ✨";
     }
-    else if (lowerMessage.includes('creator') || lowerMessage.includes('who made') || lowerMessage.includes('who created') || lowerMessage.includes('harshit') || lowerMessage.includes('mehta')) {
+    else if (lowerMessage.includes('creator') || lowerMessage.includes('who made') || lowerMessage.includes('who created') || lowerMessage.includes('harshit') || lowerMessage.includes('mehta') || lowerMessage.includes('founder')) {
       aiText = "Harshit Mehta is the brilliant Founder and Creator of Outpost HQ and Scout Intelligence! 🚀\n\nHe built this platform from the ground up to provide a seamless, modern, and highly interactive chat experience for gamers, developers, and teams. His vision drives all the cool features you see here today!";
+    }
+    else if (lowerMessage.includes('developer skills') || lowerMessage.includes('harshit skills') || lowerMessage.includes('what does harshit know')) {
+      aiText = "Harshit Mehta is a versatile Full-Stack Developer! He specializes in modern web technologies, including React, Node.js, Express, MongoDB, Postgres, real-time systems with WebSockets, and AI integrations. He's passionate about building scalable and engaging user experiences! 💻✨";
+    }
+    else if (lowerMessage.includes('hire harshit') || lowerMessage.includes('contact harshit') || lowerMessage.includes('developer contact')) {
+      aiText = "You can reach out to Harshit Mehta for collaboration or opportunities! As the mastermind behind Outpost, he's always open to discussing innovative projects. Connect with him to build something amazing! 🤝";
+    }
+    else if (lowerMessage.includes('features') || lowerMessage.includes('what can i do here')) {
+      aiText = "In Outpost HQ, you can:\n- Chat in real-time in various channels 💬\n- Join Voice Expeditions for seamless audio communication 🎙️\n- Customize your UI with awesome themes like Cyberpunk 🎨\n- Interact with me (Ai-Scout) for assistance 🤖\n- Securely manage your data with top-tier encryption! 🛡️";
     }
     else if (lowerMessage.includes('channel') || lowerMessage.includes('rooms')) {
       aiText = "Outpost has multiple channels you can join! For example, #basecamp is the main lobby, #development is for coding, and #Ai-Scout is where you are right now communicating with me.";
