@@ -846,10 +846,18 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('✅ Connected to MongoDB Atlas'))
 .catch(err => console.error('❌ Failed to connect to MongoDB', err));
 
+const { trainModel } = require('./ai/nlpEngine');
+
 const PORT = process.env.PORT || 5000;
 if (require.main === module) {
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+  // Train NLP engine before starting server
+  trainModel().then(() => {
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  }).catch(err => {
+    console.error('❌ Failed to train NLP model', err);
+    process.exit(1);
   });
 }
 

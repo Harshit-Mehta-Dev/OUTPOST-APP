@@ -1,0 +1,231 @@
+{
+  "name": "Outpost NLP Corpus",
+  "locale": "en-US",
+  "data": [
+    {
+      "intent": "app.about",
+      "utterances": [
+        "what is outpost",
+        "tell me about outpost",
+        "what is outpost mission",
+        "what does this app do",
+        "explain outpost to me"
+      ],
+      "answers": [
+        "Outpost HQ is an advanced, real-time communication platform built for teams. It features end-to-end encrypted messaging, voice expeditions, and customizable themes, all designed to keep you connected in a secure, efficient environment."
+      ]
+    },
+    {
+      "intent": "app.tech_stack",
+      "utterances": [
+        "tech stack",
+        "how was outpost built",
+        "what technologies are used",
+        "what is this app built with",
+        "is it react or vue",
+        "what is the backend"
+      ],
+      "answers": [
+        "Outpost HQ is built with a modern tech stack: React on the frontend, Node.js and Express on the backend, MongoDB and Supabase for robust data management, and WebSockets (Socket.io) for blazing fast real-time communication! 🚀"
+      ]
+    },
+    {
+      "intent": "app.database",
+      "utterances": [
+        "database",
+        "where is data stored",
+        "is it using postgres",
+        "how do you store messages",
+        "what database does outpost use"
+      ],
+      "answers": [
+        "Outpost uses a hybrid database approach! MongoDB is used as the primary database for complex documents and relationships, while Supabase provides blazing fast real-time subscriptions and robust relational data storage."
+      ]
+    },
+    {
+      "intent": "bot.identity",
+      "utterances": [
+        "who are you",
+        "what is your name",
+        "are you a bot",
+        "who am i talking to",
+        "what are you",
+        "tell me about yourself"
+      ],
+      "answers": [
+        "Hello there! 🌟 I'm Ai-Scout, your personal ethical guide and assistant here at Outpost HQ! I was designed to help you navigate this platform with ease. Just let me know what you need!"
+      ]
+    },
+    {
+      "intent": "bot.scout_meaning",
+      "utterances": [
+        "what does scout mean",
+        "s.c.o.u.t",
+        "scout stand for",
+        "what does s.c.o.u.t. mean"
+      ],
+      "answers": [
+        "S.C.O.U.T. stands for:\n**S**patial: Real-time chat channels and workspaces.\n**C**ommunity: Built exclusively for users, gamers, and developers.\n**O**perations: Executes tasks like compiling stats and polls.\n**U**tility: A highly functional, multi-purpose tool.\n**T**erminal: Connecting perfectly to our dark-themed console look."
+      ]
+    },
+    {
+      "intent": "creator.info",
+      "utterances": [
+        "who is the creator",
+        "who made this",
+        "who created outpost",
+        "who is harshit mehta",
+        "harshit",
+        "founder",
+        "who built this app"
+      ],
+      "answers": [
+        "Harshit Mehta is the brilliant Founder and Creator of Outpost HQ and Scout Intelligence! 🚀\n\nHe built this platform from the ground up to provide a seamless, modern, and highly interactive chat experience for gamers, developers, and teams. His vision drives all the cool features you see here today!"
+      ]
+    },
+    {
+      "intent": "creator.skills",
+      "utterances": [
+        "developer skills",
+        "harshit skills",
+        "what does harshit know",
+        "what languages does the creator know",
+        "is harshit a frontend or backend developer"
+      ],
+      "answers": [
+        "Harshit Mehta is a versatile Full-Stack Developer! He specializes in modern web technologies, including React, Node.js, Express, MongoDB, Postgres, real-time systems with WebSockets, and AI integrations. He's passionate about building scalable and engaging user experiences! 💻✨"
+      ]
+    },
+    {
+      "intent": "creator.hire",
+      "utterances": [
+        "hire harshit",
+        "contact harshit",
+        "developer contact",
+        "how can i hire the creator",
+        "i want to work with harshit"
+      ],
+      "answers": [
+        "You can reach out to Harshit Mehta for collaboration or opportunities! As the mastermind behind Outpost, he's always open to discussing innovative projects. Connect with him to build something amazing! 🤝"
+      ]
+    },
+    {
+      "intent": "app.features",
+      "utterances": [
+        "features",
+        "what can i do here",
+        "what are the main features",
+        "what does outpost have",
+        "list features"
+      ],
+      "answers": [
+        "In Outpost HQ, you can:\n- Chat in real-time in various channels 💬\n- Join Voice Expeditions for seamless audio communication 🎙️\n- Customize your UI with awesome themes like Cyberpunk 🎨\n- Interact with me (Ai-Scout) for assistance 🤖\n- Securely manage your data with top-tier encryption! 🛡️"
+      ]
+    },
+    {
+      "intent": "app.channels",
+      "utterances": [
+        "channel",
+        "rooms",
+        "how do channels work",
+        "what are channels for",
+        "how to join a room"
+      ],
+      "answers": [
+        "Outpost has multiple channels you can join! For example, #basecamp is the main lobby, #development is for coding, and #Ai-Scout is where you are right now communicating with me."
+      ]
+    },
+    {
+      "intent": "app.themes",
+      "utterances": [
+        "theme",
+        "dark mode",
+        "color",
+        "how to change theme",
+        "how to get dark mode",
+        "customization"
+      ],
+      "answers": [
+        "You can customize your experience! Outpost supports various themes including Midnight Blue, Cyberpunk, and Classic Dark. Just click the gear icon to explore settings and make Outpost look exactly how you want."
+      ]
+    },
+    {
+      "intent": "greeting.hello",
+      "utterances": [
+        "hello",
+        "hi",
+        "hey",
+        "good morning",
+        "greetings",
+        "howdy"
+      ],
+      "answers": [
+        "Hello Scout! 👋 I am Ai-Scout. How can I help you navigate the app today?"
+      ]
+    },
+    {
+      "intent": "greeting.how_are_you",
+      "utterances": [
+        "how are you",
+        "how is it going",
+        "how are you doing",
+        "are you feeling well"
+      ],
+      "answers": [
+        "I'm running at optimal efficiency and feeling great! 🤖 Thanks for asking. How can I assist you in Outpost today?"
+      ]
+    },
+    {
+      "intent": "bot.help",
+      "utterances": [
+        "help",
+        "what can you do",
+        "i need assistance",
+        "how do i use this",
+        "guide me"
+      ],
+      "answers": [
+        "I am your trusty Outpost guide! I can help you understand how to use Outpost. Ask me about:\n- 💬 Channels\n- 🎨 Themes\n- 🎙️ Voice expeditions\n- 👨‍💻 Who created the app\n- Or just say hi!"
+      ]
+    },
+    {
+      "intent": "app.voice",
+      "utterances": [
+        "voice",
+        "call",
+        "audio",
+        "how to call someone",
+        "voice expeditions",
+        "how to use audio"
+      ],
+      "answers": [
+        "Voice Expeditions allow you to seamlessly drop into voice channels and talk with your team in real-time. Look for the speaker icon in the channels list to jump right in!"
+      ]
+    },
+    {
+      "intent": "bot.joke",
+      "utterances": [
+        "joke",
+        "tell me a joke",
+        "make me laugh",
+        "say something funny"
+      ],
+      "answers": [
+        "Why do programmers prefer dark mode?\n\nBecause light attracts bugs! 🐛😄"
+      ]
+    },
+    {
+      "intent": "greeting.bye",
+      "utterances": [
+        "bye",
+        "goodbye",
+        "see you later",
+        "catch you later",
+        "cya"
+      ],
+      "answers": [
+        "Goodbye! Have a great time exploring Outpost. I'll be right here in the #Ai-Scout channel whenever you need me! 🌟"
+      ]
+    }
+  ]
+}
