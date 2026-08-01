@@ -62,8 +62,11 @@ router.post('/chat', requireAuth, async (req, res) => {
     else if (lowerMessage.includes('database') || lowerMessage.includes('where is data stored')) {
       aiText = "Outpost uses a hybrid database approach! MongoDB is used as the primary database for complex documents and relationships, while Supabase provides blazing fast real-time subscriptions and robust relational data storage.";
     }
-    else if (lowerMessage.includes('scout ai') || lowerMessage.includes('what is scout') || lowerMessage.includes('ai-scout') || lowerMessage.includes('your name')) {
-      aiText = "Hello there! 🌟 I'm Ai-Scout, your personal guide and assistant here at Outpost HQ!\n\nS.C.O.U.T. stands for:\n**S**patial: Real-time chat channels, dashboard layouts, and isolated workspaces.\n**C**ommunity: Built exclusively for regular users, gamers, and developers.\n**O**perations: Executes tasks like compiling leaderboards, generating stats, and running polls.\n**U**tility: A highly functional, multi-purpose tool.\n**T**erminal: Connecting perfectly to the dark-themed console look and mascot engine.\n\nI'm here to make your experience amazing! I can help you navigate the app, explain how Voice Expeditions work, switch to the perfect theme (like Cyberpunk or Midnight Blue), or just chat with you. How can I brighten your day? ✨";
+    else if (lowerMessage.includes('scout ai') || lowerMessage.includes('what is scout') || lowerMessage.includes('ai-scout') || lowerMessage.includes('your name') || lowerMessage.includes('who are you')) {
+      aiText = "Hello there! 🌟 I'm Ai-Scout, your personal ethical guide and assistant here at Outpost HQ! I was designed to help you navigate this platform with ease. Just let me know what you need!";
+    }
+    else if (lowerMessage.includes('s.c.o.u.t') || lowerMessage.includes('scout mean') || lowerMessage.includes('stand for')) {
+      aiText = "S.C.O.U.T. stands for:\n**S**patial: Real-time chat channels and workspaces.\n**C**ommunity: Built exclusively for users, gamers, and developers.\n**O**perations: Executes tasks like compiling stats and polls.\n**U**tility: A highly functional, multi-purpose tool.\n**T**erminal: Connecting perfectly to our dark-themed console look.";
     }
     else if (lowerMessage.includes('creator') || lowerMessage.includes('who made') || lowerMessage.includes('who created') || lowerMessage.includes('harshit') || lowerMessage.includes('mehta') || lowerMessage.includes('founder')) {
       aiText = "Harshit Mehta is the brilliant Founder and Creator of Outpost HQ and Scout Intelligence! 🚀\n\nHe built this platform from the ground up to provide a seamless, modern, and highly interactive chat experience for gamers, developers, and teams. His vision drives all the cool features you see here today!";
@@ -103,7 +106,13 @@ router.post('/chat', requireAuth, async (req, res) => {
     }
     // 3. Fallback
     else {
-      aiText = "I am Ai-Scout, specialized only in assisting you with the Outpost application. I don't know the answer to that, but I can help you with app features, channels, or themes! Try asking 'What is Outpost?'";
+      // Pick a random ethical fallback response so they aren't completely identical
+      const fallbacks = [
+        "I'm Ai-Scout, specialized specifically in assisting you with the Outpost application. I might not know the exact answer to that, but I'd be happy to explain app features, channels, or themes!",
+        "Hmm, my primary programming is focused on Outpost HQ! While I don't have that specific information, I can definitely assist you with learning how to use this platform.",
+        "As an ethical application guide, my knowledge base is tailored strictly to Outpost HQ and its features. Feel free to ask me questions like 'What is Outpost?' or 'How do channels work?' instead!"
+      ];
+      aiText = fallbacks[Math.floor(Math.random() * fallbacks.length)];
     }
 
     // Add a slight artificial delay to make it feel like AI is "thinking"
