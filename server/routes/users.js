@@ -22,7 +22,13 @@ const syncToSupabase = async (userDoc) => {
       { email: data.email, ...data }, 
       { onConflict: 'email' }
     );
-    if (error) console.error('Supabase User Backup Error:', error.message);
+    if (error) {
+      if (error.message.includes('Could not find the table')) {
+        console.warn('Supabase User Backup Skipped: Table "users" does not exist.');
+      } else {
+        console.error('Supabase User Backup Error:', error.message);
+      }
+    }
   } catch (err) {
     console.error('Supabase User Backup Exception:', err.message);
   }
@@ -314,13 +320,22 @@ router.put('/global-restrict', requireAuth, async (req, res) => {
 // Fetch the currently logged-in user's fresh data (XP, Level, etc.)
 router.get('/me', requireAuth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id || req.user.sub).select('-password -twoFactorSecret -resetPasswordToken -resetPasswordExpires');
-    if (!user) {
-      // Fallback: find by email if ID doesn't work (e.g. Supabase auth)
-      const userByEmail = await User.findOne({ email: req.user.email }).select('-password -twoFactorSecret -resetPasswordToken -resetPasswordExpires');
-      if (!userByEmail) return res.status(404).json({ error: 'User not found' });
-      return res.json(userByEmail);
+    const mongoose = require('mongoose');
+    const userId = req.user.id || req.user.sub;
+    
+    let user = null;
+    // Only attempt findById if userId is a valid MongoDB ObjectId
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      user = await User.findById(userId).select('-password -twoFactorSecret -resetPasswordToken -resetPasswordExpires');
     }
+    
+    if (!user && req.user.email) {
+      // Fallback: find by email if ID doesn't work (e.g. Supabase auth UUIDs)
+      user = await User.findOne({ email: req.user.email }).select('-password -twoFactorSecret -resetPasswordToken -resetPasswordExpires');
+    }
+    
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
