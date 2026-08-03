@@ -453,15 +453,8 @@
   padding: 8px 0;
 }
 
-.trail-markers {
-  margin: auto 12px 10px;
-  padding: 12px;
-  border: 1px solid rgba(var(--brand-primary), 0.26);
-  border-radius: 12px;
-  color: var(--text-primary);
-  background: linear-gradient(145deg, rgba(255,107,43,0.10), rgba(255,255,255,0.035));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 18px rgba(0,0,0,0.16);
-}
+.trail-markers-trigger { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; margin: auto 12px 10px; padding: 7px 10px; border: 1px solid rgba(var(--brand-primary), .28); border-radius: 8px; color: var(--text-secondary); background: rgba(255,255,255,.035); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; transition: .18s ease; }.trail-markers-trigger:hover { color: var(--text-primary); border-color: var(--accent-primary); background: rgba(var(--brand-primary), .1); }.trail-markers-trigger span { font-size: 14px; }
+.trail-markers-backdrop { position: fixed; inset: 0; z-index: 2500; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.58); backdrop-filter: blur(6px); }.trail-markers-modal { position: relative; width: min(380px, 100%); padding: 22px; border: 1px solid rgba(var(--brand-primary), .34); border-radius: 15px; color: var(--text-primary); background: linear-gradient(145deg, var(--bg-secondary), var(--bg-primary)); box-shadow: 0 24px 70px rgba(0,0,0,.55); }.trail-markers-close { position: absolute; top: 12px; right: 12px; border: 0; color: var(--text-secondary); background: transparent; cursor: pointer; }.trail-markers-subtitle { margin: 4px 0 16px; color: var(--text-secondary); font-size: 12px; }
 
 .trail-markers-heading { display: flex; align-items: center; gap: 7px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }.trail-markers-heading span { font-size: 16px; }.trail-markers-heading button { margin-left: auto; width: 24px; height: 24px; border: 0; border-radius: 6px; color: var(--text-secondary); background: transparent; cursor: pointer; font-size: 17px; }.trail-markers-heading button:hover { color: var(--accent-primary); background: rgba(255,255,255,.07); }
 .trail-weather { display: flex; align-items: center; gap: 8px; margin: 11px 0 10px; }.trail-weather-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: rgba(0,0,0,.16); font-size: 16px; }.trail-weather div { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 1px; }.trail-weather strong { font-size: 14px; }.trail-weather small { overflow: hidden; color: var(--text-secondary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }.trail-weather time { color: var(--text-secondary); font-size: 11px; }

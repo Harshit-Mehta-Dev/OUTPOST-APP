@@ -81,6 +81,7 @@ import BasecampBoard from '../components/board/BasecampBoard';
 const CHAT_URL = import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
 
 const TrailMarkers = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [weather, setWeather] = useState({ temperature: null, code: null, label: 'Locating trail...', source: 'local' });
   const [time, setTime] = useState(new Date());
   const [condition, setCondition] = useState('Clear Skies');
@@ -108,20 +109,26 @@ const TrailMarkers = () => {
   };
 
   useEffect(() => {
+    if (!isOpen) return undefined;
     refreshWeather();
     const clock = window.setInterval(() => setTime(new Date()), 60000);
     return () => window.clearInterval(clock);
-  }, []);
+  }, [isOpen]);
 
   const rotateCondition = () => setCondition(previous => previous === 'Clear Skies' ? 'Campfire Active' : previous === 'Campfire Active' ? 'Trail Watch' : 'Clear Skies');
 
-  return (
-    <section className="trail-markers" aria-label="Trail Markers local status">
-      <div className="trail-markers-heading"><span>⛺</span><strong>Trail Markers</strong><button onClick={refreshWeather} title="Refresh local weather">↻</button></div>
-      <div className="trail-weather"><span className="trail-weather-icon">{weather.code || '◌'}</span><div><strong>{weather.temperature === null ? weather.label : `${weather.temperature}°C`}</strong><small>{weather.temperature === null ? 'Local device status' : weather.label}</small></div><time>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></div>
-      <button className="trail-condition" onClick={rotateCondition} title="Change basecamp condition"><span className="trail-condition-dot" />{condition}</button>
-    </section>
-  );
+  return <>
+    <button className="trail-markers-trigger" onClick={() => setIsOpen(true)} title="Open Trail Markers"><span>⛺</span> Trail Markers</button>
+    {isOpen && <div className="trail-markers-backdrop" onClick={() => setIsOpen(false)}>
+      <section className="trail-markers-modal" onClick={event => event.stopPropagation()} aria-label="Trail Markers">
+        <button className="trail-markers-close" onClick={() => setIsOpen(false)} aria-label="Close Trail Markers"><X size={17} /></button>
+        <div className="trail-markers-heading"><span>⛺</span><strong>Trail Markers</strong><button onClick={refreshWeather} title="Refresh local weather">↻</button></div>
+        <p className="trail-markers-subtitle">Your local basecamp conditions</p>
+        <div className="trail-weather"><span className="trail-weather-icon">{weather.code || '◌'}</span><div><strong>{weather.temperature === null ? weather.label : `${weather.temperature}°C`}</strong><small>{weather.temperature === null ? 'Local device status' : weather.label}</small></div><time>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></div>
+        <button className="trail-condition" onClick={rotateCondition} title="Change basecamp condition"><span className="trail-condition-dot" />{condition}</button>
+      </section>
+    </div>}
+  </>;
 };
 
 const Basecamp = ({ isDarkMode, toggleTheme }) => {
