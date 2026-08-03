@@ -483,6 +483,7 @@
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   animation: message-card-in 280ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
   transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  overflow: visible;
 }
 
 .message-content::before {
@@ -1159,9 +1160,10 @@
 .message-actions-container {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
   margin-left: auto;
   flex-shrink: 0;
+  padding-left: 8px;
 }
 
 .dropdown-wrapper {
@@ -1171,9 +1173,9 @@
 
 .message-dropdown-menu {
   position: absolute;
-  top: 100%;
+  bottom: calc(100% + 8px);
   right: 0;
-  margin-top: 5px;
+  margin-top: 0;
   background: rgba(20, 20, 25, 0.85);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1182,7 +1184,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  z-index: 100;
+  z-index: 20;
   min-width: 140px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
@@ -1362,8 +1364,11 @@
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  justify-content: center;
+  padding: 0;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1379,4 +1384,17 @@
 .message-action-btn:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
+}
+
+@media (max-width: 680px) {
+  .message-meta {
+    flex-wrap: wrap !important;
+    row-gap: 4px;
+  }
+
+  .message-actions-container {
+    width: 100%;
+    justify-content: flex-end;
+    padding-left: 0;
+  }
 }

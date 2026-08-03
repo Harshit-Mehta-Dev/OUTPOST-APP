@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, RotateCcw, Sparkles, Lock } from 'lucide-react';
+import { Send, RotateCcw, Sparkles, Lock, CheckSquare, Square, Star, Forward, Info, X, Copy, Check } from 'lucide-react';
 import './AiNexus.css';
 
 const API_BASE = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
@@ -26,6 +26,10 @@ const AiNexus = ({ currentUser }) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedMessageIds, setSelectedMessageIds] = useState([]);
+  const [starredMessageIds, setStarredMessageIds] = useState([]);
+  const [infoMessage, setInfoMessage] = useState(null);
+  const [notice, setNotice] = useState('');
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const textareaRef = useRef(null);
@@ -106,6 +110,37 @@ const AiNexus = ({ currentUser }) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
+  const notify = (text) => {
+    setNotice(text);
+    window.setTimeout(() => setNotice(''), 2400);
+  };
+
+  const toggleSelected = (id) => setSelectedMessageIds(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+
+  const toggleStarred = (id) => {
+    const isStarred = starredMessageIds.includes(id);
+    setStarredMessageIds(prev => isStarred ? prev.filter(item => item !== id) : [...prev, id]);
+    notify(isStarred ? 'Message removed from starred' : 'Message saved to starred');
+  };
+
+  const forwardMessage = (msg) => {
+    setInput(`Forwarded message: ${msg.text}`);
+    window.setTimeout(() => {
+      autoResize();
+      textareaRef.current?.focus();
+    }, 0);
+    notify('Message added to the composer — edit or send it.');
+  };
+
+  const copyMessage = async (msg) => {
+    try {
+      await navigator.clipboard.writeText(msg.text);
+      notify('Message copied to clipboard.');
+    } catch {
+      notify('Copy is not available in this browser.');
+    }
+  };
+
   const clearChat = () => setMessages([{
     id: 'w-' + Date.now(), role: 'bot',
     text: `Chat cleared! How can I help, ${currentUser?.username || 'Scout'}?`,
@@ -133,11 +168,17 @@ const AiNexus = ({ currentUser }) => {
       {/* Messages */}
       <div className="ainex-messages">
         {messages.map((msg) => (
-          <div key={msg.id} className={`ainex-row ${msg.role === 'user' ? 'ainex-row-user' : 'ainex-row-bot'}`}>
+          <div key={msg.id} className={`ainex-row ${msg.role === 'user' ? 'ainex-row-user' : 'ainex-row-bot'} ${selectedMessageIds.includes(msg.id) ? 'ainex-row-selected' : ''}`}>
             {msg.role === 'bot' && <div className="ainex-bot-icon"><img src="/ai-scout-logo.png" alt="Ai-Scout" className="ainex-custom-logo" /></div>}
             <div className={`ainex-bubble ${msg.role === 'user' ? 'ainex-bubble-user' : 'ainex-bubble-bot'} ${msg.isError ? 'ainex-bubble-error' : ''}`}>
-              <div className="ainex-bubble-text">{msg.text}</div>
-              <div className="ainex-bubble-time">{msg.time}</div>
+              <div className="ainex-message-actions" aria-label="Message actions">
+                <button onClick={() => toggleSelected(msg.id)} title={selectedMessageIds.includes(msg.id) ? 'Deselect message' : 'Select message'}>{selectedMessageIds.includes(msg.id) ? <CheckSquare size={14} /> : <Square size={14} />}</button>
+                <button className={starredMessageIds.includes(msg.id) ? 'is-starred' : ''} onClick={() => toggleStarred(msg.id)} title="Star message"><Star size={14} fill={starredMessageIds.includes(msg.id) ? 'currentColor' : 'none'} /></button>
+                <button onClick={() => forwardMessage(msg)} title="Forward message"><Forward size={14} /></button>
+                <button onClick={() => setInfoMessage(msg)} title="Message information"><Info size={14} /></button>
+              </div>
+              <span className="ainex-bubble-text">{msg.text}</span>
+              <span className="ainex-bubble-time">{msg.time}</span>
             </div>
             {msg.role === 'user' && (
               <div className="ainex-user-icon">
@@ -151,6 +192,20 @@ const AiNexus = ({ currentUser }) => {
         {isLoading && <SkeletonMessage />}
         <div ref={bottomRef} />
       </div>
+
+      {notice && <div className="ainex-notice" role="status"><Check size={14} /> {notice}</div>}
+      {infoMessage && (
+        <div className="ainex-info-backdrop" onClick={() => setInfoMessage(null)}>
+          <section className="ainex-info-panel" onClick={e => e.stopPropagation()} aria-label="Message information">
+            <button className="ainex-info-close" onClick={() => setInfoMessage(null)} aria-label="Close"><X size={17} /></button>
+            <Info size={18} className="ainex-info-icon" />
+            <h3>Message information</h3>
+            <p><strong>From</strong> {infoMessage.role === 'bot' ? 'Ai-Scout' : (currentUser?.username || 'You')}</p>
+            <p><strong>Sent</strong> {infoMessage.time}</p>
+            <button className="ainex-info-copy" onClick={() => copyMessage(infoMessage)}><Copy size={14} /> Copy message</button>
+          </section>
+        </div>
+      )}
 
       {/* Input */}
       <div className="ainex-input-section">

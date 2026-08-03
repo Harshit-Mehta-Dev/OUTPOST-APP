@@ -2393,7 +2393,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         )}
                       </div>
                       <div className="message-content">
-                        <div className="message-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', width: '100%', overflow: 'visible' }}>
+                        <div className="message-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', width: '100%', overflow: 'visible' }}>
                           {(() => {
                             const username = msg.user?.username || msg.user || 'Unknown Scout';
                             const userEmail = msg.user?.email || '';
