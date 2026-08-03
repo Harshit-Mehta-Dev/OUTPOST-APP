@@ -1990,7 +1990,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 <img src={logoUrl} alt="Logo" />
                 <span className="font-malinton" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.25em', fontWeight: 'normal', letterSpacing: 'normal' }}>OUTPOST <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span></span>
               </div>
-              <TrailMarkers />
             </div>
             
             <div className="expedition-list">
@@ -2115,6 +2114,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             
+            <TrailMarkers />
             {/* NOTIFICATION BELL OUTSIDE SYSTEM TOOLS */}
             <div style={{ position: 'relative' }}>
               <button
@@ -2930,7 +2930,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     <img src={logoUrl} alt="Outpost Logo" />
                     <span className="font-malinton" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.25em', fontWeight: 'normal', letterSpacing: 'normal' }}>OUTPOST <span style={{ fontSize: '16px', padding: '2px 6px', background: '#ff3c00', color: '#ffffff', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>β</span></span>
                   </div>
-                  <TrailMarkers />
                 </div>
 
                 <div className="expedition-list">

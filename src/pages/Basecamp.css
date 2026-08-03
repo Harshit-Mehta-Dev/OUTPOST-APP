@@ -192,7 +192,14 @@
   min-height: 0;
   padding: 16px 8px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
 }
+
+.expedition-list::-webkit-scrollbar { width: 6px; }
+.expedition-list::-webkit-scrollbar-track { background: transparent; }
+.expedition-list::-webkit-scrollbar-thumb { border-radius: 6px; background: rgba(255,255,255,0.2); }
+.expedition-list::-webkit-scrollbar-thumb:hover { background: rgba(var(--brand-primary),0.65); }
 
 .expedition-category {
   font-size: 0.75rem;
@@ -464,6 +471,7 @@
 
 .expedition-header .trail-markers-trigger { flex: 0 0 32px; width: 32px; height: 32px; justify-content: center; margin: 0; padding: 0; font-size: 0; }
 .expedition-header .trail-markers-trigger span { font-size: 15px; }
+.top-bar-right .trail-markers-trigger { width: 42px; height: 42px; justify-content: center; margin: 0; padding: 0; border-radius: 11px; font-size: 0; }.top-bar-right .trail-markers-trigger span { font-size: 17px; }.top-bar-right .trail-markers-trigger:hover { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(0,0,0,.2); }
 
 .trail-markers-heading { display: flex; align-items: center; gap: 7px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }.trail-markers-heading span { font-size: 16px; }.trail-markers-heading button { margin-left: auto; width: 24px; height: 24px; border: 0; border-radius: 6px; color: var(--text-secondary); background: transparent; cursor: pointer; font-size: 17px; }.trail-markers-heading button:hover { color: var(--accent-primary); background: rgba(255,255,255,.07); }
 .trail-weather { display: flex; align-items: center; gap: 8px; margin: 11px 0 10px; }.trail-weather-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: rgba(0,0,0,.16); font-size: 16px; }.trail-weather div { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 1px; }.trail-weather strong { font-size: 14px; }.trail-weather small { overflow: hidden; color: var(--text-secondary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }.trail-weather time { color: var(--text-secondary); font-size: 11px; }
