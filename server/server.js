@@ -262,6 +262,9 @@ app.use('/api/messages', dataLimiter);
 const campsiteRoutes = require('./routes/campsites');
 app.use('/api/campsites', campsiteRoutes);
 
+const boardRoutes = require('./routes/board');
+app.use('/api/board', boardRoutes);
+
 const userRoutes = require('./routes/users');
 app.use('/api/users', userRoutes);
 

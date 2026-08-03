@@ -67,6 +67,7 @@ import GradientBars from '../components/ui/gradient-bars-background';
 import HelpDesk from '../components/HelpDesk';
 import FeedbackForm from '../components/FeedbackForm';
 import GroupAdminPanelModal from '../components/modals/GroupAdminPanelModal';
+import BasecampBoard from '../components/board/BasecampBoard';
 
 // Socket is created lazily inside the component so it always has a fresh token.
 // Creating it at module level causes authentication failures because the token
@@ -1833,6 +1834,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   <Plus size={14} />
                 </button>
               </div>
+
+              <div 
+                className={`expedition-item ${activeChannel === 'Basecamp-Board' ? 'active' : ''}`}
+                onClick={() => setActiveChannel('Basecamp-Board')}
+                style={{ marginBottom: '8px', borderLeft: '2px solid var(--accent-primary)', backgroundColor: activeChannel === 'Basecamp-Board' ? 'var(--bg-active)' : 'transparent' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Pin size={18} className="exp-icon" style={{ color: 'var(--accent-primary)' }} />
+                  <span style={{ fontWeight: '600' }}>Basecamp Board</span>
+                </div>
+              </div>
+
               {expeditions.filter(e => e.type === 'text').map(exp => (
                 <div 
                   key={exp.id} 
@@ -2197,9 +2210,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
         {activeChannel === 'Ai-Scout' ? (
           <AiNexus currentUser={currentUser} />
+        ) : activeChannel === 'Basecamp-Board' ? (
+          <BasecampBoard campsiteId={currentCampsiteId} currentUser={currentUser} />
         ) : null}
 
-        <div className="chat-messages" style={{ display: activeChannel === 'Ai-Scout' ? 'none' : undefined }}>
+        <div className="chat-messages" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board') ? 'none' : undefined }}>
           <div className="chat-welcome">
             <div className="welcome-icon">
               <Hash size={40} />
@@ -2515,7 +2530,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           <div ref={messagesEndRef} style={{ height: '32px', flexShrink: 0 }} />
         </div>
 
-        {activeChannel !== 'Ai-Scout' && <AnimatePresence>
+        {(activeChannel !== 'Ai-Scout' && activeChannel !== 'Basecamp-Board') && <AnimatePresence>
           {activeTypers.length > 0 && (
             <motion.div 
               className="typing-indicator"
@@ -2538,7 +2553,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </motion.div>
           )}
         </AnimatePresence>}
-        {activeChannel !== 'Ai-Scout' && <AnimatePresence>
+        {(activeChannel !== 'Ai-Scout' && activeChannel !== 'Basecamp-Board') && <AnimatePresence>
           {replyingTo && (
             <motion.div 
               initial={{ opacity: 0, y: 10, height: 0 }}
@@ -2559,7 +2574,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           )}
         </AnimatePresence>}
 
-        <div className="chat-input-wrapper" style={{ display: activeChannel === 'Ai-Scout' ? 'none' : undefined }}>
+        <div className="chat-input-wrapper" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board') ? 'none' : undefined }}>
           <div className="chat-input-container" style={{ position: 'relative', overflow: 'visible' }}>
             {activeCampsite?.bannedUsers?.includes(currentUser?.username) ? (
               <div style={{ width: '100%', textAlign: 'center', padding: '12px', color: '#ff4444', fontWeight: 'bold', background: 'rgba(255,0,0,0.1)', borderRadius: '8px' }}>
