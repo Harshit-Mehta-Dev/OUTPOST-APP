@@ -39,7 +39,12 @@ import {
   MoreVertical,
   Heart,
   Pin,
-  Smile
+  Smile,
+  CheckSquare,
+  Square,
+  Star,
+  Forward,
+  Info
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -118,6 +123,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isCampOpsModalOpen, setIsCampOpsModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
+  const [selectedMessageIds, setSelectedMessageIds] = useState([]);
+  const [starredMessageIds, setStarredMessageIds] = useState([]);
+  const [messageInfo, setMessageInfo] = useState(null);
+  const chatInputRef = useRef(null);
 
   useEffect(() => {
     const handleGlobalClick = () => {
@@ -129,6 +138,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const toggleDropdown = (id) => {
     setActiveDropdownId(prev => prev === id ? null : id);
+  };
+
+  const toggleMessageSelection = (id) => {
+    setSelectedMessageIds(prev => prev.includes(id) ? prev.filter(messageId => messageId !== id) : [...prev, id]);
+  };
+
+  const toggleMessageStar = (id) => {
+    setStarredMessageIds(prev => prev.includes(id) ? prev.filter(messageId => messageId !== id) : [...prev, id]);
+  };
+
+  const forwardToComposer = (msg) => {
+    const author = msg.user?.username || msg.user || 'Scout';
+    setInputText(`Forwarded from ${author}: ${msg.text || msg.body || ''}`);
+    window.setTimeout(() => chatInputRef.current?.focus(), 0);
   };
 
   const handleLikeMessage = (msgId, channelKey) => {
@@ -2384,7 +2407,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               }
 
               return (
-                    <div className={`message-item${highlightClass}`} key={msg._id || msg.id || index}>
+                    <div className={`message-item${highlightClass}${selectedMessageIds.includes(msg._id || msg.id) ? ' message-item-selected' : ''}`} key={msg._id || msg.id || index}>
                       <div className="message-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
                         {msg.user?.profilePictureUrl ? (
                           <img src={msg.user.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -2415,6 +2438,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
                           <span className="message-time" style={{ marginLeft: '10px', flexGrow: 1 }}>{msg.time}</span>
                           <div className="message-actions-container">
+                            <button
+                              className={`message-action-btn ${selectedMessageIds.includes(msg._id || msg.id) ? 'is-selected' : ''}`}
+                              onClick={(e) => { e.stopPropagation(); toggleMessageSelection(msg._id || msg.id); }}
+                              title={selectedMessageIds.includes(msg._id || msg.id) ? 'Deselect message' : 'Select message'}
+                            >
+                              {selectedMessageIds.includes(msg._id || msg.id) ? <CheckSquare size={14} /> : <Square size={14} />}
+                            </button>
+                            <button
+                              className={`message-action-btn ${starredMessageIds.includes(msg._id || msg.id) ? 'is-starred' : ''}`}
+                              onClick={(e) => { e.stopPropagation(); toggleMessageStar(msg._id || msg.id); }}
+                              title={starredMessageIds.includes(msg._id || msg.id) ? 'Remove from starred' : 'Star message'}
+                            >
+                              <Star size={14} fill={starredMessageIds.includes(msg._id || msg.id) ? 'currentColor' : 'none'} />
+                            </button>
+                            <button className="message-action-btn" onClick={(e) => { e.stopPropagation(); forwardToComposer(msg); }} title="Forward to composer"><Forward size={14} /></button>
+                            <button className="message-action-btn" onClick={(e) => { e.stopPropagation(); setMessageInfo(msg); }} title="Message information"><Info size={14} /></button>
                             {/* Emoji Reaction Picker */}
                             <div className="emoji-picker-wrapper" onClick={e => e.stopPropagation()}>
                               <button className="message-action-btn message-emoji-trigger-btn" title="Add Reaction">
@@ -2690,6 +2729,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   <Plus size={20} />
                 </button>
                 <input 
+                  ref={chatInputRef}
                   type="text" 
                   placeholder={`Message #${activeChannel}`} 
                   className="chat-input"
@@ -2709,6 +2749,19 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <Lock size={12} /> <span>End-to-End Encrypted Chat</span>
           </div>
         </div>
+        {messageInfo && (
+          <div className="message-info-backdrop" onClick={() => setMessageInfo(null)}>
+            <section className="message-info-panel" onClick={e => e.stopPropagation()} aria-label="Message information">
+              <button className="message-info-close" onClick={() => setMessageInfo(null)} aria-label="Close message information"><X size={17} /></button>
+              <Info size={19} className="message-info-icon" />
+              <h3>Message information</h3>
+              <p><strong>From</strong> {messageInfo.user?.username || messageInfo.user || 'Unknown Scout'}</p>
+              <p><strong>Sent</strong> {messageInfo.time || 'Just now'}</p>
+              <p><strong>Channel</strong> #{activeChannel}</p>
+              <button className="message-info-forward" onClick={() => { forwardToComposer(messageInfo); setMessageInfo(null); }}><Forward size={14} /> Forward to composer</button>
+            </section>
+          </div>
+        )}
       </main>
       </>
       )}
