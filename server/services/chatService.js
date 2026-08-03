@@ -577,7 +577,8 @@ io.on('connection', (socket) => {
       }
 
       msg.markModified('reactions');
-      await Message.updateOne({ _id: messageId }, { $set: { reactions: msg.reactions } });
+      await msg.save();
+      syncMessageToSupabase(msg);
 
       io.to(channelKey).emit("message_reacted", { messageId, channelKey, reactions: msg.reactions });
     } catch (err) {
