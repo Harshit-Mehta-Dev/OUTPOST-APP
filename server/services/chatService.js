@@ -553,6 +553,38 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on("react_message", async ({ messageId, channelKey, emoji, username }) => {
+    try {
+      if (!username || !emoji) return;
+      const msg = await Message.findById(messageId);
+      if (!msg) return;
+
+      if (!msg.reactions) msg.reactions = [];
+
+      const reactionIndex = msg.reactions.findIndex(r => r.emoji === emoji);
+      if (reactionIndex > -1) {
+        const userIndex = msg.reactions[reactionIndex].users.indexOf(username);
+        if (userIndex > -1) {
+          msg.reactions[reactionIndex].users.splice(userIndex, 1);
+          if (msg.reactions[reactionIndex].users.length === 0) {
+            msg.reactions.splice(reactionIndex, 1);
+          }
+        } else {
+          msg.reactions[reactionIndex].users.push(username);
+        }
+      } else {
+        msg.reactions.push({ emoji, users: [username] });
+      }
+
+      msg.markModified('reactions');
+      await Message.updateOne({ _id: messageId }, { $set: { reactions: msg.reactions } });
+
+      io.to(channelKey).emit("message_reacted", { messageId, channelKey, reactions: msg.reactions });
+    } catch (err) {
+      console.error("Error reacting to message:", err);
+    }
+  });
+
   // Catch and Broadcast "Scout stopped typing"
   socket.on("scout-typing-stop", ({ channelId, scoutName }) => {
     socket.broadcast.to(channelId).emit("broadcast-typing-stop", { scoutName });

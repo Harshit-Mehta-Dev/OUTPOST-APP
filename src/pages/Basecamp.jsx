@@ -38,7 +38,8 @@ import {
   Cpu,
   MoreVertical,
   Heart,
-  Pin
+  Pin,
+  Smile
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -157,6 +158,38 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     });
     
     socket.emit("like_message", { messageId: msgId, channelKey, username: currentUser?.username || 'Scout' });
+  };
+
+  const handleReactMessage = (msgId, channelKey, emoji) => {
+    const username = currentUser?.username || 'Scout';
+    // Optimistic UI update
+    setMessagesByChannel(prev => {
+      const currentMessages = prev[channelKey] || [];
+      const existingIndex = currentMessages.findIndex(m => (m._id || m.id) === msgId);
+      if (existingIndex !== -1) {
+        const updatedMessages = [...currentMessages];
+        const msg = updatedMessages[existingIndex];
+        const currentReactions = (msg.reactions || []).map(r => ({ ...r, users: [...r.users] }));
+        const reactionIndex = currentReactions.findIndex(r => r.emoji === emoji);
+        if (reactionIndex > -1) {
+          const userIndex = currentReactions[reactionIndex].users.indexOf(username);
+          if (userIndex > -1) {
+            currentReactions[reactionIndex].users.splice(userIndex, 1);
+            if (currentReactions[reactionIndex].users.length === 0) {
+              currentReactions.splice(reactionIndex, 1);
+            }
+          } else {
+            currentReactions[reactionIndex].users.push(username);
+          }
+        } else {
+          currentReactions.push({ emoji, users: [username] });
+        }
+        updatedMessages[existingIndex] = { ...msg, reactions: currentReactions };
+        return { ...prev, [channelKey]: updatedMessages };
+      }
+      return prev;
+    });
+    socket.emit("react_message", { messageId: msgId, channelKey, emoji, username });
   };
 
   const handlePinMessage = (msg, channelKey) => {
@@ -393,7 +426,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       pollData: m.pollData,
       replyTo: m.replyTo,
       isPinned: m.isPinned || false,
-      likes: m.likes || []
+      likes: m.likes || [],
+      reactions: m.reactions || []
     };
   };
 
@@ -440,10 +474,19 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       }
 
       if (fetchedMsgs !== null) {
-        setMessagesByChannel(prev => ({
-          ...prev,
-          [currentChannelKey]: fetchedMsgs
-        }));
+        setMessagesByChannel(prev => {
+          const existing = prev[currentChannelKey] || [];
+          const fetchedIds = new Set(fetchedMsgs.map(m => String(m.id || m._id)));
+          // Keep local-only optimistic messages not yet confirmed by the server
+          const localOnly = existing.filter(m => {
+            const id = String(m.id || m._id || '');
+            return id.startsWith('local-') && !fetchedIds.has(id);
+          });
+          const merged = [...fetchedMsgs, ...localOnly].sort(
+            (a, b) => (a.receivedAt || 0) - (b.receivedAt || 0)
+          );
+          return { ...prev, [currentChannelKey]: merged };
+        });
       }
 
       setIsFetchingMessages(false);
@@ -505,8 +548,25 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       });
     };
 
+    const handleMessageReacted = (data) => {
+      setMessagesByChannel(prev => {
+        const currentMessages = prev[data.channelKey] || [];
+        const existingIndex = currentMessages.findIndex(m => (m._id || m.id) === data.messageId);
+        if (existingIndex !== -1) {
+          const updatedMessages = [...currentMessages];
+          updatedMessages[existingIndex] = { ...updatedMessages[existingIndex], reactions: data.reactions };
+          return { ...prev, [data.channelKey]: updatedMessages };
+        }
+        return prev;
+      });
+    };
+
     socket.on('message_liked', handleMessageLiked);
-    return () => socket.off('message_liked', handleMessageLiked);
+    socket.on('message_reacted', handleMessageReacted);
+    return () => {
+      socket.off('message_liked', handleMessageLiked);
+      socket.off('message_reacted', handleMessageReacted);
+    };
   }, []);
 
   useEffect(() => {
@@ -2355,6 +2415,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
                           <span className="message-time" style={{ marginLeft: '10px', flexGrow: 1 }}>{msg.time}</span>
                           <div className="message-actions-container">
+                            {/* Emoji Reaction Picker */}
+                            <div className="emoji-picker-wrapper" onClick={e => e.stopPropagation()}>
+                              <button className="message-action-btn message-emoji-trigger-btn" title="Add Reaction">
+                                <Smile size={14} />
+                              </button>
+                              <div className="emoji-quick-picker">
+                                {['👍','❤️','🔥','😂','👀'].map(emoji => (
+                                  <button
+                                    key={emoji}
+                                    className={`emoji-quick-btn ${msg.reactions?.find(r => r.emoji === emoji && r.users.includes(currentUser?.username)) ? 'reacted' : ''}`}
+                                    onClick={() => handleReactMessage(msg._id || msg.id, currentChannelKey, emoji)}
+                                    title={emoji}
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
                             <button
                               className={`message-action-btn message-like-btn ${msg.likes?.includes(currentUser?.username) ? 'liked' : ''}`}
                               onClick={(e) => {
@@ -2517,6 +2595,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                                   );
                                 })}
                               </div>
+                            </div>
+                          )}
+                          {/* Emoji Reaction Pills */}
+                          {msg.reactions && msg.reactions.length > 0 && (
+                            <div className="message-reactions-row">
+                              {msg.reactions.map((reaction) => (
+                                <button
+                                  key={reaction.emoji}
+                                  className={`reaction-pill ${reaction.users.includes(currentUser?.username) ? 'reacted' : ''}`}
+                                  onClick={() => handleReactMessage(msg._id || msg.id, currentChannelKey, reaction.emoji)}
+                                  title={reaction.users.join(', ')}
+                                >
+                                  <span>{reaction.emoji}</span>
+                                  <span className="reaction-count">{reaction.users.length}</span>
+                                </button>
+                              ))}
                             </div>
                           )}
                         </div>
