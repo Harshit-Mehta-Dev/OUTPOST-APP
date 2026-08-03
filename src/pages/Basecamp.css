@@ -1,12 +1,21 @@
 .outpost-app-wrapper {
   display: flex;
   flex-direction: column;
-  /* Keep the app anchored to the visible browser viewport. This prevents the
-     document from being pushed under Chrome's bookmark bar when it appears. */
-  position: fixed;
-  inset: 0;
-  height: 100dvh;
+  /* Stay in normal document flow so Chrome positions the app below browser UI,
+     including the optional bookmarks bar. */
+  position: relative;
+  height: 100%;
   width: 100%;
+  overflow: hidden;
+}
+
+/* Basecamp is a self-contained application viewport. Keeping its document
+   scroll locked prevents Chrome UI resizes from preserving an upward page
+   offset and clipping the top application bar. */
+html:has(.outpost-app-wrapper),
+body:has(.outpost-app-wrapper),
+#root:has(.outpost-app-wrapper) {
+  height: 100%;
   overflow: hidden;
 }
 
