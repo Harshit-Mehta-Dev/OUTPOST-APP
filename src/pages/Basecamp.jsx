@@ -80,11 +80,10 @@ import BasecampBoard from '../components/board/BasecampBoard';
 // is not yet in localStorage at import time.
 const CHAT_URL = import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
 
-const TrailMarkers = () => {
+const TrailMarkers = ({ campsite, onConditionChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [weather, setWeather] = useState({ temperature: null, code: null, label: 'Locating trail...', source: 'local' });
   const [time, setTime] = useState(new Date());
-  const [condition, setCondition] = useState('Clear Skies');
 
   const weatherLabel = (code) => {
     if (code === 0) return ['☀️', 'Clear skies'];
@@ -115,7 +114,7 @@ const TrailMarkers = () => {
     return () => window.clearInterval(clock);
   }, [isOpen]);
 
-  const rotateCondition = () => setCondition(previous => previous === 'Clear Skies' ? 'Campfire Active' : previous === 'Campfire Active' ? 'Trail Watch' : 'Clear Skies');
+  const condition = campsite?.trailStatus?.label || 'Clear Skies';
 
   return <>
     <button className="trail-markers-trigger" onClick={() => setIsOpen(true)} title="Open Trail Markers"><span>⛺</span> Trail Markers</button>
@@ -123,9 +122,13 @@ const TrailMarkers = () => {
       <section className="trail-markers-modal" onClick={event => event.stopPropagation()} aria-label="Trail Markers">
         <button className="trail-markers-close" onClick={() => setIsOpen(false)} aria-label="Close Trail Markers"><X size={17} /></button>
         <div className="trail-markers-heading"><span>⛺</span><strong>Trail Markers</strong><button onClick={refreshWeather} title="Refresh local weather">↻</button></div>
-        <p className="trail-markers-subtitle">Your local basecamp conditions</p>
-        <div className="trail-weather"><span className="trail-weather-icon">{weather.code || '◌'}</span><div><strong>{weather.temperature === null ? weather.label : `${weather.temperature}°C`}</strong><small>{weather.temperature === null ? 'Local device status' : weather.label}</small></div><time>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></div>
-        <button className="trail-condition" onClick={rotateCondition} title="Change basecamp condition"><span className="trail-condition-dot" />{condition}</button>
+        <p className="trail-markers-subtitle">Weather is private to your device. Camp condition is shared with members.</p>
+        <div className="trail-weather"><span className="trail-weather-icon">{weather.code || '◌'}</span><div><strong>{weather.temperature === null ? 'Local weather unavailable' : `${weather.temperature}°C`}</strong><small>{weather.temperature === null ? weather.label : weather.label}</small></div><time>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></div>
+        <button className="trail-location-btn" onClick={refreshWeather}>⌖ {weather.temperature === null ? 'Use my location for weather' : 'Refresh local weather'}</button>
+        <div className="trail-condition-heading"><span>Basecamp condition</span><small>Shared</small></div>
+        <div className="trail-condition-options">
+          {['Clear Skies', 'Campfire Active', 'Trail Watch'].map(option => <button key={option} className={condition === option ? 'active' : ''} onClick={() => onConditionChange(option)}>{option}</button>)}
+        </div>
       </section>
     </div>}
   </>;
@@ -462,6 +465,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const expeditions = activeCampsite?.expeditions || [];
   const currentCampsiteId = activeCampsite?.id || activeCampsite?._id || 'global';
   const currentChannelKey = activeCampsite ? `${currentCampsiteId}_${activeChannel}` : 'fallback';
+  const handleTrailConditionChange = async (label) => {
+    if (!activeCampsite) return;
+    const campsiteId = activeCampsite._id || activeCampsite.id;
+    const trailStatus = { label, updatedBy: currentUser?.username || 'Scout', updatedAt: new Date().toISOString() };
+    setCampsites(prev => prev.map(campsite => String(campsite._id || campsite.id) === String(campsiteId) ? { ...campsite, trailStatus } : campsite));
+    try {
+      const token = localStorage.getItem('outpost_token');
+      const apiBase = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
+      const response = await fetch(`${apiBase}/api/campsites/${campsiteId}/trail-status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ label, username: currentUser?.username || 'Scout' }) });
+      if (!response.ok) throw new Error('Trail status service unavailable');
+    } catch (error) {
+      console.warn('[Trail Markers] Status saved locally only:', error.message);
+    }
+  };
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [selectedPopupAlert, setSelectedPopupAlert] = useState(null);
   const [clearedTimestamps, setClearedTimestamps] = useState(() => {
@@ -926,6 +943,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       setDiscoverRefreshTrigger(prev => prev + 1);
     });
 
+    const handleCampsiteUpdated = (updatedCampsite) => {
+      setCampsites(prev => prev.map(c => (c._id || c.id) === (updatedCampsite._id || updatedCampsite.id) ? { ...c, ...updatedCampsite } : c));
+    };
+    socket.on('campsite_updated', handleCampsiteUpdated);
+
     return () => {
       socket.off('receive_message', handleReceiveMessage);
       socket.off("broadcast-typing-start", handleTypingStart);
@@ -944,6 +966,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("permission_denied", handlePermissionDenied);
       socket.off("server_alert", handleServerAlert);
       socket.off("new_public_campsite");
+      socket.off("campsite_updated", handleCampsiteUpdated);
     };
   }, [currentChannelKey]);
 
@@ -2114,7 +2137,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             
-            <TrailMarkers />
+            <TrailMarkers campsite={activeCampsite} onConditionChange={handleTrailConditionChange} />
             {/* NOTIFICATION BELL OUTSIDE SYSTEM TOOLS */}
             <div style={{ position: 'relative' }}>
               <button

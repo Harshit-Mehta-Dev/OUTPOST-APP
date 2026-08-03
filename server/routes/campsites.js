@@ -289,9 +289,35 @@ router.post('/:id/roles/assign', requireAuth, async (req, res) => {
     
     await camp.save();
     res.json(camp);
-  } catch (err) {
+    } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-});
+    }
+    });
 
-module.exports = router;
+    // PATCH update a campsite's trail status (for Trail Markers)
+    router.patch('/:id/trail-status', requireAuth, async (req, res) => {
+    try {
+    const { label, username } = req.body;
+    const camp = await Campsite.findById(req.params.id);
+    if (!camp) return res.status(404).json({ message: 'Campsite not found' });
+
+    camp.trailStatus = {
+      label,
+      updatedBy: username,
+      updatedAt: new Date(),
+    };
+
+    const updatedCamp = await camp.save();
+
+    // Notify all members of the campsite room about the update
+    if (req.io) {
+      req.io.to(`camp_${camp._id}`).emit('campsite_updated', updatedCamp);
+    }
+
+    res.json(updatedCamp);
+    } catch (err) {
+    res.status(400).json({ error: err.message });
+    }
+    });
+
+    module.exports = router;

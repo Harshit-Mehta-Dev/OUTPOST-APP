@@ -38,7 +38,13 @@ const campsiteSchema = new mongoose.Schema({
   kickedUsers: [{ type: String }], // Array of usernames permanently kicked
   
   totalScouts: { type: Number, default: 1 },
-  activeScouts: { type: Number, default: 1 }
+  activeScouts: { type: Number, default: 1 },
+
+  trailStatus: {
+    label: { type: String, default: 'Clear Skies' },
+    updatedBy: { type: String },
+    updatedAt: { type: Date }
+  }
 }, { timestamps: true });
 
 // Performance Indexes

@@ -477,6 +477,16 @@
 .trail-weather { display: flex; align-items: center; gap: 8px; margin: 11px 0 10px; }.trail-weather-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: rgba(0,0,0,.16); font-size: 16px; }.trail-weather div { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 1px; }.trail-weather strong { font-size: 14px; }.trail-weather small { overflow: hidden; color: var(--text-secondary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }.trail-weather time { color: var(--text-secondary); font-size: 11px; }
 .trail-condition { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 8px; border: 1px solid rgba(85,214,157,.22); border-radius: 7px; color: #b9f2d3; background: rgba(85,214,157,.07); font-size: 11px; cursor: pointer; }.trail-condition:hover { background: rgba(85,214,157,.12); }.trail-condition-dot { width: 6px; height: 6px; border-radius: 50%; background: #55d69d; box-shadow: 0 0 8px rgba(85,214,157,.8); }
 
+.trail-location-btn { width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,.1); border-radius: 7px; background: rgba(255,255,255,.05); color: var(--text-secondary); font-size: 11px; cursor: pointer; margin-bottom: 16px; text-align: center; }
+.trail-location-btn:hover { background: rgba(255,255,255,.1); color: var(--text-primary); }
+.trail-condition-heading { display: flex; justify-content: space-between; align-items: center; font-size: 11px; text-transform: uppercase; color: var(--text-secondary); letter-spacing: .04em; margin-bottom: 8px; }
+.trail-condition-heading span { font-weight: 600; }
+.trail-condition-heading small { background: rgba(var(--brand-primary),.1); color: var(--accent-primary); padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+.trail-condition-options { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.trail-condition-options button { padding: 8px; border-radius: 7px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); color: var(--text-secondary); font-size: 11px; cursor: pointer; }
+.trail-condition-options button:hover { background: rgba(255,255,255,.1); color: var(--text-primary); }
+.trail-condition-options button.active { background: var(--accent-primary); color: #fff; border-color: var(--accent-primary); font-weight: 700; }
+
 .message-avatar {
   width: 40px;
   height: 40px;
