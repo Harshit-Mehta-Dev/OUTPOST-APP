@@ -80,6 +80,50 @@ import BasecampBoard from '../components/board/BasecampBoard';
 // is not yet in localStorage at import time.
 const CHAT_URL = import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
 
+const TrailMarkers = () => {
+  const [weather, setWeather] = useState({ temperature: null, code: null, label: 'Locating trail...', source: 'local' });
+  const [time, setTime] = useState(new Date());
+  const [condition, setCondition] = useState('Clear Skies');
+
+  const weatherLabel = (code) => {
+    if (code === 0) return ['☀️', 'Clear skies'];
+    if ([1, 2, 3].includes(code)) return ['⛅', 'Partly cloudy'];
+    if ([45, 48].includes(code)) return ['🌫️', 'Low visibility'];
+    if ([51, 53, 55, 56, 57, 61, 63, 65, 80, 81, 82].includes(code)) return ['🌧️', 'Rain on the trail'];
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return ['❄️', 'Snow conditions'];
+    return ['🌩️', 'Storm watch'];
+  };
+
+  const refreshWeather = () => {
+    if (!navigator.geolocation) { setWeather({ temperature: null, code: null, label: 'Location unavailable', source: 'fallback' }); return; }
+    setWeather(previous => ({ ...previous, label: 'Updating trail...' }));
+    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+      try {
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,weather_code&temperature_unit=celsius`);
+        const data = await response.json();
+        const [icon, label] = weatherLabel(data.current.weather_code);
+        setWeather({ temperature: Math.round(data.current.temperature_2m), code: icon, label, source: 'live' });
+      } catch { setWeather({ temperature: null, code: null, label: 'Weather signal offline', source: 'fallback' }); }
+    }, () => setWeather({ temperature: null, code: null, label: 'Location off — camp status', source: 'fallback' }), { enableHighAccuracy: false, timeout: 8000, maximumAge: 900000 });
+  };
+
+  useEffect(() => {
+    refreshWeather();
+    const clock = window.setInterval(() => setTime(new Date()), 60000);
+    return () => window.clearInterval(clock);
+  }, []);
+
+  const rotateCondition = () => setCondition(previous => previous === 'Clear Skies' ? 'Campfire Active' : previous === 'Campfire Active' ? 'Trail Watch' : 'Clear Skies');
+
+  return (
+    <section className="trail-markers" aria-label="Trail Markers local status">
+      <div className="trail-markers-heading"><span>⛺</span><strong>Trail Markers</strong><button onClick={refreshWeather} title="Refresh local weather">↻</button></div>
+      <div className="trail-weather"><span className="trail-weather-icon">{weather.code || '◌'}</span><div><strong>{weather.temperature === null ? weather.label : `${weather.temperature}°C`}</strong><small>{weather.temperature === null ? 'Local device status' : weather.label}</small></div><time>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></div>
+      <button className="trail-condition" onClick={rotateCondition} title="Change basecamp condition"><span className="trail-condition-dot" />{condition}</button>
+    </section>
+  );
+};
+
 const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const navigate = useNavigate();
   const { activeTheme } = useTheme();
@@ -2002,6 +2046,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           ))}
         </div>
 
+        <TrailMarkers />
+
         {/* User Controls */}
         <div className="user-profile">
           <div className="user-info" onClick={() => setIsProfileModalOpen(true)} style={{ cursor: 'pointer' }}>
@@ -2912,6 +2958,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 </div>
 
                 {/* User Controls Mobile */}
+                <TrailMarkers />
+
                 <div className="user-profile">
                   <div className="user-info" onClick={() => { setIsProfileModalOpen(true); setIsMobileDrawerOpen(false); }}>
                     <div className="user-avatar">

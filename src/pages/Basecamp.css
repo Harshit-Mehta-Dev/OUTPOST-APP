@@ -453,6 +453,20 @@
   padding: 8px 0;
 }
 
+.trail-markers {
+  margin: auto 12px 10px;
+  padding: 12px;
+  border: 1px solid rgba(var(--brand-primary), 0.26);
+  border-radius: 12px;
+  color: var(--text-primary);
+  background: linear-gradient(145deg, rgba(255,107,43,0.10), rgba(255,255,255,0.035));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 18px rgba(0,0,0,0.16);
+}
+
+.trail-markers-heading { display: flex; align-items: center; gap: 7px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }.trail-markers-heading span { font-size: 16px; }.trail-markers-heading button { margin-left: auto; width: 24px; height: 24px; border: 0; border-radius: 6px; color: var(--text-secondary); background: transparent; cursor: pointer; font-size: 17px; }.trail-markers-heading button:hover { color: var(--accent-primary); background: rgba(255,255,255,.07); }
+.trail-weather { display: flex; align-items: center; gap: 8px; margin: 11px 0 10px; }.trail-weather-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: rgba(0,0,0,.16); font-size: 16px; }.trail-weather div { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 1px; }.trail-weather strong { font-size: 14px; }.trail-weather small { overflow: hidden; color: var(--text-secondary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }.trail-weather time { color: var(--text-secondary); font-size: 11px; }
+.trail-condition { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 8px; border: 1px solid rgba(85,214,157,.22); border-radius: 7px; color: #b9f2d3; background: rgba(85,214,157,.07); font-size: 11px; cursor: pointer; }.trail-condition:hover { background: rgba(85,214,157,.12); }.trail-condition-dot { width: 6px; height: 6px; border-radius: 50%; background: #55d69d; box-shadow: 0 0 8px rgba(85,214,157,.8); }
+
 .message-avatar {
   width: 40px;
   height: 40px;
