@@ -126,6 +126,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [selectedMessageIds, setSelectedMessageIds] = useState([]);
   const [starredMessageIds, setStarredMessageIds] = useState([]);
   const [messageInfo, setMessageInfo] = useState(null);
+  const [forwardMessageIds, setForwardMessageIds] = useState([]);
+  const [isForwardPickerOpen, setIsForwardPickerOpen] = useState(false);
   const chatInputRef = useRef(null);
 
   useEffect(() => {
@@ -148,10 +150,39 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     setStarredMessageIds(prev => prev.includes(id) ? prev.filter(messageId => messageId !== id) : [...prev, id]);
   };
 
-  const forwardToComposer = (msg) => {
-    const author = msg.user?.username || msg.user || 'Scout';
-    setInputText(`Forwarded from ${author}: ${msg.text || msg.body || ''}`);
-    window.setTimeout(() => chatInputRef.current?.focus(), 0);
+  const openForwardPicker = (messageIds) => {
+    setForwardMessageIds(messageIds);
+    setIsForwardPickerOpen(true);
+    setActiveDropdownId(null);
+  };
+
+  const forwardMessagesToChannel = (target) => {
+    const chosen = messages.filter(message => forwardMessageIds.includes(message._id || message.id));
+    const channelKey = `${target.campsiteId}_${target.channel.id}`;
+    const now = new Date();
+    const forwarded = chosen.map((message, index) => ({
+      channelKey,
+      user: { username: currentUser?.username || 'Scout', profilePictureUrl: currentUser?.profilePictureUrl || '', level: currentUser?.level || 1 },
+      time: 'Today at ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      type: 'text',
+      text: `Forwarded from ${message.user?.username || message.user || 'Scout'}: ${message.text || message.body || ''}`,
+      id: `local-forward-${now.getTime()}-${index}`,
+      receivedAt: Date.now()
+    }));
+    setMessagesByChannel(prev => ({ ...prev, [channelKey]: [...(prev[channelKey] || []), ...forwarded] }));
+    forwarded.forEach(message => socket?.connected && socket.emit('send_message', message));
+    setSelectedMessageIds([]);
+    setForwardMessageIds([]);
+    setIsForwardPickerOpen(false);
+  };
+
+  const deleteSelectedMessages = () => {
+    const ids = new Set(selectedMessageIds);
+    const selected = messages.filter(message => ids.has(message._id || message.id));
+    if (selected.some(message => starredMessageIds.includes(message._id || message.id)) && !window.confirm('One or more selected messages are starred. Do you want to delete them?')) return;
+    setMessagesByChannel(prev => ({ ...prev, [currentChannelKey]: (prev[currentChannelKey] || []).filter(message => !ids.has(message._id || message.id)) }));
+    selected.filter(message => (message.user?.username || message.user) === currentUser?.username && !String(message._id || message.id).startsWith('local-')).forEach(message => socket?.emit('delete_message_for_all', { messageId: message._id || message.id, channelKey: currentChannelKey, username: currentUser?.username || 'Scout' }));
+    setSelectedMessageIds([]);
   };
 
   const handleLikeMessage = (msgId, channelKey) => {
@@ -2438,22 +2469,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           {msg.user?.level && <span style={{ fontSize: '10px', color: '#ff6b2b', marginLeft: '6px' }}>Lv.{msg.user.level}</span>}
                           <span className="message-time" style={{ marginLeft: '10px', flexGrow: 1 }}>{msg.time}</span>
                           <div className="message-actions-container">
-                            <button
-                              className={`message-action-btn ${selectedMessageIds.includes(msg._id || msg.id) ? 'is-selected' : ''}`}
-                              onClick={(e) => { e.stopPropagation(); toggleMessageSelection(msg._id || msg.id); }}
-                              title={selectedMessageIds.includes(msg._id || msg.id) ? 'Deselect message' : 'Select message'}
-                            >
-                              {selectedMessageIds.includes(msg._id || msg.id) ? <CheckSquare size={14} /> : <Square size={14} />}
-                            </button>
-                            <button
-                              className={`message-action-btn ${starredMessageIds.includes(msg._id || msg.id) ? 'is-starred' : ''}`}
-                              onClick={(e) => { e.stopPropagation(); toggleMessageStar(msg._id || msg.id); }}
-                              title={starredMessageIds.includes(msg._id || msg.id) ? 'Remove from starred' : 'Star message'}
-                            >
-                              <Star size={14} fill={starredMessageIds.includes(msg._id || msg.id) ? 'currentColor' : 'none'} />
-                            </button>
-                            <button className="message-action-btn" onClick={(e) => { e.stopPropagation(); forwardToComposer(msg); }} title="Forward to composer"><Forward size={14} /></button>
-                            <button className="message-action-btn" onClick={(e) => { e.stopPropagation(); setMessageInfo(msg); }} title="Message information"><Info size={14} /></button>
                             {/* Emoji Reaction Picker */}
                             <div className="emoji-picker-wrapper" onClick={e => e.stopPropagation()}>
                               <button className="message-action-btn message-emoji-trigger-btn" title="Add Reaction">
@@ -2506,6 +2521,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                                     <button onClick={() => { handleCopyMessage(msg); setActiveDropdownId(null); }}>
                                       <Copy size={14} /> Copy
                                     </button>
+                                    <button onClick={() => { toggleMessageSelection(msg._id || msg.id); setActiveDropdownId(null); }}>
+                                      {selectedMessageIds.includes(msg._id || msg.id) ? <CheckSquare size={14} /> : <Square size={14} />} {selectedMessageIds.includes(msg._id || msg.id) ? 'Deselect' : 'Select'}
+                                    </button>
+                                    <button onClick={() => { toggleMessageStar(msg._id || msg.id); setActiveDropdownId(null); }}>
+                                      <Star size={14} fill={starredMessageIds.includes(msg._id || msg.id) ? 'currentColor' : 'none'} /> {starredMessageIds.includes(msg._id || msg.id) ? 'Unstar' : 'Star'}
+                                    </button>
+                                    <button onClick={() => openForwardPicker([msg._id || msg.id])}>
+                                      <Forward size={14} /> Forward
+                                    </button>
+                                    <button onClick={() => { setMessageInfo(msg); setActiveDropdownId(null); }}>
+                                      <Info size={14} /> Message info
+                                    </button>
                                     <button onClick={() => { setReplyingTo(msg); setActiveDropdownId(null); }}>
                                       <Reply size={14} /> Reply
                                     </button>
@@ -2514,6 +2541,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                                     </button>
                                     <button 
                                       onClick={() => {
+                                        if (starredMessageIds.includes(msg._id || msg.id) && !window.confirm('This message is starred. Do you want to delete it?')) return;
                                         setMessageToDelete({ 
                                           id: msg._id || msg.id, 
                                           channelKey: currentChannelKey,
@@ -2707,6 +2735,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           )}
         </AnimatePresence>}
 
+        {selectedMessageIds.length > 0 && (
+          <div className="bulk-message-toolbar">
+            <span>{selectedMessageIds.length} message{selectedMessageIds.length === 1 ? '' : 's'} selected</span>
+            <button onClick={() => openForwardPicker(selectedMessageIds)}><Forward size={15} /> Forward</button>
+            <button className="bulk-delete-btn" onClick={deleteSelectedMessages}><Trash2 size={15} /> Delete selected</button>
+            <button className="bulk-cancel-btn" onClick={() => setSelectedMessageIds([])}>Cancel</button>
+          </div>
+        )}
         <div className="chat-input-wrapper" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board') ? 'none' : undefined }}>
           <div className="chat-input-container" style={{ position: 'relative', overflow: 'visible' }}>
             {activeCampsite?.bannedUsers?.includes(currentUser?.username) ? (
@@ -2758,7 +2794,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <p><strong>From</strong> {messageInfo.user?.username || messageInfo.user || 'Unknown Scout'}</p>
               <p><strong>Sent</strong> {messageInfo.time || 'Just now'}</p>
               <p><strong>Channel</strong> #{activeChannel}</p>
-              <button className="message-info-forward" onClick={() => { forwardToComposer(messageInfo); setMessageInfo(null); }}><Forward size={14} /> Forward to composer</button>
+              <button className="message-info-forward" onClick={() => { openForwardPicker([messageInfo._id || messageInfo.id]); setMessageInfo(null); }}><Forward size={14} /> Forward message</button>
+            </section>
+          </div>
+        )}
+        {isForwardPickerOpen && (
+          <div className="message-info-backdrop" onClick={() => setIsForwardPickerOpen(false)}>
+            <section className="forward-picker-panel" onClick={e => e.stopPropagation()} aria-label="Forward messages">
+              <button className="message-info-close" onClick={() => setIsForwardPickerOpen(false)} aria-label="Close forward dialog"><X size={17} /></button>
+              <Forward size={19} className="message-info-icon" />
+              <h3>Forward {forwardMessageIds.length} message{forwardMessageIds.length === 1 ? '' : 's'}</h3>
+              <p>Choose a group and channel where you are a member.</p>
+              <div className="forward-target-list">
+                {campsites.flatMap(campsite => (campsite.expeditions || []).filter(channel => channel.type === 'text' && channel.id !== 'Ai-Scout').map(channel => ({ campsiteId: campsite.id || campsite._id, campsiteName: campsite.name || 'Outpost', channel }))).map(target => (
+                  <button key={`${target.campsiteId}-${target.channel.id}`} onClick={() => forwardMessagesToChannel(target)}>
+                    <span>{target.campsiteName}</span><strong>#{target.channel.name || target.channel.id}</strong>
+                  </button>
+                ))}
+              </div>
             </section>
           </div>
         )}
