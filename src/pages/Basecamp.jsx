@@ -480,6 +480,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     }
   };
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [isPinPopupOpen, setIsPinPopupOpen] = useState(false);
   const [selectedPopupAlert, setSelectedPopupAlert] = useState(null);
   const [clearedTimestamps, setClearedTimestamps] = useState(() => {
     try {
@@ -492,7 +493,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const rawMessages = messagesByChannel[currentChannelKey] || [];
   const clearTime = clearedTimestamps[currentChannelKey] || 0;
   const messages = rawMessages.filter(msg => (msg.receivedAt || 0) >= clearTime);
+  const pinnedMessages = Object.values(messagesByChannel)
+    .flat()
+    .filter(msg => msg.isPinned)
+    .sort((a, b) => (b.receivedAt || 0) - (a.receivedAt || 0));
+  const pinnedCount = pinnedMessages.length;
   
+  const handleTogglePinPopup = () => {
+    setIsPinPopupOpen(prev => !prev);
+    setIsAlertOpen(false);
+    setIsAIOpen(false);
+  };
+
   const changeViewChannelCallback = (campsiteId, channelId) => {
     setCampsites(prev => prev.map(c => ({
       ...c,
@@ -2136,7 +2148,18 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </div>
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={handleTogglePinPopup}
+                className={`theme-trigger-btn ${isPinPopupOpen ? 'active shadow-[0_0_18px_rgba(251,191,36,0.28)]' : ''}`}
+                style={isPinPopupOpen ? { background: 'var(--bg-card)', color: '#fbbf24', border: '1px solid #fbbf24' } : { border: '1px solid transparent' }}
+                title="Pinned Messages"
+              >
+                <Pin size={18} />
+                <span className="hide-on-mobile" style={{ marginLeft: '6px', fontSize: '0.8rem', textTransform: 'uppercase' }}>Pins</span>
+                {pinnedCount > 0 && <span className="pin-badge">{pinnedCount}</span>}
+              </button>
+            </div>
             <TrailMarkers campsite={activeCampsite} onConditionChange={handleTrailConditionChange} />
             {/* NOTIFICATION BELL OUTSIDE SYSTEM TOOLS */}
             <div style={{ position: 'relative' }}>
@@ -2284,6 +2307,97 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               onDismissAlert={(id) => setAlerts(prev => prev.filter(a => a.id !== id))}
               onClearAll={() => setAlerts([])} 
             />
+
+            <AnimatePresence>
+              {isPinPopupOpen && (
+                <motion.div
+                  className="pin-popup-backdrop"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0, 0, 0, 0.55)',
+                    zIndex: 9998,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                  }}
+                  onClick={() => setIsPinPopupOpen(false)}
+                >
+                  <motion.section
+                    className="pin-popup-panel"
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      borderRadius: '24px',
+                      width: 'min(720px, 100%)',
+                      maxHeight: 'min(90vh, 720px)',
+                      overflow: 'hidden',
+                      boxShadow: '0 30px 80px rgba(0,0,0,0.35)',
+                      padding: '0',
+                      position: 'relative'
+                    }}
+                    onClick={event => event.stopPropagation()}
+                  >
+                    <div className="pin-popup-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '22px 26px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-primary)', marginBottom: '6px' }}>
+                          <Pin size={18} />
+                          <strong style={{ fontSize: '1rem', letterSpacing: '0.06em' }}>Pinned Messages</strong>
+                        </div>
+                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{pinnedCount > 0 ? `Showing ${pinnedCount} pinned message${pinnedCount === 1 ? '' : 's'} in ${activeChannel}` : 'No pinned messages in this channel yet.'}</p>
+                      </div>
+                      <button
+                        onClick={() => setIsPinPopupOpen(false)}
+                        className="icon-btn"
+                        style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)', padding: '8px' }}
+                        title="Close pinned messages"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                    <div className="pin-popup-content" style={{ maxHeight: 'calc(90vh - 130px)', overflowY: 'auto', padding: '20px 24px', display: 'grid', gap: '16px' }}>
+                      {pinnedMessages.length > 0 ? pinnedMessages.map((msg, index) => (
+                        <article key={msg._id || msg.id || `pin-${index}`} className="pin-item-card" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '18px', display: 'grid', gap: '12px' }}>
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(251, 191, 36, 0.15)', display: 'grid', placeItems: 'center', color: '#fbbf24' }}><Pin size={16} /></div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                <strong style={{ color: 'var(--text-primary)' }}>{msg.user?.username || 'Scout'}</strong>
+                                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{msg.time}</span>
+                              </div>
+                              <span style={{ fontSize: '0.8rem', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Pinned</span>
+                            </div>
+                          </div>
+                          <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.text || msg.body || '[No text content]'}</p>
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                              className="theme-trigger-btn"
+                              style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: '10px' }}
+                              onClick={() => handlePinMessage(msg, msg.channelKey || currentChannelKey)}
+                            >
+                              <Pin size={14} /> Unpin
+                            </button>
+                          </div>
+                        </article>
+                      )) : (
+                        <div style={{ padding: '32px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                          <p style={{ margin: 0, fontWeight: '600', color: 'var(--text-primary)' }}>No pins here yet.</p>
+                          <p style={{ margin: '10px 0 0' }}>Use the message dropdown menu to pin important content, and it will stay available after refresh.</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.section>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <AnimatePresence>
               {selectedPopupAlert && (

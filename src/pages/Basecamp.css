@@ -1285,6 +1285,54 @@
   font-weight: bold;
 }
 
+.pin-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f59e0b;
+  color: #0f172a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.pin-popup-panel {
+  border-radius: 24px;
+}
+
+.pin-popup-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251,191,36,0.4) transparent;
+}
+
+.pin-popup-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.pin-popup-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pin-popup-content::-webkit-scrollbar-thumb {
+  background: rgba(251,191,36,0.35);
+  border-radius: 999px;
+}
+
+.pin-item-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pin-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.15);
+}
+
 /* ─── Emoji Reaction Picker ─────────────────────────────────────────── */
 .emoji-picker-wrapper {
   position: relative;
