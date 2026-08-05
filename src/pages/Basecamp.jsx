@@ -313,6 +313,17 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       }
       return prev;
     });
+
+    if (isPinnedNow) {
+      setPinnedMessages(prev => {
+        const exists = prev.some(m => (m.id || m._id) === msgId);
+        if (exists) return prev;
+        return [{ ...msg, isPinned: true }, ...prev];
+      });
+    } else {
+      setPinnedMessages(prev => prev.filter(m => (m.id || m._id) !== msgId));
+    }
+
     socket.emit("pin_message", { messageId: msgId, channelKey, isPinned: isPinnedNow });
   };
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -493,10 +504,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const rawMessages = messagesByChannel[currentChannelKey] || [];
   const clearTime = clearedTimestamps[currentChannelKey] || 0;
   const messages = rawMessages.filter(msg => (msg.receivedAt || 0) >= clearTime);
-  const pinnedMessages = Object.values(messagesByChannel)
-    .flat()
-    .filter(msg => msg.isPinned)
-    .sort((a, b) => (b.receivedAt || 0) - (a.receivedAt || 0));
+  const [pinnedMessages, setPinnedMessages] = useState([]);
   const pinnedCount = pinnedMessages.length;
   
   const handleTogglePinPopup = () => {
@@ -564,6 +572,28 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       reactions: m.reactions || []
     };
   };
+
+  const fetchPins = async () => {
+    try {
+      const token = localStorage.getItem('outpost_token');
+      const apiBase = CHAT_URL || import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
+      const res = await fetch(`${apiBase}/api/messages/pins`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        const apiData = await res.json();
+        if (Array.isArray(apiData)) {
+          setPinnedMessages(apiData.map(m => parseIncomingMessage(m, m.channelKey)));
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to fetch pinned messages:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPins();
+  }, [currentChannelKey]);
 
   // Fetch messages using Dual-Tier Architecture (Primary Backend API + Supabase Backup)
   useEffect(() => {
@@ -864,6 +894,26 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         });
         return { ...prev, [channelKey]: updated };
       });
+
+      if (isPinned) {
+        // If pinned, try to find the full message in messagesByChannel to add it, or fall back to fetchPins()
+        setPinnedMessages(prev => {
+          const exists = prev.some(m => (m.id || m._id) === messageId);
+          if (exists) return prev;
+          
+          // Look for it in the channel messages
+          const currentChannelMessages = messagesByChannel[channelKey] || [];
+          const found = currentChannelMessages.find(m => (m.id || m._id) === messageId);
+          if (found) {
+            return [{ ...found, isPinned: true }, ...prev];
+          }
+          // If not in cache, refetch pins to be accurate
+          fetchPins();
+          return prev;
+        });
+      } else {
+        setPinnedMessages(prev => prev.filter(m => (m.id || m._id) !== messageId));
+      }
     };
     socket.on("message_pinned", handleMessagePinned);
 
@@ -875,6 +925,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           [channelKey]: currentMessages.filter(m => (m._id || m.id) !== messageId)
         };
       });
+      setPinnedMessages(prev => prev.filter(m => (m.id || m._id) !== messageId));
     };
 
     const handleOperatorErasure = (payload) => {
@@ -893,6 +944,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           )
         };
       });
+      setPinnedMessages(prev => prev.map(msg => 
+        (msg.id || msg._id) === payload.messageId
+          ? {
+              ...msg,
+              text: payload.replacementText,
+              isSystemDeleted: true
+            }
+          : msg
+      ));
     };
 
     const handleOperatorPurge = (payload) => {
@@ -2352,7 +2412,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                           <Pin size={18} />
                           <strong style={{ fontSize: '1rem', letterSpacing: '0.06em' }}>Pinned Messages</strong>
                         </div>
-                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{pinnedCount > 0 ? `Showing ${pinnedCount} pinned message${pinnedCount === 1 ? '' : 's'} in ${activeChannel}` : 'No pinned messages in this channel yet.'}</p>
+                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{pinnedCount > 0 ? `Showing ${pinnedCount} pinned message${pinnedCount === 1 ? '' : 's'}` : 'No pinned messages yet.'}</p>
                       </div>
                       <button
                         onClick={() => setIsPinPopupOpen(false)}
@@ -2364,30 +2424,46 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                       </button>
                     </div>
                     <div className="pin-popup-content" style={{ maxHeight: 'calc(90vh - 130px)', overflowY: 'auto', padding: '20px 24px', display: 'grid', gap: '16px' }}>
-                      {pinnedMessages.length > 0 ? pinnedMessages.map((msg, index) => (
-                        <article key={msg._id || msg.id || `pin-${index}`} className="pin-item-card" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '18px', display: 'grid', gap: '12px' }}>
-                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(251, 191, 36, 0.15)', display: 'grid', placeItems: 'center', color: '#fbbf24' }}><Pin size={16} /></div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                                <strong style={{ color: 'var(--text-primary)' }}>{msg.user?.username || 'Scout'}</strong>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{msg.time}</span>
+                      {pinnedMessages.length > 0 ? pinnedMessages.map((msg, index) => {
+                        const channelName = msg.channelKey ? msg.channelKey.split('_').slice(1).join('_') : '';
+                        return (
+                          <article key={msg._id || msg.id || `pin-${index}`} className="pin-item-card" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '18px', display: 'grid', gap: '12px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(251, 191, 36, 0.15)', display: 'grid', placeItems: 'center', color: '#fbbf24' }}><Pin size={16} /></div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                  <strong style={{ color: 'var(--text-primary)' }}>{msg.user?.username || 'Scout'}</strong>
+                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{msg.time}</span>
+                                </div>
+                                <span style={{ fontSize: '0.8rem', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Pinned {channelName ? `in #${channelName}` : ''}</span>
                               </div>
-                              <span style={{ fontSize: '0.8rem', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Pinned</span>
                             </div>
-                          </div>
-                          <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.text || msg.body || '[No text content]'}</p>
-                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                            <button
-                              className="theme-trigger-btn"
-                              style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: '10px' }}
-                              onClick={() => handlePinMessage(msg, msg.channelKey || currentChannelKey)}
-                            >
-                              <Pin size={14} /> Unpin
-                            </button>
-                          </div>
-                        </article>
-                      )) : (
+                            <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.text || msg.body || '[No text content]'}</p>
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                              <button
+                                className="theme-trigger-btn"
+                                style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: '10px' }}
+                                onClick={() => handlePinMessage(msg, msg.channelKey || currentChannelKey)}
+                              >
+                                <Pin size={14} /> Unpin
+                              </button>
+                              {channelName && (
+                                <button
+                                  className="theme-trigger-btn"
+                                  style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: '10px', background: 'var(--accent-primary)', color: 'white', border: 'none' }}
+                                  onClick={() => {
+                                    const campsiteId = msg.channelKey.split('_')[0];
+                                    changeViewChannelCallback(campsiteId, msg.channelKey);
+                                    setIsPinPopupOpen(false);
+                                  }}
+                                >
+                                  Jump to Channel
+                                </button>
+                              )}
+                            </div>
+                          </article>
+                        );
+                      }) : (
                         <div style={{ padding: '32px', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-secondary)', textAlign: 'center' }}>
                           <p style={{ margin: 0, fontWeight: '600', color: 'var(--text-primary)' }}>No pins here yet.</p>
                           <p style={{ margin: '10px 0 0' }}>Use the message dropdown menu to pin important content, and it will stay available after refresh.</p>

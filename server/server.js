@@ -340,6 +340,27 @@ app.use('/api/messages/search', async (req, res, next) => {
   }
 });
 
+// Pinned Messages Route
+app.get('/api/messages/pins', async (req, res) => {
+  try {
+    const messages = await Message.find({ isPinned: true })
+      .sort({ createdAt: -1 })
+      .limit(100);
+      
+    const decryptedMessages = messages.map(msg => {
+      const doc = msg.toObject ? msg.toObject() : msg;
+      if (doc.encryptedData && doc.iv) {
+        doc.text = scoutVault.decrypt(doc.encryptedData, doc.iv);
+      }
+      return doc;
+    });
+    
+    res.json(decryptedMessages);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch pinned messages' });
+  }
+});
+
 // Messages Route
 app.get('/api/messages/:channelKey', async (req, res) => {
   try {

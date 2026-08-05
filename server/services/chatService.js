@@ -210,6 +210,27 @@ const User = require('../models/User');
 const HelpRequest = require('../models/HelpRequest');
 const scoutVault = require('../utils/scoutVault');
 
+// Pinned Messages Route
+app.get('/api/messages/pins', cache(15), async (req, res) => {
+  try {
+    const messages = await Message.find({ isPinned: true })
+      .sort({ createdAt: -1 })
+      .limit(100);
+      
+    const decryptedMessages = messages.map(msg => {
+      const doc = msg.toObject ? msg.toObject() : msg;
+      if (doc.encryptedData && doc.iv) {
+        doc.text = scoutVault.decrypt(doc.encryptedData, doc.iv);
+      }
+      return doc;
+    });
+    
+    res.json(decryptedMessages);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch pinned messages' });
+  }
+});
+
 // Messages Route
 app.get('/api/messages/:channelKey', cache(15), async (req, res) => {
   try {
@@ -583,6 +604,21 @@ io.on('connection', (socket) => {
       io.to(channelKey).emit("message_reacted", { messageId, channelKey, reactions: msg.reactions });
     } catch (err) {
       console.error("Error reacting to message:", err);
+    }
+  });
+
+  socket.on("pin_message", async ({ messageId, channelKey, isPinned }) => {
+    try {
+      const msg = await Message.findById(messageId);
+      if (!msg) return;
+      
+      msg.isPinned = isPinned;
+      await Message.updateOne({ _id: messageId }, { $set: { isPinned } });
+      syncMessageToSupabase(msg);
+
+      io.to(channelKey).emit("message_pinned", { messageId, channelKey, isPinned });
+    } catch (err) {
+      console.error("Error pinning message:", err);
     }
   });
 
