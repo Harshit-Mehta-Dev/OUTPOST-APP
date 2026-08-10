@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Lock } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient';
 import './ScoutGuardian.css';
 
 /**
  * Scout-Guardian Frontend Aegis
- * Catches truly catastrophic UI crashes and provides recovery.
- * Does NOT treat normal network errors or API failures as security threats.
- * Does NOT wipe user sessions or force logout on recoverable errors.
+ * Catches catastrophic UI crashes and provides recovery.
+ * On 3rd consecutive failure, it initiates an emergency lockdown to prevent bypass attempts.
  */
 export class ScoutGuardian extends Component {
   constructor(props) {
@@ -15,6 +15,7 @@ export class ScoutGuardian extends Component {
       hasError: false,
       errorCount: 0,
       isRecovering: false,
+      isLockdown: false,
       lastError: null,
     };
   }
@@ -23,13 +24,10 @@ export class ScoutGuardian extends Component {
     return { hasError: true, lastError: error?.message || 'Unknown error' };
   }
 
-  componentDidCatch(error, errorInfo) {
-    // Log the crash for debugging — never show raw error to users
+  async componentDidCatch(error, errorInfo) {
     console.error('[Scout-Guardian] UI crash intercepted:', error.message);
-
     const newCount = this.state.errorCount + 1;
 
-    // Auto-recover for the first 2 crashes — most are transient render issues
     if (newCount <= 2) {
       this.setState({ isRecovering: true, errorCount: newCount });
       setTimeout(() => {
@@ -37,8 +35,21 @@ export class ScoutGuardian extends Component {
         console.log('[Scout-Guardian] Auto-recovery successful.');
       }, 2000);
     } else {
-      // After 3 crashes, show the halt screen but DO NOT log out the user
-      this.setState({ errorCount: newCount });
+      // 3rd crash -> EMERGENCY LOCKDOWN
+      this.setState({ isLockdown: true, errorCount: newCount });
+      console.warn('[Scout-Guardian] 3 consecutive failures detected. Initiating Emergency Lockdown.');
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.error('Logout failed during lockdown', e);
+      }
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Force reload to login screen after 3 seconds
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 3000);
     }
   }
 
@@ -57,29 +68,20 @@ export class ScoutGuardian extends Component {
         );
       }
 
-      // Persistent crash — offer a reload, but keep the user's session intact
+      // Persistent crash -> Emergency Lockdown UI
       return (
         <div className="scout-guardian-overlay critical">
           <div className="scout-guardian-box">
-            <ShieldCheck size={48} className="scout-guardian-icon critical-icon" />
-            <h2 className="scout-guardian-title">Scout-Guardian: System Error</h2>
+            <Lock size={48} className="scout-guardian-icon critical-icon pulse" style={{ color: '#ff3b30' }} />
+            <h2 className="scout-guardian-title" style={{ color: '#ff3b30' }}>EMERGENCY LOCKDOWN</h2>
             <p className="scout-guardian-text">
-              A persistent display error occurred. Click below to reload the page.
-              Your account and data are safe.
+              Multiple consecutive failures detected. To protect your account from unauthorized bypass attempts, 
+              Scout-Guardian has initiated an emergency lockdown and safely terminated your session.
             </p>
-            <button
-              className="scout-guardian-btn"
-              onClick={() => window.location.reload()}
-            >
-              Reload Application
-            </button>
-            <button
-              className="scout-guardian-btn"
-              style={{ marginTop: '8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#aaa' }}
-              onClick={() => this.setState({ hasError: false, errorCount: 0, isRecovering: false })}
-            >
-              Try Without Reload
-            </button>
+            <div className="scout-guardian-loader" style={{ borderTopColor: '#ff3b30' }}></div>
+            <p className="scout-guardian-text" style={{ fontSize: '10px', marginTop: '16px', color: 'rgba(255,255,255,0.4)' }}>
+              Redirecting to secure login...
+            </p>
           </div>
         </div>
       );
