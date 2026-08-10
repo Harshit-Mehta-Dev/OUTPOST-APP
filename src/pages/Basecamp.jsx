@@ -2216,7 +2216,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 title="Pinned Messages"
               >
                 <Pin size={18} />
-                <span className="hide-on-mobile" style={{ marginLeft: '6px', fontSize: '0.8rem', textTransform: 'uppercase' }}>Pins</span>
                 {pinnedCount > 0 && <span className="pin-badge">{pinnedCount}</span>}
               </button>
             </div>
