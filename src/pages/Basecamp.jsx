@@ -2639,7 +2639,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 </motion.div>
               )}
             </AnimatePresence>
-          </AnimatePresence>
 
             <button className="camp-ops-btn" onClick={() => setIsCampOpsModalOpen(true)}>
               <Settings size={18} />
