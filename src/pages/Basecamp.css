@@ -83,6 +83,18 @@
   max-height: 100%;
 }
 
+.basecamp-layout.layout-discover {
+  grid-template-columns: 72px 1fr;
+}
+
+.basecamp-layout.layout-sidebar-open {
+  grid-template-columns: 72px 280px 1fr;
+}
+
+.basecamp-layout.layout-sidebar-closed {
+  grid-template-columns: 72px 1fr;
+}
+
 /* Glass Panels specifically for the app view */
 .glass-panel {
   background: var(--bg-glass);

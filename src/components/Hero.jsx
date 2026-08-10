@@ -12,7 +12,7 @@ const Hero = () => {
       
       <div className="container hero-content">
         <div className="badge glass-panel">
-          <span className="live-dot"></span> Outpost Beta v2.1 is live
+          <span className="live-dot"></span> Outpost Beta v3.0 is live
         </div>
         
         <div className="sticker-container" style={{ display: 'inline-block' }}>

@@ -1834,8 +1834,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </div>
       )}
       <div 
-        className="basecamp-layout" 
-        style={{ gridTemplateColumns: showDiscover ? '72px 1fr' : (isSidebarOpen ? '72px 280px 1fr' : '72px 1fr') }}
+        className={`basecamp-layout ${showDiscover ? 'layout-discover' : (isSidebarOpen ? 'layout-sidebar-open' : 'layout-sidebar-closed')}`}
       >
       <AnimatePresence>
         {messageToDelete && (
