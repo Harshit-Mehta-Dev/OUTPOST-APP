@@ -2556,7 +2556,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
           <div className="chat-header-actions" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* Mini player embedded in header */}
-            {isSpotifyLoggedIn && activeChannel !== 'Chill-Zone' && (
+            {activeChannel !== 'Chill-Zone' && (
               <div
                 onClick={() => setActiveChannel('Chill-Zone')}
                 style={{
@@ -2577,9 +2577,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 onMouseOut={(e) => { e.currentTarget.style.borderColor = 'rgba(29,185,84,0.3)'; e.currentTarget.style.background = 'linear-gradient(135deg, rgba(29,185,84,0.18), rgba(0,0,0,0.4))'; }}
                 title="Go to Chill Zone"
               >
-                <Music size={12} style={{ color: '#1db954', flexShrink: 0 }} />
+                <Music size={12} style={{ color: '#1db954', flexShrink: 0, animation: 'pulse 2s ease-in-out infinite' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ fontSize: '9px', color: '#1db954', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: '1' }}>Playing</div>
+                  <div style={{ fontSize: '9px', color: '#1db954', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: '1' }}>
+                    {isSpotifyLoggedIn ? '♪ Playing' : '♪ Preview'}
+                  </div>
                   <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.2' }}>
                     {selectedPlaylistUrl.includes('37i9dQZF1DWZeKCadgRdKQ') ? 'Lofi Beats' : selectedPlaylistUrl.includes('37i9dQZF1DX4sWSpwq3LiO') ? 'Chill Lofi Study' : 'Chill Jazz'}
                   </div>
