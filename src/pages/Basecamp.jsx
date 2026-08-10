@@ -2789,7 +2789,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', display: 'block' }}>
                     1. Click <strong style={{color:'#1db954'}}>Log In</strong> above — a small Spotify popup opens.
                     <br/>2. Sign in to your account in that popup.
-                    <br/>3. Close the popup &amp; enjoy full tracks here!
                     <br/><br/><em>Without login: 30s previews only.</em>
                   </span>
                 </div>
