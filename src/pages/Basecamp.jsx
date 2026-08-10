@@ -2641,11 +2641,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 </div>
                 
                 <button
-                  onClick={() => window.open("https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F", "_blank")}
+                  onClick={() => setSelectedPlaylistUrl(selectedPlaylistUrl === "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F" ? "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGae312e" : "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F")}
                   className="chill-action-btn accent"
                   style={{ background: '#1db954', border: 'none', color: '#fff', padding: '10px 20px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', transition: 'transform 0.2s' }}
                 >
-                  Log In with Spotify Account
+                  {selectedPlaylistUrl.includes("accounts.spotify.com") ? "Back to Player" : "Log In with Spotify Account"}
                 </button>
               </div>
 
