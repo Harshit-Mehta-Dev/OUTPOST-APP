@@ -6,6 +6,7 @@ import { useSoundEngine } from './hooks/useSoundEngine';
 import { GeometricBorder } from './components/ui/GeometricBorder'; // Loading indicator placeholder
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useThemeTransition } from './hooks/useThemeTransition';
 
 // Lazy-loaded routes
 const Landing = lazy(() => import('./pages/Landing'));
@@ -30,6 +31,7 @@ import { ScoutGuardian } from './components/security/ScoutGuardian';
 function App() {
   // Initialize Global Sound Engine
   useSoundEngine();
+  const { triggerTransition } = useThemeTransition();
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -95,8 +97,10 @@ function App() {
     }
   }, []);
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+  // Accepts an optional MouseEvent to anchor the ripple to the clicked button
+  const toggleTheme = (event) => {
+    const newIsDark = !isDarkMode;
+    triggerTransition(event, newIsDark, () => setIsDarkMode(newIsDark));
   };
 
   return (

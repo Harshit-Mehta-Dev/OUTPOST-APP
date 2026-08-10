@@ -87,7 +87,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
           <a href="/#helpdesk" onClick={(e) => handleNavClick(e, '/#helpdesk')}>Help Desk</a>
           <a href="/#feedback" onClick={(e) => handleNavClick(e, '/#feedback')}>Feedback</a>
           <div className="nav-actions-mobile">
-            <button className="theme-toggle" onClick={toggleTheme}>
+            <button className="theme-toggle" onClick={(e) => toggleTheme(e)}>
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <button className="btn-secondary" onClick={() => { setMobileMenuOpen(false); navigate('/auth'); }}>
@@ -97,7 +97,7 @@ const Header = ({ isDarkMode, toggleTheme }) => {
         </nav>
 
         <div className="nav-actions-desktop" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button className="theme-toggle" onClick={toggleTheme} style={{ display: 'flex', alignItems: 'center', padding: '0 12px', color: 'var(--text-primary)' }}>
+          <button className="theme-toggle" onClick={(e) => toggleTheme(e)} style={{ display: 'flex', alignItems: 'center', padding: '0 12px', color: 'var(--text-primary)' }}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           <button className="btn-secondary" onClick={() => navigate('/auth')}>

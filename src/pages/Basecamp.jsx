@@ -2299,7 +2299,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
                       {/* THEME TOGGLE */}
                       <button
-                        onClick={() => { toggleTheme(); }}
+                        onClick={(e) => { toggleTheme(e); }}
                         className={`theme-trigger-btn ${!isDarkMode ? 'active' : ''}`}
                         title="Toggle Light/Dark Mode"
                       >
