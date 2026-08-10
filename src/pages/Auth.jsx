@@ -39,10 +39,9 @@ const Auth = () => {
     }
   };
 
+  // Pre-fetch SVG captcha silently in background as fallback (only used if Turnstile fails)
   useEffect(() => {
-    if (!import.meta.env.VITE_TURNSTILE_SITE_KEY) {
-      fetchSvgCaptcha();
-    }
+    fetchSvgCaptcha();
   }, []);
 
   const [isSessionResolving, setIsSessionResolving] = useState(() => {
@@ -453,8 +452,9 @@ const IconBackground = () => {
             
             <div className="form-group captcha-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', marginBottom: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                {(!import.meta.env.VITE_TURNSTILE_SITE_KEY || turnstileError) ? (
-                  svgCaptchaImage && (
+                {turnstileError ? (
+                  // SVG fallback — only shown if Turnstile fires onError
+                  svgCaptchaImage ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px' }}>
                       <div dangerouslySetInnerHTML={{ __html: svgCaptchaImage }} style={{ background: '#fff', borderRadius: '4px', padding: '5px' }} />
                       <input
@@ -468,8 +468,9 @@ const IconBackground = () => {
                         Refresh Captcha
                       </button>
                     </div>
-                  )
+                  ) : <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Loading captcha...</div>
                 ) : (
+                  // Always try Turnstile first — uses env var or hardcoded fallback key
                   <Turnstile 
                     siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAAD0VEYB6AeTVN4V2"} 
                     onSuccess={(token) => setTurnstileToken(token)}
@@ -477,6 +478,7 @@ const IconBackground = () => {
                       setTurnstileError(true);
                       fetchSvgCaptcha();
                     }}
+                    onExpire={() => setTurnstileToken('')}
                   />
                 )}
               </div>
@@ -531,8 +533,8 @@ const IconBackground = () => {
                 
                 <div className="form-group captcha-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px', marginBottom: '15px' }}>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    {(!import.meta.env.VITE_TURNSTILE_SITE_KEY || turnstileError) ? (
-                      svgCaptchaImage && (
+                    {turnstileError ? (
+                      svgCaptchaImage ? (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px' }}>
                           <div dangerouslySetInnerHTML={{ __html: svgCaptchaImage }} style={{ background: '#fff', borderRadius: '4px', padding: '5px' }} />
                           <input
@@ -546,7 +548,7 @@ const IconBackground = () => {
                             Refresh Captcha
                           </button>
                         </div>
-                      )
+                      ) : <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Loading captcha...</div>
                     ) : (
                       <Turnstile 
                         siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAAD0VEYB6AeTVN4V2"} 
@@ -555,6 +557,7 @@ const IconBackground = () => {
                           setTurnstileError(true);
                           fetchSvgCaptcha();
                         }}
+                        onExpire={() => setTurnstileToken('')}
                       />
                     )}
                   </div>
