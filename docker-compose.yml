@@ -76,7 +76,7 @@ services:
     restart: always
     environment:
       - POSTGRES_USER=n8n
-      - POSTGRES_PASSWORD=n8n_secure_password
+      - POSTGRES_PASSWORD=${N8N_DB_PASSWORD}
       - POSTGRES_DB=n8n
     volumes:
       - n8n_db_data:/var/lib/postgresql/data
@@ -94,7 +94,7 @@ services:
       - DB_POSTGRESDB_PORT=5432
       - DB_POSTGRESDB_DATABASE=n8n
       - DB_POSTGRESDB_USER=n8n
-      - DB_POSTGRESDB_PASSWORD=n8n_secure_password
+      - DB_POSTGRESDB_PASSWORD=${N8N_DB_PASSWORD}
       - N8N_ENFORCEMENT_USER_MANAGEMENT=true
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
