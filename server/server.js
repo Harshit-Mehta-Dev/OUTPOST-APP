@@ -40,6 +40,24 @@ const { compressMediaPayload } = require('./utils/compression');
 // Removed old requires
 const morgan = require('morgan');
 
+const { ServerApiVersion } = require('mongodb');
+
+// MongoDB Connection — connect FIRST before any routes or sockets are registered
+mongoose.connect(process.env.MONGODB_URI, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+})
+.then(() => console.log('✅ Connected to MongoDB Atlas'))
+.catch(err => console.error('❌ Failed to connect to MongoDB', err));
+
+// MongoDB reconnect/disconnect event hooks
+mongoose.connection.on('disconnected', () => console.warn('⚠️  MongoDB disconnected. Mongoose will auto-reconnect...'));
+mongoose.connection.on('reconnected', () => console.log('✅ MongoDB reconnected.'));
+mongoose.connection.on('error', (err) => console.error('❌ MongoDB connection error:', err.message));
+
 // Global Crash Handlers
 process.on('uncaughtException', (err) => {
   console.error('UNCAUGHT EXCEPTION! 💥 System recovered.');
@@ -371,9 +389,19 @@ app.get('/api/messages/pins', async (req, res) => {
   }
 });
 
-// Messages Route
+// Messages Route — requires a valid Supabase token
 app.get('/api/messages/:channelKey', async (req, res) => {
   try {
+    // Auth guard: verify Bearer token
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
+
+    if (supabase) {
+      const { data, error } = await supabase.auth.getUser(token);
+      if (error || !data.user) return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    }
+
     const messages = await Message.find({ channelKey: req.params.channelKey })
       .sort({ createdAt: 1 })
       .limit(100);
@@ -743,44 +771,9 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Catch and Broadcast "Scout is typing"
-  socket.on("scout-typing-start", async ({ channelId, scoutName }) => {
-    try {
-      const campsiteId = channelId.split('_')[0];
-      const typingNotif = new Notification({
-        campsiteId,
-        message: `${scoutName} is typing...`,
-        scoutName,
-        type: 'typing'
-      });
-      await typingNotif.save();
-    } catch (err) {
-      console.error("Error saving typing notification:", err);
-    }
+  // Catch and Broadcast "Scout is typing" — do NOT persist to DB (would create spam)
+  socket.on("scout-typing-start", ({ channelId, scoutName }) => {
     socket.broadcast.to(channelId).emit("broadcast-typing-start", { scoutName });
-  });
-
-  socket.on("submit-scout-vote", async ({ messageId, channelKey, optionIndex, scoutId }) => {
-    try {
-      const message = await Message.findById(messageId);
-      if (message && message.type === 'poll') {
-        const newPollData = { ...message.pollData };
-        if (!newPollData.votesArray.includes(scoutId)) {
-          newPollData.votesArray.push(scoutId);
-          if(!newPollData.votesMap[optionIndex]) newPollData.votesMap[optionIndex] = [];
-          newPollData.votesMap[optionIndex].push(scoutId);
-          
-          message.pollData = newPollData;
-          message.markModified('pollData');
-          await message.save();
-          syncMessageToSupabase(message);
-          
-          io.to(channelKey).emit("broadcast-updated-vote", { messageId, optionIndex, scoutId, channelKey });
-        }
-      }
-    } catch(err) {
-      console.error("Error voting:", err);
-    }
   });
 
   socket.on("like_message", async ({ messageId, channelKey, username }) => {
@@ -915,7 +908,6 @@ io.on('connection', (socket) => {
   });
 });
 
-const { ServerApiVersion } = require('mongodb');
 const errorHandler = require('./middleware/errorHandler');
 
 // Catch-all route for 404s
@@ -926,16 +918,7 @@ app.use((req, res, next) => {
 // Apply centralized error handler
 app.use(errorHandler);
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-})
-.then(() => console.log('✅ Connected to MongoDB Atlas'))
-.catch(err => console.error('❌ Failed to connect to MongoDB', err));
+// MongoDB connection already established at the top of this file
 
 const { trainModel } = require('./ai/nlpEngine');
 
