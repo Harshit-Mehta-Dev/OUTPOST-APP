@@ -505,6 +505,218 @@
 
 .trail-location-btn { width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,.1); border-radius: 7px; background: rgba(255,255,255,.05); color: var(--text-secondary); font-size: 11px; cursor: pointer; margin-bottom: 16px; text-align: center; }
 .trail-location-btn:hover { background: rgba(255,255,255,.1); color: var(--text-primary); }
+
+/* --- Spotify Chill Zone Modal & Styling --- */
+.chill-zone-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+.chill-zone-modal {
+  position: relative;
+  width: min(500px, 90vw);
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(10, 10, 10, 0.98));
+  border: 1px solid rgba(29, 185, 84, 0.4);
+  border-radius: 20px;
+  padding: 24px;
+  color: #fff;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(29, 185, 84, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+}
+
+/* Chill Zone Moving/Running Background Glow animation */
+.chill-zone-bg-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(29, 185, 84, 0.15) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+  animation: chillGlowRotate 12s linear infinite;
+}
+
+@keyframes chillGlowRotate {
+  0% { transform: scale(1) rotate(0deg) translate(0px, 0px); }
+  33% { transform: scale(1.15) rotate(120deg) translate(15px, -10px); }
+  66% { transform: scale(0.9) rotate(240deg) translate(-10px, 15px); }
+  100% { transform: scale(1) rotate(360deg) translate(0px, 0px); }
+}
+
+.chill-zone-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chill-zone-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spotify-brand-text {
+  color: #1db954;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.chill-zone-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.spotify-iframe-container {
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  position: relative;
+  aspect-ratio: 16 / 9;
+  min-height: 232px;
+}
+
+.playlist-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.playlist-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.playlist-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  padding: 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-btn:hover {
+  background: rgba(29, 185, 84, 0.1);
+  color: #1db954;
+  border-color: rgba(29, 185, 84, 0.3);
+}
+
+.playlist-btn.active {
+  background: #1db954;
+  color: #fff;
+  border-color: #1db954;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+}
+
+.chill-zone-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.chill-action-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.chill-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.chill-action-btn.accent {
+  background: #1db954;
+  color: #fff;
+  border-color: #1db954;
+}
+
+.chill-action-btn.accent:hover {
+  background: #1ed760;
+  box-shadow: 0 0 15px rgba(29, 185, 84, 0.4);
+}
+
+/* Minimized Floating Widget */
+.chill-zone-minimized-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2400;
+  background: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(29, 185, 84, 0.4);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(29, 185, 84, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chill-zone-minimized-widget:hover {
+  transform: translateY(-2px);
+  border-color: #1db954;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(29, 185, 84, 0.35);
+}
+
+.widget-playing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 12px;
+}
+
+.widget-playing-bar {
+  width: 2px;
+  height: 100%;
+  background-color: #1db954;
+  border-radius: 1px;
+  animation: soundBarBounce 1s ease infinite alternate;
+}
+
+.widget-playing-bar:nth-child(2) { animation-delay: 0.2s; }
+.widget-playing-bar:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes soundBarBounce {
+  0% { transform: scaleY(0.3); }
+  100% { transform: scaleY(1); }
+}
+
 .trail-condition-heading { display: flex; justify-content: space-between; align-items: center; font-size: 11px; text-transform: uppercase; color: var(--text-secondary); letter-spacing: .04em; margin-bottom: 8px; }
 .trail-condition-heading span { font-weight: 600; }
 .trail-condition-heading small { background: rgba(var(--brand-primary),.1); color: var(--accent-primary); padding: 2px 6px; border-radius: 4px; font-weight: 700; }

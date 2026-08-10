@@ -218,6 +218,14 @@
   box-shadow: 0 0 14px rgba(var(--brand-primary), 0.2);
 }
 
+/* Spotify Chill Zone button active — green glow */
+.theme-trigger-btn.music-active {
+  background-color: var(--bg-card);
+  border-color: #1db954;
+  color: #1db954;
+  box-shadow: 0 0 14px rgba(29, 185, 84, 0.3);
+}
+
 /* Mobile Optimizations */
 @media (max-width: 768px) {
   .theme-controller-overlay {

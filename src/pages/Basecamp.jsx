@@ -41,11 +41,9 @@ import {
   Pin,
   Smile,
   CheckSquare,
-  Square,
-  Star,
-  Forward,
   Info,
-  MapPin
+  MapPin,
+  Music
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -493,6 +491,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [isPinPopupOpen, setIsPinPopupOpen] = useState(false);
+  
+  // Spotify Chill Zone State
+  const [isMusicOpen, setIsMusicOpen] = useState(false);
+  const [isMusicMinimized, setIsMusicMinimized] = useState(false);
+  const [selectedPlaylistUrl, setSelectedPlaylistUrl] = useState("https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGae312e"); // Chill Lofi Beats default
+
   const [selectedPopupAlert, setSelectedPopupAlert] = useState(null);
   const [clearedTimestamps, setClearedTimestamps] = useState(() => {
     try {
@@ -2209,6 +2213,23 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </div>
           </div>
           <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            {/* SPOTIFY MUSIC CHILL ZONE TRIGGER */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => {
+                  setIsMusicOpen(true);
+                  setIsMusicMinimized(false);
+                  setIsPinPopupOpen(false);
+                  setIsAlertOpen(false);
+                  setIsAIOpen(false);
+                }}
+                className={`theme-trigger-btn ${isMusicOpen && !isMusicMinimized ? 'active music-active' : ''}`}
+                title="Chill Zone (Spotify)"
+              >
+                <Music size={18} />
+              </button>
+            </div>
+
             <div style={{ position: 'relative' }}>
               <button
                 onClick={handleTogglePinPopup}
@@ -2502,6 +2523,123 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 </div>
               )}
             </AnimatePresence>
+
+            {/* SPOTIFY CHILL ZONE MODAL */}
+            <AnimatePresence>
+              {isMusicOpen && !isMusicMinimized && (
+                <div className="chill-zone-overlay">
+                  <motion.div
+                    className="chill-zone-modal"
+                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 30, scale: 0.95 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                  >
+                    {/* Running Glow Background Accent */}
+                    <div className="chill-zone-bg-glow" />
+
+                    <header className="chill-zone-header">
+                      <div className="chill-zone-title-wrap">
+                        <Music size={20} className="animate-bounce" style={{ color: '#1db954' }} />
+                        <span className="spotify-brand-text">CHILL ZONE</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => setIsMusicMinimized(true)}
+                          className="trail-markers-close"
+                          style={{ position: 'static', color: '#1db954', background: 'rgba(29, 185, 84, 0.1)', padding: '6px', borderRadius: '8px' }}
+                          title="Minimize player to background"
+                        >
+                          Minimize
+                        </button>
+                        <button
+                          onClick={() => setIsMusicOpen(false)}
+                          className="trail-markers-close"
+                          style={{ position: 'static' }}
+                        >
+                          <X size={17} />
+                        </button>
+                      </div>
+                    </header>
+
+                    <div className="chill-zone-body">
+                      {/* Interactive Custom Embed Player */}
+                      <div className="spotify-iframe-container">
+                        <iframe
+                          src={selectedPlaylistUrl}
+                          width="100%"
+                          height="100%"
+                          frameBorder="0"
+                          allowFullScreen=""
+                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                          loading="lazy"
+                          style={{ border: 'none', position: 'absolute', top: 0, left: 0 }}
+                        />
+                      </div>
+
+                      {/* Station Selector */}
+                      <div className="playlist-selector">
+                        <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255, 255, 255, 0.6)' }}>Select Station</span>
+                        <div className="playlist-options">
+                          <button
+                            className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DXcBWIGae312e') ? 'active' : ''}`}
+                            onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGae312e")}
+                          >
+                            Lofi Beats
+                          </button>
+                          <button
+                            className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX4WY412122Ad') ? 'active' : ''}`}
+                            onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4WY412122Ad")}
+                          >
+                            Chill Lofi Study
+                          </button>
+                          <button
+                            className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX8U72gzM1BSA') ? 'active' : ''}`}
+                            onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX8U72gzM1BSA")}
+                          >
+                            Chill Jazz
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <footer className="chill-zone-actions">
+                      <button
+                        onClick={() => {
+                          // Open user login directly to authorization web client
+                          window.open("https://accounts.spotify.com/login", "_blank");
+                        }}
+                        className="chill-action-btn accent"
+                      >
+                        Authorize Spotify Account
+                      </button>
+                    </footer>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
+
+            {/* MINIMIZED FLOATING WIDGET (RUNNING AUDIO INDICATOR) */}
+            <AnimatePresence>
+              {isMusicOpen && isMusicMinimized && (
+                <motion.div
+                  className="chill-zone-minimized-widget"
+                  initial={{ opacity: 0, y: 50, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 50, scale: 0.8 }}
+                  onClick={() => setIsMusicMinimized(false)}
+                >
+                  <div className="widget-playing-indicator">
+                    <span className="widget-playing-bar" />
+                    <span className="widget-playing-bar" />
+                    <span className="widget-playing-bar" />
+                  </div>
+                  <span style={{ fontSize: '12px', fontWeight: '500' }}>Spotify Chill Zone Active</span>
+                  <Music size={14} style={{ color: '#1db954' }} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </AnimatePresence>
 
             <button className="camp-ops-btn" onClick={() => setIsCampOpsModalOpen(true)}>
               <Settings size={18} />
