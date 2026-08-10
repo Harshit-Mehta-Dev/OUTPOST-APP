@@ -495,7 +495,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // Spotify Chill Zone State
   const [isMusicOpen, setIsMusicOpen] = useState(false);
   const [isMusicMinimized, setIsMusicMinimized] = useState(false);
-  const [selectedPlaylistUrl, setSelectedPlaylistUrl] = useState("https://open.spotify.com/embed/playlist/0vvXsWCC9xrXsKd4eZs47a?utm_source=generator"); // Chill Lofi Beats default
+  const [isSpotifyLoggedIn, setIsSpotifyLoggedIn] = useState(false);
+  const [selectedPlaylistUrl, setSelectedPlaylistUrl] = useState("https://open.spotify.com/embed/playlist/37i9dQZF1DX2pSTOxoPbx9?utm_source=generator"); // Chill Jazz default (verified working)
 
   const [selectedPopupAlert, setSelectedPopupAlert] = useState(null);
   const [clearedTimestamps, setClearedTimestamps] = useState(() => {
@@ -2646,32 +2647,33 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     const height = 680;
                     const left = window.screen.width / 2 - width / 2;
                     const top = window.screen.height / 2 - height / 2;
-                    window.open(
+                    const popup = window.open(
                       "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F",
                       "SpotifyLogin",
                       `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
                     );
+                    // Poll until popup closes, then mark as logged in
+                    const pollTimer = setInterval(() => {
+                      if (!popup || popup.closed) {
+                        clearInterval(pollTimer);
+                        setIsSpotifyLoggedIn(true);
+                        // Reload iframe to pick up the new session cookie
+                        const iframe = document.getElementById('spotify-bg-iframe');
+                        if (iframe) { const s = iframe.src; iframe.src = ''; iframe.src = s; }
+                      }
+                    }, 500);
                   }}
                   className="chill-action-btn accent"
-                  style={{ background: '#1db954', border: 'none', color: '#fff', padding: '10px 20px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', transition: 'transform 0.2s' }}
+                  style={{ background: isSpotifyLoggedIn ? 'rgba(29,185,84,0.2)' : '#1db954', border: isSpotifyLoggedIn ? '1px solid #1db954' : 'none', color: '#fff', padding: '10px 20px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
-                  Log In with Spotify Account
+                  {isSpotifyLoggedIn ? '✅ Logged In to Spotify' : '🎵 Log In with Spotify'}
                 </button>
               </div>
 
               {/* Station Grid Options */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px', flex: 1, minHeight: 0 }}>
                 <div className="spotify-iframe-container" style={{ flex: 1, height: '100%', minHeight: '380px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
-                  <iframe
-                    src={selectedPlaylistUrl}
-                    width="100%"
-                    height="100%"
-                    frameBorder="0"
-                    allowFullScreen=""
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    style={{ border: 'none', position: 'absolute', top: 0, left: 0 }}
-                  />
+                  {/* iframe lives here visually but is the same persistent DOM node below */}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '18px' }}>
@@ -2679,15 +2681,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('0vvXsWCC9xrXsKd4eZs47a') ? 'active' : ''}`}
-                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/0vvXsWCC9xrXsKd4eZs47a?utm_source=generator")}
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX4wta20PHI0l') ? 'active' : ''}`}
+                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4wta20PHI0l?utm_source=generator")}
                       style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                     >
                       ☕ Lofi Beats
                     </button>
                     <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX8Igebx81DGr') ? 'active' : ''}`}
-                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX8Igebx81DGr?utm_source=generator")}
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DXcFszNC9iFUT') ? 'active' : ''}`}
+                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DXcFszNC9iFUT?utm_source=generator")}
                       style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                     >
                       📚 Chill Lofi Study
@@ -2715,6 +2717,58 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             </div>
           </div>
         ) : null}
+
+        {/* ===== ALWAYS-MOUNTED SPOTIFY IFRAME (keeps playing across navigation) ===== */}
+        <iframe
+          id="spotify-bg-iframe"
+          src={selectedPlaylistUrl}
+          width="100%"
+          height="100%"
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          style={{
+            border: 'none',
+            position: 'absolute',
+            top: 0, left: 0,
+            // Show in Chill-Zone container, hide (but KEEP MOUNTED) elsewhere
+            display: activeChannel === 'Chill-Zone' ? 'block' : 'none',
+            zIndex: activeChannel === 'Chill-Zone' ? 1 : -1,
+            pointerEvents: activeChannel === 'Chill-Zone' ? 'auto' : 'none'
+          }}
+        />
+
+        {/* ===== MINI FLOATING PLAYER (shows when music is active but on another section) ===== */}
+        {activeChannel !== 'Chill-Zone' && (
+          <div style={{
+            position: 'fixed',
+            bottom: '80px',
+            right: '20px',
+            width: '280px',
+            background: 'linear-gradient(135deg, rgba(29,185,84,0.15), rgba(0,0,0,0.9))',
+            border: '1px solid rgba(29,185,84,0.35)',
+            borderRadius: '14px',
+            padding: '10px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            zIndex: 9999,
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 8px 32px rgba(29,185,84,0.2)',
+            cursor: 'pointer',
+            transition: 'all 0.3s'
+          }} onClick={() => setActiveChannel('Chill-Zone')} title="Go to Chill Zone">
+            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(29,185,84,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Music size={18} style={{ color: '#1db954' }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '11px', color: '#1db954', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>🎵 Chill Zone Playing</div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {selectedPlaylistUrl.includes('37i9dQZF1DX4wta20PHI0l') ? 'Lofi Beats' : selectedPlaylistUrl.includes('37i9dQZF1DXcFszNC9iFUT') ? 'Chill Lofi Study' : 'Chill Jazz'}
+              </div>
+            </div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>▶ Open</div>
+          </div>
+        )}
 
         <div className="chat-messages" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board' || activeChannel === 'Chill-Zone') ? 'none' : undefined }}>
           <div className="chat-welcome">
