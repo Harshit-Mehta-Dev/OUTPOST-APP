@@ -43,7 +43,9 @@ import {
   CheckSquare,
   Info,
   MapPin,
-  Music
+  Music,
+  Square,
+  Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
