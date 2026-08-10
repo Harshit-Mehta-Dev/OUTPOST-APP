@@ -2641,11 +2641,21 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 </div>
                 
                 <button
-                  onClick={() => setSelectedPlaylistUrl(selectedPlaylistUrl === "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F" ? "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGae312e" : "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F")}
+                  onClick={() => {
+                    const width = 450;
+                    const height = 680;
+                    const left = window.screen.width / 2 - width / 2;
+                    const top = window.screen.height / 2 - height / 2;
+                    window.open(
+                      "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F",
+                      "SpotifyLogin",
+                      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
+                    );
+                  }}
                   className="chill-action-btn accent"
                   style={{ background: '#1db954', border: 'none', color: '#fff', padding: '10px 20px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', transition: 'transform 0.2s' }}
                 >
-                  {selectedPlaylistUrl.includes("accounts.spotify.com") ? "Back to Player" : "Log In with Spotify Account"}
+                  Log In with Spotify Account
                 </button>
               </div>
 
