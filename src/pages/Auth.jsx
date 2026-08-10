@@ -24,6 +24,7 @@ const Auth = () => {
   const [svgCaptchaImage, setSvgCaptchaImage] = useState('');
   const [svgCaptchaId, setSvgCaptchaId] = useState('');
   const [svgCaptchaText, setSvgCaptchaText] = useState('');
+  const [turnstileError, setTurnstileError] = useState(false);
   const navigate = useNavigate();
 
   const fetchSvgCaptcha = async () => {
@@ -452,10 +453,32 @@ const IconBackground = () => {
             
             <div className="form-group captcha-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', marginBottom: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Turnstile 
-                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAAD0VEYB6AeTVN4V2"} 
-                  onSuccess={(token) => setTurnstileToken(token)}
-                />
+                {(!import.meta.env.VITE_TURNSTILE_SITE_KEY || turnstileError) ? (
+                  svgCaptchaImage && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px' }}>
+                      <div dangerouslySetInnerHTML={{ __html: svgCaptchaImage }} style={{ background: '#fff', borderRadius: '4px', padding: '5px' }} />
+                      <input
+                        type="text"
+                        placeholder="Enter letters from image"
+                        value={svgCaptchaText}
+                        onChange={(e) => setSvgCaptchaText(e.target.value)}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: '#fff', width: '100%', textAlign: 'center' }}
+                      />
+                      <button type="button" onClick={fetchSvgCaptcha} style={{ fontSize: '0.8rem', background: 'none', border: 'none', color: '#3498db', cursor: 'pointer' }}>
+                        Refresh Captcha
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <Turnstile 
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAAD0VEYB6AeTVN4V2"} 
+                    onSuccess={(token) => setTurnstileToken(token)}
+                    onError={() => {
+                      setTurnstileError(true);
+                      fetchSvgCaptcha();
+                    }}
+                  />
+                )}
               </div>
             </div>
 
@@ -508,10 +531,32 @@ const IconBackground = () => {
                 
                 <div className="form-group captcha-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px', marginBottom: '15px' }}>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <Turnstile 
-                      siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAAD0VEYB6AeTVN4V2"} 
-                      onSuccess={(token) => setTurnstileToken(token)}
-                    />
+                    {(!import.meta.env.VITE_TURNSTILE_SITE_KEY || turnstileError) ? (
+                      svgCaptchaImage && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px' }}>
+                          <div dangerouslySetInnerHTML={{ __html: svgCaptchaImage }} style={{ background: '#fff', borderRadius: '4px', padding: '5px' }} />
+                          <input
+                            type="text"
+                            placeholder="Enter letters from image"
+                            value={svgCaptchaText}
+                            onChange={(e) => setSvgCaptchaText(e.target.value)}
+                            style={{ padding: '8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: '#fff', width: '100%', textAlign: 'center' }}
+                          />
+                          <button type="button" onClick={fetchSvgCaptcha} style={{ fontSize: '0.8rem', background: 'none', border: 'none', color: '#3498db', cursor: 'pointer' }}>
+                            Refresh Captcha
+                          </button>
+                        </div>
+                      )
+                    ) : (
+                      <Turnstile 
+                        siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAAD0VEYB6AeTVN4V2"} 
+                        onSuccess={(token) => setTurnstileToken(token)}
+                        onError={() => {
+                          setTurnstileError(true);
+                          fetchSvgCaptcha();
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
 
