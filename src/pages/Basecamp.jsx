@@ -45,7 +45,8 @@ import {
   MapPin,
   Music,
   Square,
-  Star
+  Star,
+  Forward
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
