@@ -496,6 +496,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isMusicOpen, setIsMusicOpen] = useState(false);
   const [isMusicMinimized, setIsMusicMinimized] = useState(false);
   const [isSpotifyLoggedIn, setIsSpotifyLoggedIn] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
   const [selectedPlaylistUrl, setSelectedPlaylistUrl] = useState("https://open.spotify.com/embed/playlist/37i9dQZF1DX2pSTOxoPbx9?utm_source=generator"); // Chill Jazz default (verified working)
 
   const [selectedPopupAlert, setSelectedPopupAlert] = useState(null);
@@ -2700,19 +2701,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   const height = 680;
                   const left = window.screen.width / 2 - width / 2;
                   const top = window.screen.height / 2 - height / 2;
-                  // Use window 'focus' event — fires reliably when popup closes and user returns
-                  const onFocus = () => {
-                    window.removeEventListener('focus', onFocus);
-                    setIsSpotifyLoggedIn(true);
-                    const iframe = document.getElementById('spotify-chill-iframe');
-                    if (iframe) { const s = iframe.src; iframe.src = ''; setTimeout(() => { iframe.src = s; }, 100); }
-                  };
-                  window.addEventListener('focus', onFocus);
-                  window.open(
+                  const popup = window.open(
                     "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F",
                     "SpotifyLogin",
                     `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
                   );
+                  
+                  // Poll for popup close — much more reliable than window focus
+                  const pollTimer = setInterval(() => {
+                    if (!popup || popup.closed) {
+                      clearInterval(pollTimer);
+                      setIsSpotifyLoggedIn(true);
+                      setIframeKey(prev => prev + 1); // Clean React way to force iframe reload
+                    }
+                  }, 500);
                 }}
                 className="chill-action-btn accent"
                 style={{
@@ -2738,6 +2740,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px', flex: 1, minHeight: 0 }}>
               <div className="spotify-iframe-container" style={{ flex: 1, height: '100%', minHeight: '380px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
                 <iframe
+                  key={iframeKey}
                   id="spotify-chill-iframe"
                   src={selectedPlaylistUrl}
                   width="100%"
