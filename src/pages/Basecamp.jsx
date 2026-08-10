@@ -2551,6 +2551,38 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <h2>{activeChannel}</h2>
           </div>
           <div className="chat-header-actions" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Mini player embedded in header */}
+            {isSpotifyLoggedIn && activeChannel !== 'Chill-Zone' && (
+              <div
+                onClick={() => setActiveChannel('Chill-Zone')}
+                style={{
+                  background: 'linear-gradient(135deg, rgba(29,185,84,0.18), rgba(0,0,0,0.4))',
+                  border: '1px solid rgba(29,185,84,0.3)',
+                  borderRadius: '8px',
+                  padding: '4px 10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  height: '32px',
+                  marginRight: '8px',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.borderColor = 'rgba(29,185,84,0.6)'; e.currentTarget.style.background = 'rgba(29,185,84,0.25)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.borderColor = 'rgba(29,185,84,0.3)'; e.currentTarget.style.background = 'linear-gradient(135deg, rgba(29,185,84,0.18), rgba(0,0,0,0.4))'; }}
+                title="Go to Chill Zone"
+              >
+                <Music size={12} style={{ color: '#1db954', flexShrink: 0 }} />
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ fontSize: '9px', color: '#1db954', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: '1' }}>Playing</div>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.2' }}>
+                    {selectedPlaylistUrl.includes('37i9dQZF1DWZeKCadgRdKQ') ? 'Lofi Beats' : selectedPlaylistUrl.includes('37i9dQZF1DX4sWSpwq3LiO') ? 'Chill Lofi Study' : 'Chill Jazz'}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <button 
               className="clear-chat-btn"
               onClick={() => {
@@ -2758,39 +2790,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
         </div>
 
-        {/* Mini floating player — only when logged in and away from Chill Zone */}
-        {isSpotifyLoggedIn && activeChannel !== 'Chill-Zone' && (
-          <div
-            onClick={() => setActiveChannel('Chill-Zone')}
-            style={{
-              position: 'fixed',
-              bottom: '16px',
-              right: '16px',
-              background: 'linear-gradient(135deg, rgba(29,185,84,0.18), rgba(0,0,0,0.88))',
-              border: '1px solid rgba(29,185,84,0.4)',
-              borderRadius: '12px',
-              padding: '8px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              zIndex: 1000,
-              backdropFilter: 'blur(16px)',
-              boxShadow: '0 4px 24px rgba(29,185,84,0.2)',
-              cursor: 'pointer',
-              userSelect: 'none',
-              maxWidth: '240px',
-            }}
-          >
-            <Music size={16} style={{ color: '#1db954', flexShrink: 0 }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '10px', color: '#1db954', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Playing</div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {selectedPlaylistUrl.includes('37i9dQZF1DWZeKCadgRdKQ') ? 'Lofi Beats' : selectedPlaylistUrl.includes('37i9dQZF1DX4sWSpwq3LiO') ? 'Chill Lofi Study' : 'Chill Jazz'}
-              </div>
-            </div>
-            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>▶</span>
-          </div>
-        )}
+
 
         <div className="chat-messages" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board' || activeChannel === 'Chill-Zone') ? 'none' : undefined }}>
           <div className="chat-welcome">
