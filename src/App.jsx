@@ -100,7 +100,8 @@ function App() {
   // Accepts an optional MouseEvent to anchor the ripple to the clicked button
   const toggleTheme = (event) => {
     const newIsDark = !isDarkMode;
-    triggerTransition(event, newIsDark, () => setIsDarkMode(newIsDark));
+    // Pass current mode so the overlay uses the OLD colour while new theme reveals underneath
+    triggerTransition(event, isDarkMode, () => setIsDarkMode(newIsDark));
   };
 
   return (
