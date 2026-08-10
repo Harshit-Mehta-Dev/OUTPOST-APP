@@ -2242,23 +2242,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               </button>
             </div>
 
-            {/* CPU CHIP DROPDOWN: CONTAINS ALL GENERIC TOOLS */}
-            <div 
-              className="dev-menu-container"
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: isDevMenuOpen ? '8px' : '0', 
-                background: isDevMenuOpen ? 'var(--bg-card)' : 'transparent',
-                padding: isDevMenuOpen ? '4px 12px 4px 4px' : '0',
-                borderRadius: '24px',
-                border: isDevMenuOpen ? '1px solid var(--border-glass)' : 'none',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-            >
+            {/* SYSTEM TOOLS: fixed-width trigger + floating dropdown */}
+            <div className="dev-menu-container" style={{ position: 'relative' }}>
               <button
                 onClick={() => setIsDevMenuOpen(!isDevMenuOpen)}
-                className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${isDevMenuOpen ? 'active' : ''}`}
+                className={`theme-trigger-btn ${isDevMenuOpen ? 'active' : ''}`}
                 style={isDevMenuOpen ? { background: 'var(--accent-primary)', color: 'white', borderColor: 'var(--accent-primary)' } : undefined}
                 title="System Tools"
               >
@@ -2267,94 +2255,105 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
               <AnimatePresence>
                 {isDevMenuOpen && (
-                  <motion.div
-                    className="dev-menu-items"
-                    initial={{ width: 0, opacity: 0, scale: 0.8 }}
-                    animate={{ width: 'auto', opacity: 1, scale: 1 }}
-                    exit={{ width: 0, opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}
-                  >
-                    {/* AI ASSISTANT */}
-                    {isCampAdmin && (
-                      <button
-                        onClick={() => {
-                          setIsAIOpen(!isAIOpen);
-                          setIsThemeOpen(false);
-                        }}
-                        className={`theme-trigger-btn ${isAIOpen ? 'active shadow-[0_0_15px_rgba(var(--brand-primary),0.2)]' : ''}`}
-                        style={isAIOpen ? { background: 'var(--bg-card)', color: 'var(--accent-primary)' } : undefined}
-                        title="Compute Intelligence Matrices"
-                      >
-                        <Brain size={16} />
-                      </button>
-                    )}
-
-                    {/* THEME TOGGLE */}
-                    <button
-                      onClick={toggleTheme}
-                      className={`theme-trigger-btn ${!isDarkMode ? 'active' : ''}`}
-                      title="Toggle Light/Dark Mode"
-                    >
-                      {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-                    </button>
-
-                    {/* PALETTE TOGGLE */}
-                    <button
-                      onClick={() => {
-                        setIsThemeOpen(!isThemeOpen);
-                        setIsAIOpen(false);
+                  <>
+                    {/* Invisible backdrop to close on outside click */}
+                    <div
+                      style={{ position: 'fixed', inset: 0, zIndex: 1199 }}
+                      onClick={() => setIsDevMenuOpen(false)}
+                    />
+                    <motion.div
+                      className="dev-menu-dropdown"
+                      initial={{ opacity: 0, scale: 0.92, y: -8 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.92, y: -8 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 10px)',
+                        right: 0,
+                        zIndex: 1200,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px',
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border-glass)',
+                        borderRadius: '16px',
+                        padding: '10px',
+                        boxShadow: '0 16px 40px rgba(0,0,0,0.4)',
+                        backdropFilter: 'blur(16px)',
+                        minWidth: '52px',
+                        alignItems: 'center',
                       }}
-                      className={`theme-trigger-btn ${isThemeOpen ? 'active' : ''}`}
-                      title="Modulate Theme Matrix"
                     >
-                      <Palette size={16} />
-                    </button>
+                      {/* AI ASSISTANT */}
+                      {isCampAdmin && (
+                        <button
+                          onClick={() => { setIsAIOpen(!isAIOpen); setIsThemeOpen(false); setIsDevMenuOpen(false); }}
+                          className={`theme-trigger-btn ${isAIOpen ? 'active' : ''}`}
+                          style={isAIOpen ? { background: 'var(--bg-card)', color: 'var(--accent-primary)', borderColor: 'var(--accent-primary)' } : undefined}
+                          title="Compute Intelligence Matrices"
+                        >
+                          <Brain size={16} />
+                        </button>
+                      )}
 
-                    {/* HELP DESK */}
-                    <button
-                      onClick={() => isGlobalAdmin ? setIsHelpDeskOpen(true) : setIsUserHelpDeskOpen(true)}
-                      className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
-                        (isGlobalAdmin ? isHelpDeskOpen : isUserHelpDeskOpen) ? "active shadow-[0_0_15px_rgba(74,222,128,0.2)]" : ""
-                      }`}
-                      style={(isGlobalAdmin ? isHelpDeskOpen : isUserHelpDeskOpen) ? {
-                        background: 'rgba(20, 83, 45, 0.4)', borderColor: 'rgba(34, 197, 94, 0.8)', color: '#4ade80'
-                      } : undefined}
-                      title="HELP DESK"
-                    >
-                      {isGlobalAdmin ? <HelpCircle size={16} className="animate-pulse" /> : <LifeBuoy size={16} />}
-                    </button>
-
-                    {/* FEEDBACK */}
-                    <button
-                      onClick={() => isGlobalAdmin ? setIsDeveloperFeedbackOpen(true) : setIsUserFeedbackOpen(true)}
-                      className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
-                        (isGlobalAdmin ? isDeveloperFeedbackOpen : isUserFeedbackOpen) ? "active shadow-[0_0_15px_rgba(255,165,0,0.2)]" : ""
-                      }`}
-                      style={(isGlobalAdmin ? isDeveloperFeedbackOpen : isUserFeedbackOpen) ? {
-                        background: 'rgba(184, 115, 51, 0.4)', borderColor: 'rgba(255, 165, 0, 0.8)', color: '#ffa500'
-                      } : undefined}
-                      title="FEEDBACK"
-                    >
-                      <MessageSquare size={16} className={isGlobalAdmin ? "animate-pulse" : ""} />
-                    </button>
-
-                    {/* COMMAND GATE (GLOBAL ADMIN ONLY) */}
-                    {isGlobalAdmin && (
+                      {/* THEME TOGGLE */}
                       <button
-                        onClick={() => setIsOperatorOpen(true)}
-                        className={`theme-trigger-btn flex items-center justify-center transition-all duration-200 ${
-                          isOperatorOpen ? "active shadow-[0_0_15px_rgba(239,68,68,0.2)]" : ""
-                        }`}
-                        style={isOperatorOpen ? {
-                          background: 'rgba(69, 10, 10, 0.4)', borderColor: 'rgba(153, 27, 27, 0.8)', color: '#f87171'
-                        } : undefined}
-                        title="OPERATOR COMMAND PANEL GATE"
+                        onClick={() => { toggleTheme(); }}
+                        className={`theme-trigger-btn ${!isDarkMode ? 'active' : ''}`}
+                        title="Toggle Light/Dark Mode"
                       >
-                        <Eye size={16} className="animate-pulse" />
+                        {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
                       </button>
-                    )}
-                  </motion.div>
+
+                      {/* PALETTE TOGGLE */}
+                      <button
+                        onClick={() => { setIsThemeOpen(!isThemeOpen); setIsAIOpen(false); setIsDevMenuOpen(false); }}
+                        className={`theme-trigger-btn ${isThemeOpen ? 'active' : ''}`}
+                        title="Modulate Theme Matrix"
+                      >
+                        <Palette size={16} />
+                      </button>
+
+                      {/* HELP DESK */}
+                      <button
+                        onClick={() => { isGlobalAdmin ? setIsHelpDeskOpen(true) : setIsUserHelpDeskOpen(true); setIsDevMenuOpen(false); }}
+                        className={`theme-trigger-btn ${(isGlobalAdmin ? isHelpDeskOpen : isUserHelpDeskOpen) ? 'active' : ''}`}
+                        style={(isGlobalAdmin ? isHelpDeskOpen : isUserHelpDeskOpen) ? {
+                          background: 'rgba(20, 83, 45, 0.4)', borderColor: 'rgba(34, 197, 94, 0.8)', color: '#4ade80'
+                        } : undefined}
+                        title="Help Desk"
+                      >
+                        {isGlobalAdmin ? <HelpCircle size={16} className="animate-pulse" /> : <LifeBuoy size={16} />}
+                      </button>
+
+                      {/* FEEDBACK */}
+                      <button
+                        onClick={() => { isGlobalAdmin ? setIsDeveloperFeedbackOpen(true) : setIsUserFeedbackOpen(true); setIsDevMenuOpen(false); }}
+                        className={`theme-trigger-btn ${(isGlobalAdmin ? isDeveloperFeedbackOpen : isUserFeedbackOpen) ? 'active' : ''}`}
+                        style={(isGlobalAdmin ? isDeveloperFeedbackOpen : isUserFeedbackOpen) ? {
+                          background: 'rgba(184, 115, 51, 0.4)', borderColor: 'rgba(255, 165, 0, 0.8)', color: '#ffa500'
+                        } : undefined}
+                        title="Feedback"
+                      >
+                        <MessageSquare size={16} className={isGlobalAdmin ? 'animate-pulse' : ''} />
+                      </button>
+
+                      {/* COMMAND GATE (GLOBAL ADMIN ONLY) */}
+                      {isGlobalAdmin && (
+                        <button
+                          onClick={() => { setIsOperatorOpen(true); setIsDevMenuOpen(false); }}
+                          className={`theme-trigger-btn ${isOperatorOpen ? 'active' : ''}`}
+                          style={isOperatorOpen ? {
+                            background: 'rgba(69, 10, 10, 0.4)', borderColor: 'rgba(153, 27, 27, 0.8)', color: '#f87171'
+                          } : undefined}
+                          title="Operator Command Panel"
+                        >
+                          <Eye size={16} className="animate-pulse" />
+                        </button>
+                      )}
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
