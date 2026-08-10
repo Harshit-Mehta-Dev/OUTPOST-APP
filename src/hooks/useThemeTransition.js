@@ -1,16 +1,15 @@
 /**
  * useThemeTransition
- * Cinematic circular "reveal" animation on dark/light mode toggle.
+ * Cinematic circular EXPAND animation on dark/light mode toggle.
  *
- * Strategy (REVERSE WIPE):
- *  1. Apply the new theme IMMEDIATELY — so the real UI is already in the new mode.
- *  2. Slam an overlay of the OLD theme's background colour on top (covers everything — user still sees old look).
- *  3. Animate the overlay's clip-path from full-screen circle → 0px circle originating from the button.
- *  4. As the circle shrinks, the new-theme UI underneath is progressively revealed.
- *  5. Remove overlay when done.
+ * Strategy:
+ *  1. Overlay of the NEW theme colour starts at 0px circle at the button origin.
+ *  2. Overlay expands to cover the full viewport.
+ *  3. Theme is applied WHILE the overlay is fully covering the screen (instant, invisible to user).
+ *  4. Overlay then QUICKLY fades out (opacity 0) so the now-matching real UI is revealed.
  *
- * Result: user sees the new theme content appearing through a shrinking circle — content is always visible,
- * and the transition feel is smooth and cinematic.
+ * Net effect: a satisfying colour ripple sweeps from the button outward.
+ * Content is never visibly "hidden" because the overlay colour matches the new theme exactly.
  */
 import { useRef, useCallback } from 'react';
 
@@ -19,37 +18,32 @@ export function useThemeTransition() {
 
   /**
    * triggerTransition(event, currentIsDark, applyThemeFn)
-   * @param {MouseEvent} event        — click event, used to anchor the ripple origin
-   * @param {boolean}   currentIsDark — whether the CURRENT (pre-toggle) mode is dark
-   * @param {Function}  applyThemeFn  — immediately switches the real theme
+   * @param {MouseEvent} event        — click event, anchors the circle origin
+   * @param {boolean}   currentIsDark — current (pre-toggle) dark mode state
+   * @param {Function}  applyThemeFn  — flips the real theme
    */
   const triggerTransition = useCallback((event, currentIsDark, applyThemeFn) => {
-    // --- 1. Origin from button click position ---
     const rect = event?.currentTarget?.getBoundingClientRect?.();
     const originX = rect ? Math.round(rect.left + rect.width / 2) : Math.round(window.innerWidth / 2);
     const originY = rect ? Math.round(rect.top + rect.height / 2) : Math.round(window.innerHeight / 2);
 
-    // Max radius to fully cover viewport from origin
     const maxRadius = Math.ceil(
       Math.hypot(
         Math.max(originX, window.innerWidth - originX),
         Math.max(originY, window.innerHeight - originY)
       )
-    ) + 20; // small buffer
+    ) + 20;
 
-    // --- 2. Apply the real theme NOW (UI flips underneath immediately) ---
-    applyThemeFn();
-
-    // --- 3. Remove any leftover overlay ---
+    // Remove any leftover overlay
     if (overlayRef.current) {
       overlayRef.current.remove();
       overlayRef.current = null;
     }
 
-    // --- 4. Create overlay coloured like the OLD theme ---
-    // OLD dark mode → overlay is dark navy; OLD light mode → overlay is off-white
-    const oldBg = currentIsDark ? '#0f172a' : '#f1f5f9';
+    // New theme colour (what we're transitioning TO)
+    const newBg = currentIsDark ? '#f1f5f9' : '#0f172a';
 
+    // --- Phase 1: Expand circle from 0 → full screen ---
     const overlay = document.createElement('div');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.style.cssText = `
@@ -57,34 +51,49 @@ export function useThemeTransition() {
       inset: 0;
       z-index: 99999;
       pointer-events: none;
-      background: ${oldBg};
-      clip-path: circle(${maxRadius}px at ${originX}px ${originY}px);
-      will-change: clip-path;
+      background: ${newBg};
+      clip-path: circle(0px at ${originX}px ${originY}px);
+      will-change: clip-path, opacity;
+      transition: clip-path 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 1;
     `;
     document.body.appendChild(overlay);
     overlayRef.current = overlay;
 
-    // --- 5. Force reflow so the browser registers the starting state ---
+    // Force reflow
     void overlay.getBoundingClientRect();
 
-    // --- 6. Animate: shrink the circle from full-screen → 0 (reveals new theme) ---
-    overlay.style.transition = 'clip-path 0.55s cubic-bezier(0.4, 0, 0.2, 1)';
-    overlay.style.clipPath = `circle(0px at ${originX}px ${originY}px)`;
+    // Start expanding
+    overlay.style.clipPath = `circle(${maxRadius}px at ${originX}px ${originY}px)`;
 
-    // --- 7. Cleanup after animation ---
-    const cleanup = () => {
-      if (overlayRef.current === overlay) {
-        overlay.remove();
-        overlayRef.current = null;
-      }
+    // When expand finishes: switch the real theme, then fade overlay away
+    const onExpandDone = () => {
+      // Apply real theme (UI now matches overlay colour — seamless)
+      applyThemeFn();
+
+      // Small tick to let React re-render with new theme
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Phase 2: Fade out overlay to reveal matching new-theme UI
+          overlay.style.transition = 'opacity 0.18s ease';
+          overlay.style.opacity = '0';
+
+          const cleanup = () => {
+            if (overlayRef.current === overlay) {
+              overlay.remove();
+              overlayRef.current = null;
+            }
+          };
+
+          overlay.addEventListener('transitionend', cleanup, { once: true });
+          setTimeout(cleanup, 300); // safety fallback
+        });
+      });
     };
 
-    overlay.addEventListener('transitionend', cleanup, { once: true });
-
-    // Safety fallback in case transitionend doesn't fire
-    const fallback = setTimeout(cleanup, 700);
-
-    return () => clearTimeout(fallback);
+    overlay.addEventListener('transitionend', onExpandDone, { once: true });
+    // Safety: if transitionend never fires
+    setTimeout(onExpandDone, 600);
   }, []);
 
   return { triggerTransition };
