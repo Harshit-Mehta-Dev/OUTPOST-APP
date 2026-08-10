@@ -2620,15 +2620,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             overflow: 'hidden',
             padding: activeChannel === 'Chill-Zone' ? '24px' : 0,
             background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(9,15,32,0.99))',
-            // When not active: send off-screen with fixed positioning — layout untouched, audio continues
-            position: activeChannel === 'Chill-Zone' ? 'relative' : 'fixed',
-            top: activeChannel === 'Chill-Zone' ? 'auto' : '-200vh',
-            left: activeChannel === 'Chill-Zone' ? 'auto' : '-200vw',
-            width: activeChannel === 'Chill-Zone' ? '100%' : '100vw',
-            height: activeChannel === 'Chill-Zone' ? '100%' : '100vh',
-            visibility: activeChannel === 'Chill-Zone' ? 'visible' : 'hidden',
+            // When not active: sit behind everything with opacity 0 — audio keeps playing (visibility:hidden stops it!)
+            position: activeChannel === 'Chill-Zone' ? 'relative' : 'absolute',
+            top: 0,
+            left: 0,
+            width: activeChannel === 'Chill-Zone' ? '100%' : '100%',
+            height: activeChannel === 'Chill-Zone' ? '100%' : '100%',
+            opacity: activeChannel === 'Chill-Zone' ? 1 : 0,
             pointerEvents: activeChannel === 'Chill-Zone' ? 'auto' : 'none',
-            zIndex: activeChannel === 'Chill-Zone' ? 'auto' : -999,
+            zIndex: activeChannel === 'Chill-Zone' ? 2 : -1,
           }}
         >
           <div className="chill-zone-bg-glow" style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.6 }} />
@@ -2668,19 +2668,19 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   const height = 680;
                   const left = window.screen.width / 2 - width / 2;
                   const top = window.screen.height / 2 - height / 2;
-                  const popup = window.open(
+                  // Use window 'focus' event — fires reliably when popup closes and user returns
+                  const onFocus = () => {
+                    window.removeEventListener('focus', onFocus);
+                    setIsSpotifyLoggedIn(true);
+                    const iframe = document.getElementById('spotify-chill-iframe');
+                    if (iframe) { const s = iframe.src; iframe.src = ''; setTimeout(() => { iframe.src = s; }, 100); }
+                  };
+                  window.addEventListener('focus', onFocus);
+                  window.open(
                     "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F",
                     "SpotifyLogin",
                     `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
                   );
-                  const pollTimer = setInterval(() => {
-                    if (!popup || popup.closed) {
-                      clearInterval(pollTimer);
-                      setIsSpotifyLoggedIn(true);
-                      const iframe = document.getElementById('spotify-chill-iframe');
-                      if (iframe) { const s = iframe.src; iframe.src = ''; iframe.src = s; }
-                    }
-                  }, 500);
                 }}
                 className="chill-action-btn accent"
                 style={{
@@ -2722,15 +2722,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <button
-                    className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX4wta20PHI0l') ? 'active' : ''}`}
-                    onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4wta20PHI0l?utm_source=generator")}
+                    className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DWZeKCadgRdKQ') ? 'active' : ''}`}
+                    onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DWZeKCadgRdKQ?utm_source=generator")}
                     style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                   >
                     ☕ Lofi Beats
                   </button>
                   <button
-                    className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DXcFszNC9iFUT') ? 'active' : ''}`}
-                    onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DXcFszNC9iFUT?utm_source=generator")}
+                    className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX4sWSpwq3LiO') ? 'active' : ''}`}
+                    onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4sWSpwq3LiO?utm_source=generator")}
                     style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                   >
                     📚 Chill Lofi Study
@@ -2785,7 +2785,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '10px', color: '#1db954', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Playing</div>
               <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {selectedPlaylistUrl.includes('37i9dQZF1DX4wta20PHI0l') ? 'Lofi Beats' : selectedPlaylistUrl.includes('37i9dQZF1DXcFszNC9iFUT') ? 'Chill Lofi Study' : 'Chill Jazz'}
+                {selectedPlaylistUrl.includes('37i9dQZF1DWZeKCadgRdKQ') ? 'Lofi Beats' : selectedPlaylistUrl.includes('37i9dQZF1DX4sWSpwq3LiO') ? 'Chill Lofi Study' : 'Chill Jazz'}
               </div>
             </div>
             <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>▶</span>
