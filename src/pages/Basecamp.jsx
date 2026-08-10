@@ -2608,165 +2608,187 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           <AiNexus currentUser={currentUser} />
         ) : activeChannel === 'Basecamp-Board' ? (
           <BasecampBoard campsiteId={currentCampsiteId} currentUser={currentUser} />
-        ) : activeChannel === 'Chill-Zone' ? (
-          <div className="chill-zone-section" style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', padding: '24px', background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(9,15,32,0.99))' }}>
-            <div className="chill-zone-bg-glow" style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.6 }} />
-            
-            {/* Ambient Equalizer Visualizer Background lines */}
-            <div className="visualizer-background" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '180px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '6px', padding: '0 40px', pointerEvents: 'none', zIndex: 1, opacity: 0.15 }}>
-              {Array.from({ length: 40 }).map((_, i) => (
-                <div 
-                  key={i} 
-                  style={{ 
-                    flex: 1, 
-                    height: '100%', 
-                    background: 'linear-gradient(to top, #1db954, transparent)', 
-                    transformOrigin: 'bottom', 
-                    borderRadius: '4px 4px 0 0',
-                    animation: `soundBarBounce ${0.6 + (i % 5) * 0.15}s ease infinite alternate` 
-                  }} 
-                />
-              ))}
-            </div>
+        ) : null}
 
-            <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: '20px', height: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ padding: '8px', background: 'rgba(29, 185, 84, 0.15)', borderRadius: '12px' }}>
-                    <Music size={24} style={{ color: '#1db954' }} />
-                  </div>
-                  <div>
-                    <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#fff', fontWeight: 800 }}>Spotify Chill Zone</h2>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>Listen to chill lofi beats & ambient music directly inside Outpost</p>
-                  </div>
+        {/* ===== CHILL ZONE — Always mounted, goes off-screen when not active so audio keeps playing ===== */}
+        <div
+          className="chill-zone-section"
+          style={{
+            flex: activeChannel === 'Chill-Zone' ? 1 : undefined,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            padding: activeChannel === 'Chill-Zone' ? '24px' : 0,
+            background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(9,15,32,0.99))',
+            // When not active: send off-screen with fixed positioning — layout untouched, audio continues
+            position: activeChannel === 'Chill-Zone' ? 'relative' : 'fixed',
+            top: activeChannel === 'Chill-Zone' ? 'auto' : '-200vh',
+            left: activeChannel === 'Chill-Zone' ? 'auto' : '-200vw',
+            width: activeChannel === 'Chill-Zone' ? '100%' : '100vw',
+            height: activeChannel === 'Chill-Zone' ? '100%' : '100vh',
+            visibility: activeChannel === 'Chill-Zone' ? 'visible' : 'hidden',
+            pointerEvents: activeChannel === 'Chill-Zone' ? 'auto' : 'none',
+            zIndex: activeChannel === 'Chill-Zone' ? 'auto' : -999,
+          }}
+        >
+          <div className="chill-zone-bg-glow" style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.6 }} />
+
+          {/* Ambient Equalizer Visualizer Background lines */}
+          <div className="visualizer-background" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '180px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '6px', padding: '0 40px', pointerEvents: 'none', zIndex: 1, opacity: 0.15 }}>
+            {Array.from({ length: 40 }).map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  height: '100%',
+                  background: 'linear-gradient(to top, #1db954, transparent)',
+                  transformOrigin: 'bottom',
+                  borderRadius: '4px 4px 0 0',
+                  animation: `soundBarBounce ${0.6 + (i % 5) * 0.15}s ease infinite alternate`
+                }}
+              />
+            ))}
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: '20px', height: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ padding: '8px', background: 'rgba(29, 185, 84, 0.15)', borderRadius: '12px' }}>
+                  <Music size={24} style={{ color: '#1db954' }} />
                 </div>
-                
-                <button
-                  onClick={() => {
-                    const width = 450;
-                    const height = 680;
-                    const left = window.screen.width / 2 - width / 2;
-                    const top = window.screen.height / 2 - height / 2;
-                    const popup = window.open(
-                      "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F",
-                      "SpotifyLogin",
-                      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
-                    );
-                    // Poll until popup closes, then mark as logged in
-                    const pollTimer = setInterval(() => {
-                      if (!popup || popup.closed) {
-                        clearInterval(pollTimer);
-                        setIsSpotifyLoggedIn(true);
-                        // Reload iframe to pick up the new session cookie
-                        const iframe = document.getElementById('spotify-bg-iframe');
-                        if (iframe) { const s = iframe.src; iframe.src = ''; iframe.src = s; }
-                      }
-                    }, 500);
-                  }}
-                  className="chill-action-btn accent"
-                  style={{ background: isSpotifyLoggedIn ? 'rgba(29,185,84,0.2)' : '#1db954', border: isSpotifyLoggedIn ? '1px solid #1db954' : 'none', color: '#fff', padding: '10px 20px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  {isSpotifyLoggedIn ? '✅ Logged In to Spotify' : '🎵 Log In with Spotify'}
-                </button>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#fff', fontWeight: 800 }}>Spotify Chill Zone</h2>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>Listen to chill lofi beats &amp; ambient music directly inside Outpost</p>
+                </div>
               </div>
 
-              {/* Station Grid Options */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px', flex: 1, minHeight: 0 }}>
-                <div className="spotify-iframe-container" style={{ flex: 1, height: '100%', minHeight: '380px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
-                  {/* iframe lives here visually but is the same persistent DOM node below */}
+              <button
+                onClick={() => {
+                  const width = 450;
+                  const height = 680;
+                  const left = window.screen.width / 2 - width / 2;
+                  const top = window.screen.height / 2 - height / 2;
+                  const popup = window.open(
+                    "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F",
+                    "SpotifyLogin",
+                    `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
+                  );
+                  const pollTimer = setInterval(() => {
+                    if (!popup || popup.closed) {
+                      clearInterval(pollTimer);
+                      setIsSpotifyLoggedIn(true);
+                      const iframe = document.getElementById('spotify-chill-iframe');
+                      if (iframe) { const s = iframe.src; iframe.src = ''; iframe.src = s; }
+                    }
+                  }, 500);
+                }}
+                className="chill-action-btn accent"
+                style={{
+                  background: isSpotifyLoggedIn ? 'rgba(29,185,84,0.15)' : '#1db954',
+                  border: isSpotifyLoggedIn ? '1px solid #1db954' : 'none',
+                  color: '#fff',
+                  padding: '10px 20px',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {isSpotifyLoggedIn ? '✅ Logged In to Spotify' : '🎵 Log In with Spotify'}
+              </button>
+            </div>
+
+            {/* Station Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px', flex: 1, minHeight: 0 }}>
+              <div className="spotify-iframe-container" style={{ flex: 1, height: '100%', minHeight: '380px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
+                <iframe
+                  id="spotify-chill-iframe"
+                  src={selectedPlaylistUrl}
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  allowFullScreen=""
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  style={{ border: 'none', position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '18px' }}>
+                <h3 style={{ margin: 0, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255, 255, 255, 0.6)' }}>Select Station</h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <button
+                    className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX4wta20PHI0l') ? 'active' : ''}`}
+                    onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4wta20PHI0l?utm_source=generator")}
+                    style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
+                  >
+                    ☕ Lofi Beats
+                  </button>
+                  <button
+                    className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DXcFszNC9iFUT') ? 'active' : ''}`}
+                    onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DXcFszNC9iFUT?utm_source=generator")}
+                    style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
+                  >
+                    📚 Chill Lofi Study
+                  </button>
+                  <button
+                    className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX2pSTOxoPbx9') ? 'active' : ''}`}
+                    onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX2pSTOxoPbx9?utm_source=generator")}
+                    style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
+                  >
+                    🎷 Chill Jazz
+                  </button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '18px' }}>
-                  <h3 style={{ margin: 0, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255, 255, 255, 0.6)' }}>Select Station</h3>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX4wta20PHI0l') ? 'active' : ''}`}
-                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4wta20PHI0l?utm_source=generator")}
-                      style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
-                    >
-                      ☕ Lofi Beats
-                    </button>
-                    <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DXcFszNC9iFUT') ? 'active' : ''}`}
-                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DXcFszNC9iFUT?utm_source=generator")}
-                      style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
-                    >
-                      📚 Chill Lofi Study
-                    </button>
-                    <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX2pSTOxoPbx9') ? 'active' : ''}`}
-                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX2pSTOxoPbx9?utm_source=generator")}
-                      style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
-                    >
-                      🎷 Chill Jazz
-                    </button>
-                  </div>
-
-                  <div style={{ marginTop: 'auto', padding: '12px', borderRadius: '10px', background: 'rgba(29, 185, 84, 0.08)', border: '1px solid rgba(29, 185, 84, 0.2)' }}>
-                    <strong style={{ display: 'block', fontSize: '12px', color: '#1db954', marginBottom: '4px' }}>🔒 HOW TO USE</strong>
-                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', display: 'block' }}>
-                      1. Click <strong style={{color:'#1db954'}}>Log In</strong> above — a small Spotify popup opens.
-                      <br/>2. Sign in to your account in that popup.
-                      <br/>3. Close the popup &amp; enjoy full tracks here!
-                      <br/><br/><em>Without login: 30s previews only.</em>
-                    </span>
-                  </div>
+                <div style={{ marginTop: 'auto', padding: '12px', borderRadius: '10px', background: 'rgba(29, 185, 84, 0.08)', border: '1px solid rgba(29, 185, 84, 0.2)' }}>
+                  <strong style={{ display: 'block', fontSize: '12px', color: '#1db954', marginBottom: '4px' }}>🔒 HOW TO USE</strong>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', display: 'block' }}>
+                    1. Click <strong style={{color:'#1db954'}}>Log In</strong> above — a small Spotify popup opens.
+                    <br/>2. Sign in to your account in that popup.
+                    <br/>3. Close the popup &amp; enjoy full tracks here!
+                    <br/><br/><em>Without login: 30s previews only.</em>
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-        ) : null}
+        </div>
 
-        {/* ===== ALWAYS-MOUNTED SPOTIFY IFRAME (keeps playing across navigation) ===== */}
-        <iframe
-          id="spotify-bg-iframe"
-          src={selectedPlaylistUrl}
-          width="100%"
-          height="100%"
-          frameBorder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          style={{
-            border: 'none',
-            position: 'absolute',
-            top: 0, left: 0,
-            // Show in Chill-Zone container, hide (but KEEP MOUNTED) elsewhere
-            display: activeChannel === 'Chill-Zone' ? 'block' : 'none',
-            zIndex: activeChannel === 'Chill-Zone' ? 1 : -1,
-            pointerEvents: activeChannel === 'Chill-Zone' ? 'auto' : 'none'
-          }}
-        />
-
-        {/* ===== MINI FLOATING PLAYER (shows when music is active but on another section) ===== */}
-        {activeChannel !== 'Chill-Zone' && (
-          <div style={{
-            position: 'fixed',
-            bottom: '80px',
-            right: '20px',
-            width: '280px',
-            background: 'linear-gradient(135deg, rgba(29,185,84,0.15), rgba(0,0,0,0.9))',
-            border: '1px solid rgba(29,185,84,0.35)',
-            borderRadius: '14px',
-            padding: '10px 14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            zIndex: 9999,
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 8px 32px rgba(29,185,84,0.2)',
-            cursor: 'pointer',
-            transition: 'all 0.3s'
-          }} onClick={() => setActiveChannel('Chill-Zone')} title="Go to Chill Zone">
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(29,185,84,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Music size={18} style={{ color: '#1db954' }} />
-            </div>
+        {/* Mini floating player — only when logged in and away from Chill Zone */}
+        {isSpotifyLoggedIn && activeChannel !== 'Chill-Zone' && (
+          <div
+            onClick={() => setActiveChannel('Chill-Zone')}
+            style={{
+              position: 'fixed',
+              bottom: '16px',
+              right: '16px',
+              background: 'linear-gradient(135deg, rgba(29,185,84,0.18), rgba(0,0,0,0.88))',
+              border: '1px solid rgba(29,185,84,0.4)',
+              borderRadius: '12px',
+              padding: '8px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              zIndex: 1000,
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 4px 24px rgba(29,185,84,0.2)',
+              cursor: 'pointer',
+              userSelect: 'none',
+              maxWidth: '240px',
+            }}
+          >
+            <Music size={16} style={{ color: '#1db954', flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '11px', color: '#1db954', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>🎵 Chill Zone Playing</div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '10px', color: '#1db954', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Playing</div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {selectedPlaylistUrl.includes('37i9dQZF1DX4wta20PHI0l') ? 'Lofi Beats' : selectedPlaylistUrl.includes('37i9dQZF1DXcFszNC9iFUT') ? 'Chill Lofi Study' : 'Chill Jazz'}
               </div>
             </div>
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>▶ Open</div>
+            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>▶</span>
           </div>
         )}
 
