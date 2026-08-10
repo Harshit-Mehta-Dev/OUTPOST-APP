@@ -2669,21 +2669,21 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('playlist/37i9dQZF1DXcBWIGae312e') ? 'active' : ''}`}
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DXcBWIGae312e') ? 'active' : ''}`}
                       onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGae312e")}
                       style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                     >
                       ☕ Lofi Beats
                     </button>
                     <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('playlist/37i9dQZF1DX4WY412122Ad') ? 'active' : ''}`}
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX4WY412122Ad') ? 'active' : ''}`}
                       onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4WY412122Ad")}
                       style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                     >
                       📚 Chill Lofi Study
                     </button>
                     <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('playlist/37i9dQZF1DX8U72gzM1BSA') ? 'active' : ''}`}
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX8U72gzM1BSA') ? 'active' : ''}`}
                       onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX8U72gzM1BSA")}
                       style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                     >
