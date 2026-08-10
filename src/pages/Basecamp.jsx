@@ -2217,13 +2217,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => {
-                  setIsMusicOpen(true);
-                  setIsMusicMinimized(false);
+                  setActiveChannel('Chill-Zone');
                   setIsPinPopupOpen(false);
                   setIsAlertOpen(false);
                   setIsAIOpen(false);
                 }}
-                className={`theme-trigger-btn ${isMusicOpen && !isMusicMinimized ? 'active music-active' : ''}`}
+                className={`theme-trigger-btn ${activeChannel === 'Chill-Zone' ? 'active music-active' : ''}`}
                 title="Chill Zone (Spotify)"
               >
                 <Music size={18} />
@@ -2524,122 +2523,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               )}
             </AnimatePresence>
 
-            {/* SPOTIFY CHILL ZONE MODAL */}
-            <AnimatePresence>
-              {isMusicOpen && !isMusicMinimized && (
-                <div className="chill-zone-overlay">
-                  <motion.div
-                    className="chill-zone-modal"
-                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 30, scale: 0.95 }}
-                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                  >
-                    {/* Running Glow Background Accent */}
-                    <div className="chill-zone-bg-glow" />
-
-                    <header className="chill-zone-header">
-                      <div className="chill-zone-title-wrap">
-                        <Music size={20} className="animate-bounce" style={{ color: '#1db954' }} />
-                        <span className="spotify-brand-text">CHILL ZONE</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                          onClick={() => setIsMusicMinimized(true)}
-                          className="trail-markers-close"
-                          style={{ position: 'static', color: '#1db954', background: 'rgba(29, 185, 84, 0.1)', padding: '6px', borderRadius: '8px' }}
-                          title="Minimize player to background"
-                        >
-                          Minimize
-                        </button>
-                        <button
-                          onClick={() => setIsMusicOpen(false)}
-                          className="trail-markers-close"
-                          style={{ position: 'static' }}
-                        >
-                          <X size={17} />
-                        </button>
-                      </div>
-                    </header>
-
-                    <div className="chill-zone-body">
-                      {/* Interactive Custom Embed Player */}
-                      <div className="spotify-iframe-container">
-                        <iframe
-                          src={selectedPlaylistUrl}
-                          width="100%"
-                          height="100%"
-                          frameBorder="0"
-                          allowFullScreen=""
-                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                          loading="lazy"
-                          style={{ border: 'none', position: 'absolute', top: 0, left: 0 }}
-                        />
-                      </div>
-
-                      {/* Station Selector */}
-                      <div className="playlist-selector">
-                        <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255, 255, 255, 0.6)' }}>Select Station</span>
-                        <div className="playlist-options">
-                          <button
-                            className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DXcBWIGae312e') ? 'active' : ''}`}
-                            onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGae312e")}
-                          >
-                            Lofi Beats
-                          </button>
-                          <button
-                            className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX4WY412122Ad') ? 'active' : ''}`}
-                            onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4WY412122Ad")}
-                          >
-                            Chill Lofi Study
-                          </button>
-                          <button
-                            className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX8U72gzM1BSA') ? 'active' : ''}`}
-                            onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX8U72gzM1BSA")}
-                          >
-                            Chill Jazz
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <footer className="chill-zone-actions">
-                      <button
-                        onClick={() => {
-                          // Open user login directly to authorization web client
-                          window.open("https://accounts.spotify.com/login", "_blank");
-                        }}
-                        className="chill-action-btn accent"
-                      >
-                        Authorize Spotify Account
-                      </button>
-                    </footer>
-                  </motion.div>
-                </div>
-              )}
-            </AnimatePresence>
-
-            {/* MINIMIZED FLOATING WIDGET (RUNNING AUDIO INDICATOR) */}
-            <AnimatePresence>
-              {isMusicOpen && isMusicMinimized && (
-                <motion.div
-                  className="chill-zone-minimized-widget"
-                  initial={{ opacity: 0, y: 50, scale: 0.8 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 50, scale: 0.8 }}
-                  onClick={() => setIsMusicMinimized(false)}
-                >
-                  <div className="widget-playing-indicator">
-                    <span className="widget-playing-bar" />
-                    <span className="widget-playing-bar" />
-                    <span className="widget-playing-bar" />
-                  </div>
-                  <span style={{ fontSize: '12px', fontWeight: '500' }}>Spotify Chill Zone Active</span>
-                  <Music size={14} style={{ color: '#1db954' }} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             <button className="camp-ops-btn" onClick={() => setIsCampOpsModalOpen(true)}>
               <Settings size={18} />
               <span className="hide-on-mobile">Camp Operations</span>
@@ -2724,9 +2607,103 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           <AiNexus currentUser={currentUser} />
         ) : activeChannel === 'Basecamp-Board' ? (
           <BasecampBoard campsiteId={currentCampsiteId} currentUser={currentUser} />
+        ) : activeChannel === 'Chill-Zone' ? (
+          <div className="chill-zone-section" style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', padding: '24px', background: 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(9,15,32,0.99))' }}>
+            <div className="chill-zone-bg-glow" style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.6 }} />
+            
+            {/* Ambient Equalizer Visualizer Background lines */}
+            <div className="visualizer-background" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '180px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '6px', padding: '0 40px', pointerEvents: 'none', zIndex: 1, opacity: 0.15 }}>
+              {Array.from({ length: 40 }).map((_, i) => (
+                <div 
+                  key={i} 
+                  style={{ 
+                    flex: 1, 
+                    height: '100%', 
+                    background: 'linear-gradient(to top, #1db954, transparent)', 
+                    transformOrigin: 'bottom', 
+                    borderRadius: '4px 4px 0 0',
+                    animation: `soundBarBounce ${0.6 + (i % 5) * 0.15}s ease infinite alternate` 
+                  }} 
+                />
+              ))}
+            </div>
+
+            <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: '20px', height: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ padding: '8px', background: 'rgba(29, 185, 84, 0.15)', borderRadius: '12px' }}>
+                    <Music size={24} style={{ color: '#1db954' }} />
+                  </div>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#fff', fontWeight: 800 }}>Spotify Chill Zone</h2>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>Listen to chill lofi beats & ambient music directly inside Outpost</p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => window.open("https://accounts.spotify.com/login", "_blank")}
+                  className="chill-action-btn accent"
+                  style={{ background: '#1db954', border: 'none', color: '#fff', padding: '10px 20px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', transition: 'transform 0.2s' }}
+                >
+                  Log In with Spotify Account
+                </button>
+              </div>
+
+              {/* Station Grid Options */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px', flex: 1, minHeight: 0 }}>
+                <div className="spotify-iframe-container" style={{ flex: 1, height: '100%', minHeight: '380px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
+                  <iframe
+                    src={selectedPlaylistUrl}
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    allowFullScreen=""
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    style={{ border: 'none', position: 'absolute', top: 0, left: 0 }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '18px' }}>
+                  <h3 style={{ margin: 0, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255, 255, 255, 0.6)' }}>Select Station</h3>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <button
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('playlist/37i9dQZF1DXcBWIGae312e') ? 'active' : ''}`}
+                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGae312e")}
+                      style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
+                    >
+                      ☕ Lofi Beats
+                    </button>
+                    <button
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('playlist/37i9dQZF1DX4WY412122Ad') ? 'active' : ''}`}
+                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4WY412122Ad")}
+                      style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
+                    >
+                      📚 Chill Lofi Study
+                    </button>
+                    <button
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('playlist/37i9dQZF1DX8U72gzM1BSA') ? 'active' : ''}`}
+                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX8U72gzM1BSA")}
+                      style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
+                    >
+                      🎷 Chill Jazz
+                    </button>
+                  </div>
+
+                  <div style={{ marginTop: 'auto', padding: '12px', borderRadius: '10px', background: 'rgba(29, 185, 84, 0.08)', border: '1px solid rgba(29, 185, 84, 0.2)' }}>
+                    <strong style={{ display: 'block', fontSize: '12px', color: '#1db954', marginBottom: '4px' }}>🔒 SECURE EMBED PLAYBACK</strong>
+                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.4', display: 'block' }}>
+                      To play full tracks without limits, make sure you are logged into Spotify in this browser. Unlogged connections are restricted to 30s previews by Spotify Security Policies.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         ) : null}
 
-        <div className="chat-messages" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board') ? 'none' : undefined }}>
+        <div className="chat-messages" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board' || activeChannel === 'Chill-Zone') ? 'none' : undefined }}>
           <div className="chat-welcome">
             <div className="welcome-icon">
               <Hash size={40} />
@@ -3141,7 +3118,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <button className="bulk-cancel-btn" onClick={() => setSelectedMessageIds([])}>Cancel</button>
           </div>
         )}
-        <div className="chat-input-wrapper" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board') ? 'none' : undefined }}>
+        <div className="chat-input-wrapper" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board' || activeChannel === 'Chill-Zone') ? 'none' : undefined }}>
           <div className="chat-input-container" style={{ position: 'relative', overflow: 'visible' }}>
             {activeCampsite?.bannedUsers?.includes(currentUser?.username) ? (
               <div style={{ width: '100%', textAlign: 'center', padding: '12px', color: '#ff4444', fontWeight: 'bold', background: 'rgba(255,0,0,0.1)', borderRadius: '8px' }}>
