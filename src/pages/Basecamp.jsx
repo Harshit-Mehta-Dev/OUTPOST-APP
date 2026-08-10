@@ -44,7 +44,8 @@ import {
   Square,
   Star,
   Forward,
-  Info
+  Info,
+  MapPin
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -117,7 +118,7 @@ const TrailMarkers = ({ campsite, onConditionChange }) => {
   const condition = campsite?.trailStatus?.label || 'Clear Skies';
 
   return <>
-    <button className="trail-markers-trigger" onClick={() => setIsOpen(true)} title="Open Trail Markers"><span>⛺</span> Trail Markers</button>
+    <button className="trail-markers-trigger" onClick={() => setIsOpen(true)} title="Trail Markers"><MapPin size={18} /></button>
     {isOpen && <div className="trail-markers-backdrop" onClick={() => setIsOpen(false)}>
       <section className="trail-markers-modal" onClick={event => event.stopPropagation()} aria-label="Trail Markers">
         <button className="trail-markers-close" onClick={() => setIsOpen(false)} aria-label="Close Trail Markers"><X size={17} /></button>

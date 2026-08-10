@@ -477,20 +477,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   margin: 0;
   padding: 0;
   border-radius: 0.75rem;
-  font-size: 0;
   border: 1px solid var(--border-glass);
   background-color: var(--bg-glass);
   color: var(--text-secondary);
+  cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .top-bar-right .trail-markers-trigger:hover {
   color: var(--text-primary);
   border-color: var(--text-secondary);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
