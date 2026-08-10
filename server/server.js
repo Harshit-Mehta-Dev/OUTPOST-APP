@@ -116,19 +116,29 @@ if (process.env.REDIS_URL) {
   const redisOptions = {
     url: process.env.REDIS_URL,
     pingInterval: 10000,
-    socket: { tls: process.env.REDIS_URL.startsWith('rediss://') }
+    socket: { tls: process.env.REDIS_URL.startsWith('rediss://'), connectTimeout: 10000 }
   };
   const pubClient = createClient(redisOptions);
   const subClient = pubClient.duplicate();
-  redisClientForLimits = pubClient;
 
-  pubClient.on('error', (err) => console.error('Redis Pub Client Error:', err));
-  subClient.on('error', (err) => console.error('Redis Sub Client Error:', err));
+  pubClient.on('error', (err) => {
+    // Only log non-timeout connection errors after initial startup
+    if (redisClientForLimits && err.name !== 'ConnectionTimeoutError') {
+      console.error('Redis Pub Client Error:', err.message);
+    }
+  });
+  subClient.on('error', (err) => {
+    if (redisClientForLimits && err.name !== 'ConnectionTimeoutError') {
+      console.error('Redis Sub Client Error:', err.message);
+    }
+  });
 
   Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
+    // Only assign after successful connection — prevents rate-limiter from getting a disconnected client
+    redisClientForLimits = pubClient;
     io.adapter(createAdapter(pubClient, subClient));
     console.log('✅ Redis adapter connected to Socket.io');
-  }).catch(err => console.error('Redis connection error:', err));
+  }).catch(err => console.error('Redis connection error:', err.message));
 } else {
   console.log('ℹ️ REDIS_URL not provided. Socket.io running in standalone mode.');
 }
