@@ -2212,8 +2212,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             <div style={{ position: 'relative' }}>
               <button
                 onClick={handleTogglePinPopup}
-                className={`theme-trigger-btn ${isPinPopupOpen ? 'active shadow-[0_0_18px_rgba(251,191,36,0.28)]' : ''}`}
-                style={isPinPopupOpen ? { background: 'var(--bg-card)', color: '#fbbf24', border: '1px solid #fbbf24' } : { border: '1px solid transparent' }}
+                className={`theme-trigger-btn ${isPinPopupOpen ? 'active pin-active' : ''}`}
                 title="Pinned Messages"
               >
                 <Pin size={18} />
@@ -2231,13 +2230,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     Notification.requestPermission();
                   }
                 }}
-                className={`theme-trigger-btn ${isAlertOpen ? 'active shadow-[0_0_15px_rgba(var(--brand-primary),0.2)]' : ''}`}
-                style={isAlertOpen ? { background: 'var(--bg-card)', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)' } : { border: '1px solid transparent' }}
+                className={`theme-trigger-btn ${isAlertOpen ? 'active bell-active' : ''}`}
                 title="Alerts"
               >
                 <Bell size={18} />
                 {alerts.length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-brand animate-pulse shadow-[0_0_8px_rgba(var(--brand-primary),0.6)]" style={{ width: '8px', height: '8px', position: 'absolute' }} />
+                  <span style={{ width: '8px', height: '8px', position: 'absolute', top: '6px', right: '6px', borderRadius: '50%', background: 'rgb(var(--brand-primary))', boxShadow: '0 0 8px rgba(var(--brand-primary),0.7)', animation: 'pulse 2s infinite' }} />
                 )}
               </button>
             </div>

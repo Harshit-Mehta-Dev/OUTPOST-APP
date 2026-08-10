@@ -192,7 +192,7 @@
 .theme-trigger-btn:hover {
   color: var(--text-primary);
   border-color: var(--text-secondary);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -200,6 +200,22 @@
   background-color: var(--bg-secondary);
   border-color: var(--text-secondary);
   color: var(--accent-primary);
+}
+
+/* Pin button active — amber glow */
+.theme-trigger-btn.pin-active {
+  background-color: var(--bg-card);
+  border-color: #fbbf24;
+  color: #fbbf24;
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+}
+
+/* Bell button active — brand accent glow */
+.theme-trigger-btn.bell-active {
+  background-color: var(--bg-card);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  box-shadow: 0 0 14px rgba(var(--brand-primary), 0.2);
 }
 
 /* Mobile Optimizations */
