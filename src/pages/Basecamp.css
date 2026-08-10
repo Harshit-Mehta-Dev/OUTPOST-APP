@@ -471,7 +471,32 @@
 
 .expedition-header .trail-markers-trigger { flex: 0 0 32px; width: 32px; height: 32px; justify-content: center; margin: 0; padding: 0; font-size: 0; }
 .expedition-header .trail-markers-trigger span { font-size: 15px; }
-.top-bar-right .trail-markers-trigger { width: 42px; height: 42px; justify-content: center; margin: 0; padding: 0; border-radius: 11px; font-size: 0; }.top-bar-right .trail-markers-trigger span { font-size: 17px; }.top-bar-right .trail-markers-trigger:hover { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(0,0,0,.2); }
+.top-bar-right .trail-markers-trigger {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border-radius: 0.75rem;
+  font-size: 0;
+  border: 1px solid var(--border-glass);
+  background-color: var(--bg-glass);
+  color: var(--text-secondary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.top-bar-right .trail-markers-trigger:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.top-bar-right .trail-markers-trigger:focus {
+  outline: none;
+}
 
 .trail-markers-heading { display: flex; align-items: center; gap: 7px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }.trail-markers-heading span { font-size: 16px; }.trail-markers-heading button { margin-left: auto; width: 24px; height: 24px; border: 0; border-radius: 6px; color: var(--text-secondary); background: transparent; cursor: pointer; font-size: 17px; }.trail-markers-heading button:hover { color: var(--accent-primary); background: rgba(255,255,255,.07); }
 .trail-weather { display: flex; align-items: center; gap: 8px; margin: 11px 0 10px; }.trail-weather-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: rgba(0,0,0,.16); font-size: 16px; }.trail-weather div { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 1px; }.trail-weather strong { font-size: 14px; }.trail-weather small { overflow: hidden; color: var(--text-secondary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }.trail-weather time { color: var(--text-secondary); font-size: 11px; }
@@ -1528,4 +1553,36 @@
     justify-content: flex-end;
     padding-left: 0;
   }
+}
+
+/* Pins Popup Action Buttons */
+.pin-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid var(--border-glass);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pin-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-secondary);
+}
+
+.pin-action-btn-primary {
+  background-color: var(--accent-primary);
+  color: #fff;
+  border: 1px solid var(--accent-primary);
+}
+
+.pin-action-btn-primary:hover {
+  background-color: var(--accent-glow);
+  border-color: var(--accent-glow);
 }

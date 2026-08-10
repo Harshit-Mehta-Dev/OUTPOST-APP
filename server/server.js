@@ -896,7 +896,7 @@ io.on('connection', (socket) => {
     }
 
     // 2. Explicitly target the campsite owner/admin socket connection with a banner notification
-    if (adminEmail) {
+    if (adminEmail) { 
       io.to(adminEmail).emit("campsite-admin-notification", {
         message: `A new Scout has breached the perimeter! Welcome ${scoutName}.`,
         scoutName
@@ -912,7 +912,7 @@ const errorHandler = require('./middleware/errorHandler');
 app.use((req, res, next) => {
   res.status(404).json({ error: 'API Route Not Found' });
 });
-
+ 
 // Apply centralized error handler
 app.use(errorHandler);
 

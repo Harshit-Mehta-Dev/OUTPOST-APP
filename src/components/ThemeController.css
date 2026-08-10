@@ -171,9 +171,10 @@
 
 /* Basecamp Top Bar adjustments */
 .theme-trigger-btn {
-  width: 36px;
+  min-width: 36px;
+  width: auto;
   height: 36px;
-  padding: 0;
+  padding: 0 10px;
   border-radius: 0.75rem;
   border: 1px solid transparent;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -183,6 +184,10 @@
   background-color: var(--bg-glass);
   color: var(--text-secondary);
   border-color: var(--border-glass);
+}
+
+.theme-trigger-btn:focus {
+  outline: none;
 }
 
 .theme-trigger-btn:hover {

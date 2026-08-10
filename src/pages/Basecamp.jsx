@@ -2367,7 +2367,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               onDismissAlert={(id) => setAlerts(prev => prev.filter(a => a.id !== id))}
               onClearAll={() => setAlerts([])} 
             />
-
             <AnimatePresence>
               {isPinPopupOpen && (
                 <motion.div
@@ -2378,7 +2377,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   style={{
                     position: 'fixed',
                     inset: 0,
-                    background: 'rgba(0, 0, 0, 0.55)',
+                    background: 'rgba(0, 0, 0, 0.65)',
+                    backdropFilter: 'blur(8px)',
                     zIndex: 9998,
                     display: 'flex',
                     alignItems: 'center',
@@ -2394,13 +2394,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     transition={{ duration: 0.2, ease: 'easeOut' }}
                     style={{
-                      background: 'var(--bg-card)',
-                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: 'rgba(15, 23, 42, 0.98)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
                       borderRadius: '24px',
                       width: 'min(720px, 100%)',
                       maxHeight: 'min(90vh, 720px)',
                       overflow: 'hidden',
-                      boxShadow: '0 30px 80px rgba(0,0,0,0.35)',
+                      boxShadow: '0 30px 80px rgba(0, 0, 0, 0.55)',
                       padding: '0',
                       position: 'relative'
                     }}
@@ -2441,16 +2442,14 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                             <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.text || msg.body || '[No text content]'}</p>
                             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                               <button
-                                className="theme-trigger-btn"
-                                style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: '10px' }}
+                                className="pin-action-btn"
                                 onClick={() => handlePinMessage(msg, msg.channelKey || currentChannelKey)}
                               >
                                 <Pin size={14} /> Unpin
                               </button>
                               {channelName && (
                                 <button
-                                  className="theme-trigger-btn"
-                                  style={{ padding: '8px 14px', fontSize: '0.8rem', borderRadius: '10px', background: 'var(--accent-primary)', color: 'white', border: 'none' }}
+                                  className="pin-action-btn pin-action-btn-primary"
                                   onClick={() => {
                                     const campsiteId = msg.channelKey.split('_')[0];
                                     changeViewChannelCallback(campsiteId, msg.channelKey);

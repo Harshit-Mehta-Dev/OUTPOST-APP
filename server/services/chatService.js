@@ -680,7 +680,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('✅ Connected to MongoDB Atlas'))
 .catch(err => console.error('❌ Failed to connect to MongoDB', err));
 
-const PORT = process.env.PORT || process.env.PORT_CHAT || 10000;
+const PORT = process.env.PORT_CHAT || 5003;
 if (require.main === module) {
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Chat Service running on port ${PORT}`);

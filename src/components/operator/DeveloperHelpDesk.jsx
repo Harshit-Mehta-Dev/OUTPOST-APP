@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, Image as ImageIcon, CheckCircle, MessageSquare, Paperclip, User, Trash2, Clock } from 'lucide-react';
 import { io } from 'socket.io-client';
 import './DeveloperHelpDesk.css';
+import '../AiNexus.css';
 
 const DEV_HELPDESK_SOCKET_URL = import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
 
