@@ -2641,7 +2641,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 </div>
                 
                 <button
-                  onClick={() => window.open("https://accounts.spotify.com/login", "_blank")}
+                  onClick={() => window.open("https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F", "_blank")}
                   className="chill-action-btn accent"
                   style={{ background: '#1db954', border: 'none', color: '#fff', padding: '10px 20px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', transition: 'transform 0.2s' }}
                 >
