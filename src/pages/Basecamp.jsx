@@ -495,7 +495,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // Spotify Chill Zone State
   const [isMusicOpen, setIsMusicOpen] = useState(false);
   const [isMusicMinimized, setIsMusicMinimized] = useState(false);
-  const [selectedPlaylistUrl, setSelectedPlaylistUrl] = useState("https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGae312e"); // Chill Lofi Beats default
+  const [selectedPlaylistUrl, setSelectedPlaylistUrl] = useState("https://open.spotify.com/embed/playlist/0vvXsWCC9xrXsKd4eZs47a?utm_source=generator"); // Chill Lofi Beats default
 
   const [selectedPopupAlert, setSelectedPopupAlert] = useState(null);
   const [clearedTimestamps, setClearedTimestamps] = useState(() => {
@@ -2679,22 +2679,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DXcBWIGae312e') ? 'active' : ''}`}
-                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGae312e")}
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('0vvXsWCC9xrXsKd4eZs47a') ? 'active' : ''}`}
+                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/0vvXsWCC9xrXsKd4eZs47a?utm_source=generator")}
                       style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                     >
                       ☕ Lofi Beats
                     </button>
                     <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX4WY412122Ad') ? 'active' : ''}`}
-                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX4WY412122Ad")}
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX8Igebx81DGr') ? 'active' : ''}`}
+                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX8Igebx81DGr?utm_source=generator")}
                       style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                     >
                       📚 Chill Lofi Study
                     </button>
                     <button
-                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX8U72gzM1BSA') ? 'active' : ''}`}
-                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX8U72gzM1BSA")}
+                      className={`playlist-btn ${selectedPlaylistUrl.includes('37i9dQZF1DX2pSTOxoPbx9') ? 'active' : ''}`}
+                      onClick={() => setSelectedPlaylistUrl("https://open.spotify.com/embed/playlist/37i9dQZF1DX2pSTOxoPbx9?utm_source=generator")}
                       style={{ padding: '12px', fontSize: '13px', borderRadius: '10px', textAlign: 'left' }}
                     >
                       🎷 Chill Jazz
@@ -2702,9 +2702,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   </div>
 
                   <div style={{ marginTop: 'auto', padding: '12px', borderRadius: '10px', background: 'rgba(29, 185, 84, 0.08)', border: '1px solid rgba(29, 185, 84, 0.2)' }}>
-                    <strong style={{ display: 'block', fontSize: '12px', color: '#1db954', marginBottom: '4px' }}>🔒 SECURE EMBED PLAYBACK</strong>
-                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.4', display: 'block' }}>
-                      To play full tracks without limits, make sure you are logged into Spotify in this browser. Unlogged connections are restricted to 30s previews by Spotify Security Policies.
+                    <strong style={{ display: 'block', fontSize: '12px', color: '#1db954', marginBottom: '4px' }}>🔒 HOW TO USE</strong>
+                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', display: 'block' }}>
+                      1. Click <strong style={{color:'#1db954'}}>Log In</strong> above — a small Spotify popup opens.
+                      <br/>2. Sign in to your account in that popup.
+                      <br/>3. Close the popup &amp; enjoy full tracks here!
+                      <br/><br/><em>Without login: 30s previews only.</em>
                     </span>
                   </div>
                 </div>
