@@ -236,8 +236,21 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     const ids = new Set(selectedMessageIds);
     const selected = messages.filter(message => ids.has(message._id || message.id));
     if (selected.some(message => starredMessageIds.includes(message._id || message.id)) && !window.confirm('One or more selected messages are starred. Do you want to delete them?')) return;
+    
+    addDeletedMessageIds(Array.from(ids));
     setMessagesByChannel(prev => ({ ...prev, [currentChannelKey]: (prev[currentChannelKey] || []).filter(message => !ids.has(message._id || message.id)) }));
-    selected.filter(message => (message.user?.username || message.user) === currentUser?.username && !String(message._id || message.id).startsWith('local-')).forEach(message => socket?.emit('delete_message_for_all', { messageId: message._id || message.id, channelKey: currentChannelKey, username: currentUser?.username || 'Scout' }));
+    
+    const apiBase = CHAT_URL || import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
+    const token = localStorage.getItem('outpost_token');
+
+    selected.filter(message => (message.user?.username || message.user) === currentUser?.username && !String(message._id || message.id).startsWith('local-')).forEach(message => {
+      const msgId = message._id || message.id;
+      socket?.emit('delete_message_for_all', { messageId: msgId, channelKey: currentChannelKey, username: currentUser?.username || 'Scout' });
+      fetch(`${apiBase}/api/messages/${msgId}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      }).catch(() => {});
+    });
     setSelectedMessageIds([]);
   };
 
@@ -510,10 +523,35 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       return {};
     }
   });
+
+  const getDeletedMessageIds = () => {
+    try {
+      const saved = localStorage.getItem('outpost_deleted_messages');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch (e) {
+      return new Set();
+    }
+  };
+
+  const addDeletedMessageIds = (ids) => {
+    try {
+      const current = getDeletedMessageIds();
+      ids.forEach(id => { if (id) current.add(String(id)); });
+      localStorage.setItem('outpost_deleted_messages', JSON.stringify(Array.from(current)));
+    } catch (e) {
+      console.error('Failed to save deleted message IDs', e);
+    }
+  };
   
   const rawMessages = messagesByChannel[currentChannelKey] || [];
   const clearTime = clearedTimestamps[currentChannelKey] || 0;
-  const messages = rawMessages.filter(msg => (msg.receivedAt || 0) >= clearTime);
+  const deletedIdsSet = getDeletedMessageIds();
+  const messages = rawMessages.filter(msg => {
+    const msgId = String(msg._id || msg.id || '');
+    if (deletedIdsSet.has(msgId)) return false;
+    if (msg.deletedFor && Array.isArray(msg.deletedFor) && currentUser?.username && msg.deletedFor.includes(currentUser.username)) return false;
+    return (msg.receivedAt || 0) >= clearTime;
+  });
   const [pinnedMessages, setPinnedMessages] = useState([]);
   const pinnedCount = pinnedMessages.length;
   
@@ -616,8 +654,9 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       try {
         const token = localStorage.getItem('outpost_token');
         const apiBase = CHAT_URL || import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
-        const res = await fetch(`${apiBase}/api/messages/${currentChannelKey}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        const usernameQuery = currentUser?.username ? `?username=${encodeURIComponent(currentUser.username)}` : '';
+        const res = await fetch(`${apiBase}/api/messages/${currentChannelKey}${usernameQuery}`, {
+          headers: token ? { Authorization: `Bearer ${token}`, 'x-username': currentUser?.username || '' } : { 'x-username': currentUser?.username || '' }
         });
 
         if (res.ok) {
@@ -648,15 +687,23 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       }
 
       if (fetchedMsgs !== null) {
+        const deletedIds = getDeletedMessageIds();
+        const validFetched = fetchedMsgs.filter(m => {
+          const msgId = String(m._id || m.id || '');
+          if (deletedIds.has(msgId)) return false;
+          if (m.deletedFor && Array.isArray(m.deletedFor) && currentUser?.username && m.deletedFor.includes(currentUser.username)) return false;
+          return true;
+        });
+
         setMessagesByChannel(prev => {
           const existing = prev[currentChannelKey] || [];
-          const fetchedIds = new Set(fetchedMsgs.map(m => String(m.id || m._id)));
+          const fetchedIds = new Set(validFetched.map(m => String(m.id || m._id)));
           // Keep local-only optimistic messages not yet confirmed by the server
           const localOnly = existing.filter(m => {
             const id = String(m.id || m._id || '');
-            return id.startsWith('local-') && !fetchedIds.has(id);
+            return id.startsWith('local-') && !fetchedIds.has(id) && !deletedIds.has(id);
           });
-          const merged = [...fetchedMsgs, ...localOnly].sort(
+          const merged = [...validFetched, ...localOnly].sort(
             (a, b) => (a.receivedAt || 0) - (b.receivedAt || 0)
           );
           return { ...prev, [currentChannelKey]: merged };
@@ -673,6 +720,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       .channel(`public:messages:${currentChannelKey}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `channelKey=eq.${currentChannelKey}` }, payload => {
         const mappedMsg = parseIncomingMessage(payload.new, currentChannelKey);
+        const deletedIds = getDeletedMessageIds();
+        if (deletedIds.has(String(mappedMsg.id || mappedMsg._id))) return;
         
         setMessagesByChannel(prev => {
           const current = prev[currentChannelKey] || [];
@@ -703,7 +752,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off('connect', handleReconnect);
       supabase.removeChannel(messageSubscription);
     };
-  }, [currentChannelKey, currentUser]);
+  }, [currentChannelKey, currentUser?.username]);
 
   useEffect(() => {
     const handleMessageLiked = (data) => {
@@ -1740,6 +1789,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleOperatorEraseMessage = async (msgId) => {
     try {
+      addDeletedMessageIds([msgId]);
       await fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/operator/erase-message/${msgId}`, {
         method: "DELETE",
         headers: {
@@ -1860,13 +1910,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   className="btn-primary" 
                   style={{ background: 'transparent', border: '1px solid var(--text-secondary)' }}
                   onClick={() => {
+                    const targetId = messageToDelete.id || messageToDelete._id;
+                    addDeletedMessageIds([targetId, messageToDelete.id, messageToDelete._id]);
                     setMessagesByChannel(prev => {
                       const currentMessages = prev[messageToDelete.channelKey] || [];
                       return {
                         ...prev,
-                        [messageToDelete.channelKey]: currentMessages.filter(m => (m._id || m.id) !== messageToDelete.id)
+                        [messageToDelete.channelKey]: currentMessages.filter(m => (m._id || m.id) !== targetId)
                       };
                     });
+                    if (currentUser?.username && targetId && !String(targetId).startsWith('local-')) {
+                      const apiBase = CHAT_URL || import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
+                      fetch(`${apiBase}/api/messages/${targetId}/delete-for-me`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: currentUser.username })
+                      }).catch(() => {});
+                      socket?.emit("delete_message_for_me", { messageId: targetId, username: currentUser.username });
+                    }
                     setMessageToDelete(null);
                   }}
                 >
@@ -1877,21 +1938,29 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     className="btn-primary" 
                     style={{ background: 'rgba(255, 59, 48, 0.2)', color: '#ff3b30', borderColor: '#ff3b30' }}
                     onClick={() => {
+                      const targetId = messageToDelete.id || messageToDelete._id;
+                      addDeletedMessageIds([targetId, messageToDelete.id, messageToDelete._id]);
                       // Always delete from local state immediately for instant UI feedback
                       setMessagesByChannel(prev => {
                         const currentMessages = prev[messageToDelete.channelKey] || [];
                         return {
                           ...prev,
-                          [messageToDelete.channelKey]: currentMessages.filter(m => (m._id || m.id) !== messageToDelete.id)
+                          [messageToDelete.channelKey]: currentMessages.filter(m => (m._id || m.id) !== targetId)
                         };
                       });
-                      // Fire socket to delete on server + for all other users (only if we have a real DB ID)
-                      if (!String(messageToDelete.id).startsWith('local-')) {
-                        socket.emit("delete_message_for_all", { 
-                          messageId: messageToDelete.id, 
+                      // Fire socket + REST API to delete on server + for all other users (only if we have a real DB ID)
+                      if (!String(targetId).startsWith('local-')) {
+                        const apiBase = CHAT_URL || import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
+                        const token = localStorage.getItem('outpost_token');
+                        socket?.emit("delete_message_for_all", { 
+                          messageId: targetId, 
                           channelKey: messageToDelete.channelKey,
                           username: currentUser?.username || 'Scout'
                         });
+                        fetch(`${apiBase}/api/messages/${targetId}`, {
+                          method: 'DELETE',
+                          headers: token ? { Authorization: `Bearer ${token}` } : {}
+                        }).catch(() => {});
                       }
                       setMessageToDelete(null);
                     }}

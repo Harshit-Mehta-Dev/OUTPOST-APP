@@ -18,6 +18,14 @@ router.delete("/erase-message/:id", verifyOperatorAuthority, async (req, res) =>
 
     // We can either permanently delete or set a flag. The user requested permanently deleting the record.
     await Message.findByIdAndDelete(messageId);
+    const supabase = require("../supabaseClient");
+    if (supabase) {
+      try {
+        await supabase.from('messages').delete().eq('id', String(messageId));
+      } catch (sErr) {
+        console.error("Supabase operator erase error:", sErr);
+      }
+    }
 
     // Dynamic replacement broadcast structure text
     const placeholderText = "SYSTEM DECREE: Our Operator has decided to delete this message under community violation guidelines.";
@@ -60,25 +68,30 @@ router.delete("/decommission-campsite/:id", verifyOperatorAuthority, async (req,
       if (membersToAlert.length > 0) query.push({ username: { $in: membersToAlert } });
       if (targetCampsite.adminEmail) query.push({ email: targetCampsite.adminEmail });
 
-      if (query.length > 0) {
-        await User.updateMany(
-          { $or: query },
-          { 
-            $push: { 
-              systemAlerts: { 
-                campsiteName: campsiteName, 
-                message: "Our Operator has decided to delete this group under community violation guidelines." 
-              } 
+      await User.updateMany(
+        { $or: query },
+        { 
+          $push: { 
+            alerts: { 
+              campsiteName, 
+              message: `⚠️ CRITICAL DECREE: Basecamp "${campsiteName}" has been decommissioned by the Operator.`, 
+              type: "decommission" 
             } 
-          }
-        );
-      }
+          } 
+        }
+      );
     }
 
     // Purge the server and all messages inside it permanently
     await Campsite.findByIdAndDelete(campsiteId);
     // Because messages use channelKey (e.g. `campsiteId_channelId`), we delete by matching the prefix
     await Message.deleteMany({ channelKey: { $regex: `^${campsiteId}_` } });
+    const supabase = require("../supabaseClient");
+    if (supabase) {
+      try {
+        await supabase.from('messages').delete().like('channelKey', `${campsiteId}_%`);
+      } catch (sErr) {}
+    }
 
     // Tell the frontend socket room to instantly kick all users out of the view layout
     if (req.io) {

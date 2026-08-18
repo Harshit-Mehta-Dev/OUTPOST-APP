@@ -22,6 +22,7 @@ const messageSchema = new mongoose.Schema({
     users: [{ type: String }]
   }],
   isPinned: { type: Boolean, default: false },
+  deletedFor: { type: [String], default: [] },
   createdAt: { type: Date, default: Date.now }
 });
 

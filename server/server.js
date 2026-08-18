@@ -402,7 +402,13 @@ app.get('/api/messages/:channelKey', async (req, res) => {
       if (error || !data.user) return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
 
-    const messages = await Message.find({ channelKey: req.params.channelKey })
+    const username = req.query.username || req.headers['x-username'];
+    const query = { channelKey: req.params.channelKey };
+    if (username) {
+      query.deletedFor = { $ne: username };
+    }
+
+    const messages = await Message.find(query)
       .sort({ createdAt: 1 })
       .limit(100);
       
@@ -418,6 +424,45 @@ app.get('/api/messages/:channelKey', async (req, res) => {
     res.json(decryptedMessages);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
+
+// REST Route: Delete message for everyone (Purge from Mongo + Supabase)
+app.delete('/api/messages/:id', async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const msg = await Message.findById(messageId);
+    if (!msg) return res.status(404).json({ error: 'Message not found' });
+
+    await Message.findByIdAndDelete(messageId);
+    if (supabase) {
+      try {
+        await supabase.from('messages').delete().eq('id', String(messageId));
+      } catch (sErr) {
+        console.error("Supabase REST delete error:", sErr);
+      }
+    }
+
+    if (io && msg.channelKey) {
+      io.to(msg.channelKey).emit("message_deleted", { messageId, channelKey: msg.channelKey });
+    }
+    res.json({ success: true, messageId });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete message' });
+  }
+});
+
+// REST Route: Delete message for me (per-user soft delete)
+app.post('/api/messages/:id/delete-for-me', async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ error: 'Username is required' });
+
+    await Message.updateOne({ _id: messageId }, { $addToSet: { deletedFor: username } });
+    res.json({ success: true, messageId });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to mark message as deleted' });
   }
 });
 
@@ -870,9 +915,27 @@ io.on('connection', (socket) => {
       }
 
       await Message.findByIdAndDelete(messageId);
+
+      if (supabase) {
+        try {
+          await supabase.from('messages').delete().eq('id', String(messageId));
+        } catch (sErr) {
+          console.error("Supabase message delete error:", sErr);
+        }
+      }
+
       io.to(channelKey).emit("message_deleted", { messageId, channelKey });
     } catch(err) {
       console.error("Error deleting message:", err);
+    }
+  });
+
+  socket.on("delete_message_for_me", async ({ messageId, username }) => {
+    try {
+      if (!username || !messageId) return;
+      await Message.updateOne({ _id: messageId }, { $addToSet: { deletedFor: username } });
+    } catch(err) {
+      console.error("Error deleting message for me:", err);
     }
   });
 
