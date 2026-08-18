@@ -1,0 +1,215 @@
+.scout-walkthrough-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  pointer-events: auto;
+}
+
+.scout-spotlight-svg {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+.scout-target-spotlight-ring {
+  position: fixed;
+  border-radius: 14px;
+  border: 2px solid var(--accent-primary, #ff3c00);
+  box-shadow: 
+    0 0 20px rgba(255, 60, 0, 0.6),
+    inset 0 0 15px rgba(255, 60, 0, 0.3);
+  pointer-events: none;
+  animation: scoutSpotlightPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes scoutSpotlightPulse {
+  0% {
+    box-shadow: 0 0 15px rgba(255, 60, 0, 0.5), inset 0 0 10px rgba(255, 60, 0, 0.2);
+    border-color: rgba(255, 60, 0, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(255, 60, 0, 0.9), inset 0 0 20px rgba(255, 60, 0, 0.5);
+    border-color: #ff5500;
+  }
+}
+
+.scout-walkthrough-card {
+  position: fixed;
+  width: 360px;
+  background: rgba(18, 24, 38, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    0 0 30px rgba(255, 60, 0, 0.15);
+  z-index: 1000000;
+  pointer-events: auto;
+  color: #fff;
+}
+
+.scout-walkthrough-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.scout-walkthrough-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scout-step-icon {
+  font-size: 24px;
+  background: rgba(255, 60, 0, 0.15);
+  border: 1px solid rgba(255, 60, 0, 0.3);
+  padding: 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scout-tour-badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--accent-primary, #ff3c00);
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.scout-walkthrough-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.scout-close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.scout-close-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.scout-walkthrough-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 16px 0;
+}
+
+.scout-walkthrough-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.scout-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.scout-dot.active {
+  width: 24px;
+  background: var(--accent-primary, #ff3c00);
+  box-shadow: 0 0 8px rgba(255, 60, 0, 0.6);
+}
+
+.scout-dot.completed {
+  background: rgba(255, 60, 0, 0.5);
+}
+
+.scout-walkthrough-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.scout-btn-primary {
+  background: linear-gradient(135deg, #ff3c00, #ff6a00);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(255, 60, 0, 0.3);
+}
+
+.scout-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255, 60, 0, 0.5);
+}
+
+.scout-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.scout-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.scout-btn-skip {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 8px 10px;
+}
+
+.scout-btn-skip:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 768px) {
+  .scout-walkthrough-card {
+    width: auto;
+    position: fixed;
+    bottom: 20px !important;
+    left: 16px !important;
+    right: 16px !important;
+    top: auto !important;
+    transform: none !important;
+  }
+}

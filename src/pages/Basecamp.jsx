@@ -76,6 +76,7 @@ import HelpDesk from '../components/HelpDesk';
 import FeedbackForm from '../components/FeedbackForm';
 import GroupAdminPanelModal from '../components/modals/GroupAdminPanelModal';
 import BasecampBoard from '../components/board/BasecampBoard';
+import ScoutWalkthrough from '../components/ScoutWalkthrough';
 
 // Socket is created lazily inside the component so it always has a fresh token.
 // Creating it at module level causes authentication failures because the token
@@ -184,7 +185,33 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [messageInfo, setMessageInfo] = useState(null);
   const [forwardMessageIds, setForwardMessageIds] = useState([]);
   const [isForwardPickerOpen, setIsForwardPickerOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
   const chatInputRef = useRef(null);
+
+  useEffect(() => {
+    const completed = localStorage.getItem('outpost_tour_completed');
+    if (!completed) {
+      const timer = setTimeout(() => setIsTourOpen(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleTourComplete = () => {
+    const saved = localStorage.getItem('outpost_user');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const newXp = (parsed.xp || 0) + 50;
+        parsed.xp = newXp;
+        localStorage.setItem('outpost_user', JSON.stringify(parsed));
+        setCurrentUser(prev => ({ ...prev, xp: newXp }));
+        if (socket?.connected) {
+          socket.emit("xp_update", { level: parsed.level || 1, xp: newXp });
+        }
+      } catch (e) {}
+    }
+    alert("🎉 TOUR COMPLETED! You earned +50 XP for completing Scout Orientation!");
+  };
 
   useEffect(() => {
     const handleGlobalClick = () => {
@@ -2041,7 +2068,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       </AnimatePresence>
       
       {/* 1. Campsite Sidebar (Servers) */}
-      <nav className="campsite-sidebar glass-panel-dark">
+      <nav className="campsite-sidebar glass-panel-dark" data-tour="basecamps">
         <div className={`campsite-item home-button ${showDiscover ? 'active' : ''}`} onClick={() => setShowDiscover(true)}>
           <Compass size={24} />
         </div>
@@ -2165,7 +2192,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               </div>
             </div>
             
-            <div className="expedition-list">
+            <div className="expedition-list" data-tour="channels">
               <div className="expedition-category" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>CAMPSITES</span>
                 <button className="icon-btn" onClick={handleOpenCreateChannel} style={{ padding: '2px', background: 'transparent' }}>
@@ -2228,7 +2255,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
         {/* User Controls */}
         <div className="user-profile">
-          <div className="user-info" onClick={() => setIsProfileModalOpen(true)} style={{ cursor: 'pointer' }}>
+          <div className="user-info" data-tour="profile" onClick={() => setIsProfileModalOpen(true)} style={{ cursor: 'pointer' }}>
             <div className="user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
               {currentUser?.profilePictureUrl ? (
                 <img src={currentUser?.profilePictureUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Scout'} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -2312,9 +2339,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 {pinnedCount > 0 && <span className="pin-badge">{pinnedCount}</span>}
               </button>
             </div>
-            <TrailMarkers campsite={activeCampsite} onConditionChange={handleTrailConditionChange} />
+            <div data-tour="trail-markers" style={{ display: 'inline-flex' }}>
+              <TrailMarkers campsite={activeCampsite} onConditionChange={handleTrailConditionChange} />
+            </div>
             {/* NOTIFICATION BELL OUTSIDE SYSTEM TOOLS */}
-            <div style={{ position: 'relative' }}>
+            <div data-tour="signal-radar" style={{ position: 'relative' }}>
               <button
                 onClick={() => {
                   setIsAlertOpen(!isAlertOpen);
@@ -2376,6 +2405,15 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                         alignItems: 'center',
                       }}
                     >
+                      {/* SCOUT ORIENTATION TOUR */}
+                      <button
+                        onClick={() => { setIsTourOpen(true); setIsDevMenuOpen(false); }}
+                        className={`theme-trigger-btn ${isTourOpen ? 'active' : ''}`}
+                        title="Scout Orientation Guided Tour"
+                      >
+                        <Compass size={16} className="animate-pulse" />
+                      </button>
+
                       {/* AI ASSISTANT */}
                       {isCampAdmin && (
                         <button
@@ -2626,6 +2664,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             {/* Mini player embedded in header */}
             {activeChannel !== 'Chill-Zone' && (
               <div
+                data-tour="chill-zone"
                 onClick={() => setActiveChannel('Chill-Zone')}
                 style={{
                   background: 'linear-gradient(135deg, rgba(29,185,84,0.18), rgba(0,0,0,0.4))',
@@ -3703,6 +3742,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       </AnimatePresence>
 
       {/* Modals */}
+      <ScoutWalkthrough 
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onComplete={handleTourComplete}
+        currentUser={currentUser}
+      />
       <AnimatePresence>
         {isCreateModalOpen && (
           <CreateCampsiteModal 
