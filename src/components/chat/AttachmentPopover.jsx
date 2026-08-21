@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image, BarChart3, X, Plus, Mic, Square } from "lucide-react";
+import { Image, BarChart3, X, Plus, Mic, Square, MoreHorizontal } from "lucide-react";
 import "./AttachmentPopover.css";
 
 export default function AttachmentPopover({ isOpen, onClose, onSendMedia, onSendPoll }) {
@@ -151,6 +151,14 @@ export default function AttachmentPopover({ isOpen, onClose, onSendMedia, onSend
                 >
                   {isRecording ? <Square size={20} fill="#ff3b30" /> : <Mic size={20} />}
                   <span>{isRecording ? "Stop Recording" : "Record Voice"}</span>
+                </button>
+
+                <button
+                  className="attachment-popover-btn"
+                  style={{ opacity: 0.5, cursor: 'not-allowed' }}
+                >
+                  <MoreHorizontal size={20} />
+                  <span>Coming Soon</span>
                 </button>
               </div>
             ) : (
