@@ -1,0 +1,56 @@
+services:
+  # Outpost App Express API Server with Scout-Guardian Security Aegis
+  - type: web
+    name: outpost-api-server
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5000"
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SCOUT_VAULT_PASSCODE
+        generateValue: true
+
+  # Outpost Automation Engine (n8n + Supabase PostgreSQL)
+  - type: web
+    name: outpost-n8n
+    env: image
+    image:
+      url: docker.io/n8nio/n8n:latest
+    region: oregon
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_PORT
+        value: "5432"
+      - key: DB_POSTGRESDB_DATABASE
+        value: postgres
+      - key: DB_POSTGRESDB_HOST
+        sync: false
+      - key: DB_POSTGRESDB_USER
+        sync: false
+      - key: DB_POSTGRESDB_PASSWORD
+        sync: false
+      - key: N8N_ENFORCEMENT_USER_MANAGEMENT
+        value: "true"
+      - key: N8N_PORT
+        value: "10000"
+      - key: N8N_PROTOCOL
+        value: "http"
+      - key: N8N_PUSH_BACKEND
+        value: "sse"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=400"
+      - key: WEBHOOK_URL
+        value: "https://outpost-n8n.onrender.com"

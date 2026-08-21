@@ -206,9 +206,37 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Security Headers Enforcer (Swiss Cheese Layer 1)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  next();
+});
+
 // --- Scout-Guardian Security Layer ---
 const scoutGuardian = require('./middleware/scoutGuardian');
 app.use(scoutGuardian);
+
+// Scout-Guardian Real-Time Security Telemetry Endpoint
+app.get('/api/security/scout-guardian/status', (req, res) => {
+  const metrics = scoutGuardian.getTelemetry ? scoutGuardian.getTelemetry() : {};
+  res.status(200).json({
+    system: 'Scout-Guardian Security Engine',
+    status: 'ACTIVE_AEGIS',
+    protectionMode: 'Defense-In-Depth (Swiss Cheese Architecture)',
+    limits: {
+      webSubnetPayloadMax: '25MB',
+      appSubnetPayloadMax: '10MB',
+      dataSubnetPayloadMax: '2MB',
+      blastRadiusMaxRate: '100 req/min (Burst 25/10s)'
+    },
+    telemetry: metrics,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // --- Phase 6: 24/7 Ops & Security ---
 // 3.5. Logging & Sanitization

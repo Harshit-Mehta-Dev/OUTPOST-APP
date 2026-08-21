@@ -1,12 +1,39 @@
 import React, { Component } from 'react';
-import { ShieldCheck, Lock } from 'lucide-react';
+import { ShieldCheck, Lock, ShieldAlert } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import './ScoutGuardian.css';
 
 /**
- * Scout-Guardian Frontend Aegis
- * Catches catastrophic UI crashes and provides recovery.
- * On 3rd consecutive failure, it initiates an emergency lockdown to prevent bypass attempts.
+ * Scout-Guardian Client Execution & Payload Sanitizer Utility
+ */
+export const sanitizeInput = (input) => {
+  if (typeof input !== 'string') return input;
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/javascript\s*:/gi, '')
+    .replace(/on\w+\s*=/gi, '');
+};
+
+/**
+ * Client-Side Dispatch Rate Limiter (Blast Radius Containment)
+ */
+const clientDispatchLog = [];
+export const checkExecutionLimits = (maxReq = 15, windowMs = 5000) => {
+  const now = Date.now();
+  while (clientDispatchLog.length > 0 && clientDispatchLog[0] <= now - windowMs) {
+    clientDispatchLog.shift();
+  }
+  if (clientDispatchLog.length >= maxReq) {
+    console.warn('[Scout-Guardian] Client execution limit exceeded. Throttling action.');
+    return false;
+  }
+  clientDispatchLog.push(now);
+  return true;
+};
+
+/**
+ * Scout-Guardian Frontend Aegis Component
+ * Catches UI execution crashes, provides auto-recovery, and handles Emergency Lockdown.
  */
 export class ScoutGuardian extends Component {
   constructor(props) {
@@ -17,6 +44,7 @@ export class ScoutGuardian extends Component {
       isRecovering: false,
       isLockdown: false,
       lastError: null,
+      securityStatus: 'ACTIVE_AEGIS'
     };
   }
 
@@ -61,7 +89,7 @@ export class ScoutGuardian extends Component {
             <div className="scout-guardian-box">
               <ShieldCheck size={48} className="scout-guardian-icon pulse" />
               <h2 className="scout-guardian-title">Restoring Systems...</h2>
-              <p className="scout-guardian-text">A display glitch was detected. Auto-recovering...</p>
+              <p className="scout-guardian-text">A display or execution glitch was detected. Auto-recovering...</p>
               <div className="scout-guardian-loader"></div>
             </div>
           </div>
@@ -75,7 +103,7 @@ export class ScoutGuardian extends Component {
             <Lock size={48} className="scout-guardian-icon critical-icon pulse" style={{ color: '#ff3b30' }} />
             <h2 className="scout-guardian-title" style={{ color: '#ff3b30' }}>EMERGENCY LOCKDOWN</h2>
             <p className="scout-guardian-text">
-              Multiple consecutive failures detected. To protect your account from unauthorized bypass attempts, 
+              Multiple consecutive execution failures detected. To protect your account from unauthorized bypass attempts, 
               Scout-Guardian has initiated an emergency lockdown and safely terminated your session.
             </p>
             <div className="scout-guardian-loader" style={{ borderTopColor: '#ff3b30' }}></div>
@@ -90,3 +118,4 @@ export class ScoutGuardian extends Component {
     return this.props.children;
   }
 }
+
