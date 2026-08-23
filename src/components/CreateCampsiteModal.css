@@ -234,16 +234,18 @@
 
 /* Visibility Section */
 .visibility-options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .radio-card {
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 16px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 20px 16px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-glass);
   border-radius: 8px;
@@ -261,7 +263,7 @@
 }
 
 .radio-icon {
-  margin-top: 2px;
+  margin-bottom: 4px;
   color: var(--text-secondary);
 }
 
