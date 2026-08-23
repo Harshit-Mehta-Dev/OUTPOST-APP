@@ -62,8 +62,6 @@ export default function FooterModal({ isOpen, onClose, initialSection = 'system-
       items: [
         { id: 'basecamp-core', label: 'The Basecamp Core', icon: Flame },
         { id: 'discover-radar', label: 'Global Discover Radar', icon: Compass },
-        { id: 'bot-api', label: 'Bot Sandbox API', icon: Code },
-        { id: 'open-source', label: 'Open Source Blueprint', icon: GitBranch },
       ]
     },
     {
@@ -73,14 +71,12 @@ export default function FooterModal({ isOpen, onClose, initialSection = 'system-
         { id: 'privacy-charter', label: 'Scout Data Charter (Privacy)', icon: Shield },
         { id: 'terms-compact', label: 'Basecamp Compact (ToS)', icon: FileText },
         { id: 'scout-code', label: 'The Scout Code (Guidelines)', icon: Users },
-        { id: 'security-manifesto', label: 'Security Manifestos', icon: Lock },
       ]
     },
     {
       category: 'Comm Arrays',
       icon: Radio,
       items: [
-        { id: 'hearth-status', label: 'Voice Hearth Status', icon: Activity, hasIndicator: true },
         { id: 'system-faqs', label: 'System FAQs', icon: HelpCircle },
         { id: 'support-line', label: 'Signal Support Line', icon: Headphones },
       ]
@@ -312,72 +308,7 @@ scoutBot.connect();`;
                   </div>
                 )}
 
-                {/* 3. BOT SANDBOX API */}
-                {activeSection === 'bot-api' && (
-                  <div className="section-pane">
-                    <div className="pane-header">
-                      <div className="pane-icon-box"><Code size={24} color="#f97316" /></div>
-                      <div>
-                        <h3>Bot Sandbox API & Webhooks</h3>
-                        <p className="pane-desc">Build automated bots, telemetry relays, and tactical integrations into your basecamp.</p>
-                      </div>
-                    </div>
-                    <div className="pane-body">
-                      <p>
-                        Connect webhooks, n8n automation workflows, or custom Node/Python scripts to stream real-time GitHub notifications, CI/CD alerts, or custom chatbot responses directly to your expedition channels.
-                      </p>
-                      <div className="code-block-wrapper">
-                        <div className="code-block-header">
-                          <span>JavaScript (Node.js SDK)</span>
-                          <button className="copy-btn" onClick={() => copyToClipboard(sampleApiCode)}>
-                            {copiedCode ? <Check size={14} color="#22c55e" /> : <Copy size={14} />}
-                            <span>{copiedCode ? 'Copied' : 'Copy'}</span>
-                          </button>
-                        </div>
-                        <pre className="code-snippet"><code>{sampleApiCode}</code></pre>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 4. OPEN SOURCE BLUEPRINT */}
-                {activeSection === 'open-source' && (
-                  <div className="section-pane">
-                    <div className="pane-header">
-                      <div className="pane-icon-box"><GitBranch size={24} color="#f97316" /></div>
-                      <div>
-                        <h3>Open Source Blueprint</h3>
-                        <p className="pane-desc">Transparent, auditable, and community-driven tactical software.</p>
-                      </div>
-                    </div>
-                    <div className="pane-body">
-                      <p>
-                        Outpost is engineered with an uncompromised commitment to sovereign code. The entire platform architecture, database schemas, and client-server pipelines are open for review, contribution, and deployment.
-                      </p>
-                      <div className="repo-card">
-                        <div className="repo-header">
-                          <Server size={20} color="#f97316" />
-                          <div>
-                            <h4>Harshit-Mehta-Dev / OUTPOST-APP</h4>
-                            <span className="repo-badge">MIT Licensed // Production v3.1</span>
-                          </div>
-                        </div>
-                        <div className="repo-actions">
-                          <a
-                            href="https://github.com/Harshit-Mehta-Dev/OUTPOST-APP"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="repo-btn primary"
-                          >
-                            <GitBranch size={16} /> View GitHub Repository <ExternalLink size={14} />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 5. SCOUT DATA CHARTER (PRIVACY) */}
+                {/* 2. SCOUT DATA CHARTER (PRIVACY) */}
                 {activeSection === 'privacy-charter' && (
                   <div className="section-pane">
                     <div className="pane-header">
@@ -400,7 +331,7 @@ scoutBot.connect();`;
                   </div>
                 )}
 
-                {/* 6. BASECAMP COMPACT (TOS) */}
+                {/* 3. BASECAMP COMPACT (TOS) */}
                 {activeSection === 'terms-compact' && (
                   <div className="section-pane">
                     <div className="pane-header">
@@ -423,7 +354,7 @@ scoutBot.connect();`;
                   </div>
                 )}
 
-                {/* 7. THE SCOUT CODE (GUIDELINES) */}
+                {/* 4. THE SCOUT CODE (GUIDELINES) */}
                 {activeSection === 'scout-code' && (
                   <div className="section-pane">
                     <div className="pane-header">
@@ -453,97 +384,6 @@ scoutBot.connect();`;
                         <div>
                           <h4>Protect Sensitive Comms</h4>
                           <p>Never transmit unauthorized credentials, passwords, or personal identifying information in public basecamp channels.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 8. SECURITY MANIFESTOS */}
-                {activeSection === 'security-manifesto' && (
-                  <div className="section-pane">
-                    <div className="pane-header">
-                      <div className="pane-icon-box"><Lock size={24} color="#f97316" /></div>
-                      <div>
-                        <h3>Security Manifestos & Defense Matrix</h3>
-                        <p className="pane-desc">Technical specification of Outpost's multi-layered security infrastructure.</p>
-                      </div>
-                    </div>
-                    <div className="pane-body">
-                      <div className="security-grid">
-                        <div className="security-item">
-                          <CheckCircle2 size={18} color="#22c55e" />
-                          <div>
-                            <strong>Content Security Policy (CSP):</strong> Hardened Cloudflare edge headers protecting against XSS and unauthorized frame injections.
-                          </div>
-                        </div>
-                        <div className="security-item">
-                          <CheckCircle2 size={18} color="#22c55e" />
-                          <div>
-                            <strong>Bcrypt Password Hashing:</strong> Military-grade salt rounds protecting user credentials at rest.
-                          </div>
-                        </div>
-                        <div className="security-item">
-                          <CheckCircle2 size={18} color="#22c55e" />
-                          <div>
-                            <strong>JWT Stateless Authentication:</strong> Secure HttpOnly & Bearer session tokens with automated expiration.
-                          </div>
-                        </div>
-                        <div className="security-item">
-                          <CheckCircle2 size={18} color="#22c55e" />
-                          <div>
-                            <strong>NLP Content Guard:</strong> Autonomous content classification filter intercepting malicious payloads in real-time.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 9. VOICE HEARTH STATUS */}
-                {activeSection === 'hearth-status' && (
-                  <div className="section-pane">
-                    <div className="pane-header">
-                      <div className="pane-icon-box"><Activity size={24} color="#22c55e" /></div>
-                      <div>
-                        <h3>Voice Hearth & Systems Telemetry</h3>
-                        <p className="pane-desc">Live operational telemetry across global Outpost nodes.</p>
-                      </div>
-                    </div>
-                    <div className="pane-body">
-                      <div className="status-overall-banner">
-                        <span className="live-pulsing-circle" />
-                        <div>
-                          <h4>ALL SYSTEMS OPERATIONAL</h4>
-                          <p>Global edge relays and database clusters running at 99.98% efficiency.</p>
-                        </div>
-                      </div>
-
-                      <div className="telemetry-table">
-                        <div className="telemetry-row">
-                          <span className="node-name">WebSockets Signal Gateway</span>
-                          <span className="node-metric">14ms Latency</span>
-                          <span className="node-status nominal">🟢 Operational</span>
-                        </div>
-                        <div className="telemetry-row">
-                          <span className="node-name">WebRTC Voice Hearth Relay</span>
-                          <span className="node-metric">Node US-East</span>
-                          <span className="node-status nominal">🟢 Online</span>
-                        </div>
-                        <div className="telemetry-row">
-                          <span className="node-name">MongoDB Atlas Cluster</span>
-                          <span className="node-metric">Synced</span>
-                          <span className="node-status nominal">🟢 Active</span>
-                        </div>
-                        <div className="telemetry-row">
-                          <span className="node-name">AI Scout NLP Inference</span>
-                          <span className="node-metric">Sub-50ms</span>
-                          <span className="node-status nominal">🟢 Nominal</span>
-                        </div>
-                        <div className="telemetry-row">
-                          <span className="node-name">Cloudflare Pages Edge CDN</span>
-                          <span className="node-metric">Global Anycast</span>
-                          <span className="node-status nominal">🟢 100% Routed</span>
                         </div>
                       </div>
                     </div>

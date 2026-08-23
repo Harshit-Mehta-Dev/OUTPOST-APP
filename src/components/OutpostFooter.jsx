@@ -54,19 +54,15 @@ const socialLinks = [
 const ecosystemLinks = [
   { id: "basecamp-core", text: "The Basecamp Core" },
   { id: "discover-radar", text: "Global Discover Radar" },
-  { id: "bot-api", text: "Bot Sandbox API" },
-  { id: "open-source", text: "Open Source Blueprint" },
 ];
 
 const documentationLinks = [
   { id: "privacy-charter", text: "Scout Data Charter (Privacy)" },
   { id: "terms-compact", text: "Basecamp Compact (ToS)" },
   { id: "scout-code", text: "The Scout Code (Guidelines)" },
-  { id: "security-manifesto", text: "Security Manifestos" },
 ];
 
 const infrastructureLinks = [
-  { id: "hearth-status", text: "Voice Hearth Status", hasIndicator: true },
   { id: "system-faqs", text: "System FAQs" },
   { id: "support-line", text: "Signal Support Line" },
 ];
