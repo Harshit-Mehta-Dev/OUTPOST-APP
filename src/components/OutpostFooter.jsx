@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "motion/react";
 import {
   Flame,
@@ -9,6 +9,7 @@ import {
 import './OutpostFooter.css';
 import logoUrl from '../assets/logo.png';
 import footerBannerUrl from '../assets/footer-banner.png';
+import FooterModal from './landing/FooterModal';
 
 const LinkedinIcon = ({ size }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -51,26 +52,34 @@ const socialLinks = [
 ];
 
 const ecosystemLinks = [
-  { text: "The Basecamp Core", href: "#" },
-  { text: "Global Discover Radar", href: "#" },
-  { text: "Bot Sandbox API", href: "#" },
-  { text: "Open Source Blueprint", href: "#" },
+  { id: "basecamp-core", text: "The Basecamp Core" },
+  { id: "discover-radar", text: "Global Discover Radar" },
+  { id: "bot-api", text: "Bot Sandbox API" },
+  { id: "open-source", text: "Open Source Blueprint" },
 ];
 
 const documentationLinks = [
-  { text: "Scout Data Charter (Privacy)", href: "#" },
-  { text: "Basecamp Compact (ToS)", href: "#" },
-  { text: "The Scout Code (Guidelines)", href: "#" },
-  { text: "Security Manifestos", href: "#" },
+  { id: "privacy-charter", text: "Scout Data Charter (Privacy)" },
+  { id: "terms-compact", text: "Basecamp Compact (ToS)" },
+  { id: "scout-code", text: "The Scout Code (Guidelines)" },
+  { id: "security-manifesto", text: "Security Manifestos" },
 ];
 
 const infrastructureLinks = [
-  { text: "Voice Hearth Status", href: "#", hasIndicator: true },
-  { text: "System FAQs", href: "#" },
-  { text: "Signal Support Line", href: "#" },
+  { id: "hearth-status", text: "Voice Hearth Status", hasIndicator: true },
+  { id: "system-faqs", text: "System FAQs" },
+  { id: "support-line", text: "Signal Support Line" },
 ];
 
 export default function OutpostFooter() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalSection, setModalSection] = useState('system-faqs');
+
+  const handleOpenSection = (sectionId) => {
+    setModalSection(sectionId);
+    setModalOpen(true);
+  };
+
   return (
     <footer className="outpost-footer">
       <div className="footer-banner-container">
@@ -124,11 +133,15 @@ export default function OutpostFooter() {
                 <Compass size={16} className="nav-icon" /> Terrain Navigation
               </p>
               <ul className="nav-links-list">
-                {ecosystemLinks.map(({ text, href }) => (
-                  <li key={text}>
-                    <a href={href} className="nav-link">
+                {ecosystemLinks.map(({ id, text }) => (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenSection(id)}
+                      className="nav-link footer-action-btn"
+                    >
                       {text}
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -139,11 +152,15 @@ export default function OutpostFooter() {
                 <ShieldAlert size={16} className="nav-icon" /> Legal Protocols
               </p>
               <ul className="nav-links-list">
-                {documentationLinks.map(({ text, href }) => (
-                  <li key={text}>
-                    <a href={href} className="nav-link">
+                {documentationLinks.map(({ id, text }) => (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenSection(id)}
+                      className="nav-link footer-action-btn"
+                    >
                       {text}
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -154,9 +171,13 @@ export default function OutpostFooter() {
                 <Radio size={16} className="nav-icon" /> Comm Arrays
               </p>
               <ul className="nav-links-list">
-                {infrastructureLinks.map(({ text, href, hasIndicator }) => (
-                  <li key={text}>
-                    <a href={href} className="nav-link indicator-link">
+                {infrastructureLinks.map(({ id, text, hasIndicator }) => (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenSection(id)}
+                      className="nav-link footer-action-btn indicator-link"
+                    >
                       <span>{text}</span>
                       {hasIndicator && (
                         <span className="status-indicator">
@@ -164,13 +185,18 @@ export default function OutpostFooter() {
                           <span className="status-dot" />
                         </span>
                       )}
-                    </a>
+                    </button>
                   </li>
                 ))}
                 <li>
-                  <a href={`mailto:${data.email}`} className="email-link">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenSection('support-line')}
+                    className="email-link"
+                    style={{ width: '100%', textAlign: 'left', cursor: 'pointer' }}
+                  >
                     {data.email}
-                  </a>
+                  </button>
                 </li>
               </ul>
             </div>
@@ -191,6 +217,13 @@ export default function OutpostFooter() {
         </div>
 
       </div>
+
+      {/* Global Interactive Command Directory Modal */}
+      <FooterModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        initialSection={modalSection}
+      />
     </footer>
   );
 }

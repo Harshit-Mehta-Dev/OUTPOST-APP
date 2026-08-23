@@ -215,11 +215,29 @@
 .nav-link {
   color: #71717a; /* zinc-500 */
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
 }
 
-.nav-link:hover {
-  color: #e4e4e7; /* zinc-200 */
+.footer-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-link:hover,
+.footer-action-btn:hover {
+  color: #fb923c; /* orange-400 */
+  transform: translateX(2px);
 }
 
 .indicator-link {

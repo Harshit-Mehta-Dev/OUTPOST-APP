@@ -165,6 +165,24 @@
   - Adaptive prompt streaming and payload compression tailored for cellular networks (4G/5G/3G).
   - Stream chunking interval tuning ensuring 60fps smooth rendering on mobile devices.
 
+### 3.14 Interactive Command Directory & Operational Footer Hub
+- **Universal Footer Command Directory (`FooterModal.jsx` & `FooterModal.css`):**
+  - Transforms all 11 footer links into fully interactive operational systems with dedicated modal views, live categories, and keyboard navigation (`ESC` / search filter).
+  - **Terrain Navigation:**
+    - *The Basecamp Core*: Sovereign multi-tenant architecture, Expeditions matrix, and zero-latency WebSockets.
+    - *Global Discover Radar*: Public campsite indexing, search algorithms, and one-click scout deployments.
+    - *Bot Sandbox API*: Copyable Node.js/Python SDK snippets, webhook protocols, and automated bots.
+    - *Open Source Blueprint*: Full MIT-licensed client/server topology and GitHub contribution guides.
+  - **Legal Protocols:**
+    - *Scout Data Charter (Privacy)*: Zero-knowledge logistics, transient buffer policies, and right-to-forget data deletion.
+    - *Basecamp Compact (ToS)*: Commander authorities and terms of service.
+    - *The Scout Code (Guidelines)*: Anti-malware, anti-spam, and perimeter safety rules.
+    - *Security Manifestos*: CSP headers, Bcrypt password hashing, JWT stateless authentication, and Scout-Guardian defense matrix.
+  - **Comm Arrays:**
+    - *Voice Hearth Status*: Live system telemetry across WebSockets Gateway, WebRTC Voice Array, MongoDB Atlas, and AI Scout NLP engine.
+    - *System FAQs*: Interactive categorized accordion FAQ with instant search bar covering troubleshooting, connections, operations, and Spotify Chill Zone.
+    - *Signal Support Line*: Interactive direct incident briefing dispatch form and support desk contact.
+
 ---
 
 ## 4. SECURITY & INFRASTRUCTURE ARCHITECTURE
