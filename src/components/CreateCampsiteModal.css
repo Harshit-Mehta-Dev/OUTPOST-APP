@@ -16,21 +16,23 @@
 .create-camp-modal {
   background: var(--bg-primary);
   border: 1px solid var(--border-glass);
-  border-radius: 20px;
+  border-radius: 16px;
   width: 100%;
-  max-width: 860px;
+  max-width: 760px;
+  max-height: 90vh;
   overflow: hidden;
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
 }
 
 .modal-header {
-  padding: 24px 30px;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border-glass);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
@@ -69,15 +71,15 @@
 
 /* LEFT PANEL */
 .modal-left-panel {
-  width: 260px;
+  width: 180px;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.02);
   border-right: 1px solid var(--border-glass);
-  padding: 32px 24px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
 }
 
 .emblem-hint {
@@ -91,11 +93,12 @@
 /* RIGHT PANEL */
 .modal-right-panel {
   flex: 1;
-  padding: 28px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   overflow-y: auto;
+  max-height: 100%;
 }
 
 .modal-right-panel::-webkit-scrollbar { width: 4px; }
@@ -107,8 +110,8 @@
 /* Identity Section (legacy - removed) */
 
 .emblem-upload {
-  width: 100px;
-  height: 100px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   border: 2px dashed rgba(255, 255, 255, 0.25);
   display: flex;
@@ -210,12 +213,12 @@
 .template-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-glass);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 12px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -267,11 +270,11 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 12px;
-  padding: 20px 16px;
+  gap: 6px;
+  padding: 12px 10px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-glass);
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -407,12 +410,13 @@
 }
 
 .modal-footer {
-  padding: 24px 32px;
+  padding: 14px 22px;
   border-top: 1px solid var(--border-glass);
-  background: var(--bg-secondary);
+  background: rgba(0,0,0,0.15);
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .cancel-btn {
