@@ -7,6 +7,12 @@
   z-index: 9998;
 }
 
+@media (min-width: 769px) {
+  .member-drawer-backdrop {
+    display: none;
+  }
+}
+
 .member-drawer {
   position: fixed;
   top: 54px; /* Below the main outpost top bar */
