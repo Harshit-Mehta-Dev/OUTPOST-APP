@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, RotateCcw, Sparkles, Lock, CheckSquare, Square, Star, Forward, Info, X, Copy, Check } from 'lucide-react';
+import { adaptAIPromptPayload } from '../lib/aiAdaptation';
 import './AiNexus.css';
 
 const API_BASE = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
@@ -67,6 +68,8 @@ const AiNexus = ({ currentUser }) => {
     setIsLoading(true);
 
     try {
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+      const adaptedText = adaptAIPromptPayload(text, isMobile);
       const token = localStorage.getItem('outpost_token');
       const res = await fetch(API_BASE + '/api/ai/chat', {
         method: 'POST',
@@ -74,7 +77,7 @@ const AiNexus = ({ currentUser }) => {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ message: text, channelKey: '1_Ai-Scout' })
+        body: JSON.stringify({ message: adaptedText, channelKey: '1_Ai-Scout' })
       });
 
       const data = await res.json();

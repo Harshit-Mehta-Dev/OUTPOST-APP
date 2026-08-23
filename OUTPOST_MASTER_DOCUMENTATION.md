@@ -150,6 +150,21 @@
 - **Founder & Vision Section:** Personal message and roadmap from the creator.
 - **Legal & Compliance Hub:** Full Terms of Service, Privacy Policy, Cookie Policy, and Acceptable Use Policy.
 
+### 3.13 Mobile & Device Adaptation Module (Android & iOS)
+- **Universal Device Detection Engine (`useDeviceAdaptation.js`):**
+  - Identifies platform (iOS, Android, Tablet, Desktop) and touchscreen hardware.
+  - Dynamically injects platform classes (`.platform-ios`, `.platform-android`, `.device-mobile`, `.screen-compact`).
+  - Listens to `window.visualViewport` to dynamically handle virtual keyboard opening/closing without obscuring chat inputs.
+- **iOS Safe Area & Notch Inset Protocol:**
+  - Integrated `viewport-fit=cover` and CSS safe area variables (`--sat`, `--sab`, `--sal`, `--sar`) across headers and bottom toolbars.
+  - Set input font sizes to `16px` on mobile viewports to prevent iOS Safari auto-zooming.
+- **Mobile Touch Target Optimization:**
+  - Standardized minimum 44px x 44px touch targets across all buttons, icon triggers, and dropdown actions.
+  - Momentum touch scrolling (`-webkit-overflow-scrolling: touch`) and tap highlight removal.
+- **AI Adaptation Protocol (`aiAdaptation.js`):**
+  - Adaptive prompt streaming and payload compression tailored for cellular networks (4G/5G/3G).
+  - Stream chunking interval tuning ensuring 60fps smooth rendering on mobile devices.
+
 ---
 
 ## 4. SECURITY & INFRASTRUCTURE ARCHITECTURE

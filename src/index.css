@@ -322,9 +322,85 @@ button {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.operator-action-btn:hover {
-  opacity: 1;
-  transform: scale(1.2) translateY(-2px);
-  filter: drop-shadow(0 2px 4px rgba(248, 113, 113, 0.4));
-}
 .loader { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; } @keyframes spin { to { transform: rotate(360deg); } }
+
+/* =========================================================
+   📱 MASTER MOBILE & DEVICE ADAPTATION MODULE (iOS & Android)
+   ========================================================= */
+
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --touch-target-min: 44px;
+}
+
+/* Touch & tap responsiveness */
+html.has-touch * {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth momentum scrolling across all scrollable containers */
+html.device-mobile,
+html.has-touch {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent auto-zooming on input focus on iOS Safari */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Touch target sizing for buttons on mobile */
+html.device-mobile button,
+html.device-mobile .icon-btn,
+html.device-mobile .dock-item,
+html.device-mobile .message-action-btn,
+html.device-mobile .operator-action-btn {
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Active touch feedback for mobile */
+html.has-touch button:active,
+html.has-touch .icon-btn:active,
+html.has-touch .campsite-item:active,
+html.has-touch .expedition-item:active {
+  transform: scale(0.96);
+  transition: transform 0.1s ease;
+}
+
+/* iOS Dynamic Island & Notch safe-area spacing */
+html.platform-ios .outpost-top-bar {
+  padding-top: max(var(--sat), 8px);
+}
+
+html.platform-ios .mobile-bottom-dock {
+  padding-bottom: max(var(--sab), 12px);
+}
+
+/* Mobile virtual keyboard visibility adjustments */
+html.keyboard-visible .mobile-bottom-dock {
+  display: none !important;
+}
+
+/* Compact screens (< 390px - iPhone SE, Galaxy A) */
+@media screen and (max-width: 390px) {
+  .hero-title {
+    font-size: 2.2rem !important;
+  }
+  .hero-subtitle {
+    font-size: 0.95rem !important;
+  }
+  .member-modal-card {
+    max-width: 95vw !important;
+    padding: 12px !important;
+  }
+}

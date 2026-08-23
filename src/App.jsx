@@ -27,10 +27,12 @@ const PageLoader = () => (
 const NotFoundPage = lazy(() => import('./components/ui/404-page-not-found').then(module => ({ default: module.NotFoundPage })));
 
 import { ScoutGuardian } from './components/security/ScoutGuardian';
+import { useDeviceAdaptation } from './hooks/useDeviceAdaptation';
 
 function App() {
-  // Initialize Global Sound Engine
+  // Initialize Global Sound Engine & Mobile Device Adaptation
   useSoundEngine();
+  useDeviceAdaptation();
   const { triggerTransition } = useThemeTransition();
 
   const [isDarkMode, setIsDarkMode] = useState(() => {

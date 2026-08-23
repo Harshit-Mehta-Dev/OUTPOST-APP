@@ -1834,3 +1834,116 @@
   background-color: var(--accent-glow);
   border-color: var(--accent-glow);
 }
+
+/* =========================================================
+   📱 MOBILE BASECAMP ADAPTATION (Android & iOS)
+   ========================================================= */
+
+@media (max-width: 768px) {
+  /* Dynamic App Height handling for mobile browser chrome */
+  .outpost-app-wrapper {
+    height: var(--app-height, 100dvh);
+  }
+
+  .basecamp-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .campsite-sidebar:not(.mobile-drawer-content .campsite-sidebar),
+  .expedition-sidebar:not(.mobile-drawer-content .expedition-sidebar) {
+    display: none !important;
+  }
+
+  /* Outpost Top Bar Mobile Touch Optimizations */
+  .outpost-top-bar {
+    height: 52px;
+    padding: 0 12px;
+  }
+
+  .top-bar-left .active-camp-name {
+    font-size: 0.95rem;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .top-bar-center {
+    display: none; /* Conserve horizontal real-estate on phones */
+  }
+
+  .top-bar-right {
+    gap: 4px;
+  }
+
+  /* Chat Header Mobile Spacing */
+  .chat-header {
+    height: 50px;
+    padding: 0 12px;
+  }
+
+  .chat-title h2 {
+    font-size: 1.05rem;
+  }
+
+  /* Chat Messages Mobile Framing */
+  .chat-messages {
+    padding: 14px 10px;
+    gap: 12px;
+  }
+
+  .message-item {
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  /* Mobile Chat Input Bar - Touch Target & Safe Area */
+  .chat-input-wrapper {
+    padding: 8px 10px max(var(--sab, 8px), 8px);
+    background: var(--bg-primary);
+  }
+
+  .chat-input-container {
+    border-radius: 24px;
+    padding: 4px 6px 4px 12px;
+  }
+
+  .chat-input {
+    font-size: 16px !important; /* Stop iOS Safari auto-zoom */
+    padding: 8px 4px;
+  }
+
+  .chat-send-btn,
+  .chat-attach-btn {
+    min-width: 38px;
+    min-height: 38px;
+  }
+
+  /* Mobile Bottom Floating Dock */
+  .mobile-bottom-dock {
+    height: calc(56px + var(--sab, 0px));
+    padding-bottom: var(--sab, 0px);
+    border-top: 1px solid var(--border-glass);
+    background: var(--bg-glass);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+
+  /* Mobile Drawer Sliding Content */
+  .mobile-drawer-content {
+    width: 86vw;
+    max-width: 340px;
+    height: 100dvh;
+    display: flex;
+    overflow: hidden;
+    background: var(--bg-primary);
+    box-shadow: 16px 0 40px rgba(0,0,0,0.7);
+  }
+}
+
