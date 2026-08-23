@@ -2736,16 +2736,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 background: isDrawerOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
                 color: isDrawerOpen ? 'var(--accent-primary)' : 'var(--text-secondary)'
               }}
+              title="Scout Registry"
             >
               <Users size={20} className="header-icon" />
             </button>
-            <MemberDrawer 
-              isOpen={isDrawerOpen} 
-              onClose={() => setIsDrawerOpen(false)} 
-              members={activeMembersList}
-              adminEmail={activeCampsite?.adminEmail}
-              campsite={activeCampsite}
-            />
           </div>
         </header>
 
@@ -3829,6 +3823,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             onCreateChannel={handleCreateChannel}
           />
         )}
+        <MemberDrawer 
+          isOpen={isDrawerOpen} 
+          onClose={() => setIsDrawerOpen(false)} 
+          members={activeMembersList}
+          adminEmail={activeCampsite?.adminEmail}
+          campsite={activeCampsite}
+        />
       </AnimatePresence>
       
       <OperatorTerminalTab 
