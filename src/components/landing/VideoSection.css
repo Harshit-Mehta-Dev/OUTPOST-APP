@@ -15,11 +15,12 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 600px;
+  width: 800px;
   height: 600px;
-  background: radial-gradient(circle, rgba(var(--brand-primary), 0.08) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(193, 95, 60, 0.12) 0%, rgba(193, 95, 60, 0.04) 50%, transparent 70%);
   z-index: -1;
   pointer-events: none;
+  filter: blur(40px);
 }
 
 .video-container {
@@ -86,14 +87,15 @@
   padding: 1px;
   background: linear-gradient(
     135deg,
-    rgba(var(--brand-primary), 0.4) 0%,
-    rgba(var(--brand-primary), 0.05) 50%,
-    rgba(var(--brand-primary), 0.2) 100%
+    rgba(193, 95, 60, 0.5) 0%,
+    rgba(193, 95, 60, 0.08) 40%,
+    rgba(193, 95, 60, 0.3) 100%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
+  animation: pulse-glow 4s ease-in-out infinite;
 }
 
 .video-embed-container {
@@ -102,12 +104,17 @@
   height: 100%;
   border-radius: 15px;
   overflow: hidden;
-  background: var(--bg-secondary);
-  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+  background: #000;
+  box-shadow: 0 32px 64px -12px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.04);
+  transition: box-shadow 0.4s ease;
+}
+
+.video-embed-container:hover {
+  box-shadow: 0 40px 80px -12px rgba(0,0,0,0.5), 0 0 40px rgba(193, 95, 60, 0.1);
 }
 
 [data-theme='dark'] .video-embed-container {
-  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+  box-shadow: 0 32px 64px -12px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.03);
 }
 
 .youtube-iframe {

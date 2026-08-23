@@ -4,16 +4,17 @@
   left: 0;
   width: 100%;
   z-index: 1000;
-  transition: all 0.3s ease;
-  padding: 24px 0;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 20px 0;
 }
 
 .header.scrolled {
-  padding: 16px 0;
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
-  border-top: none;
+  padding: 12px 0;
+  background: var(--bg-glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--border-glass);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15), inset 0 -1px 0 rgba(255,255,255,0.04);
 }
 
 .header-content {
@@ -31,7 +32,12 @@
 
 .logo-icon {
   color: var(--accent-primary);
-  filter: drop-shadow(0 0 8px var(--accent-glow));
+  filter: drop-shadow(0 0 10px rgba(193, 95, 60, 0.5));
+  transition: filter 0.3s ease;
+}
+
+.logo-container:hover .logo-icon {
+  filter: drop-shadow(0 0 16px rgba(193, 95, 60, 0.7));
 }
 
 .logo-text {
@@ -53,13 +59,32 @@
 
 .nav-links a {
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background: var(--accent-primary);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1px;
 }
 
 .nav-links a:hover {
   color: var(--accent-primary);
-  text-shadow: 0 0 8px var(--accent-glow);
+  text-shadow: 0 0 12px rgba(193, 95, 60, 0.35);
+}
+
+.nav-links a:hover::after {
+  width: 100%;
 }
 
 .nav-actions-desktop {

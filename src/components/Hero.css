@@ -21,26 +21,27 @@
 .glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.5;
-  animation: float 8s ease-in-out infinite;
+  filter: blur(100px);
+  opacity: 0.6;
+  animation: float 10s ease-in-out infinite;
+  will-change: transform;
 }
 
 .glow-1 {
-  top: -10%;
+  top: -15%;
   left: -10%;
-  width: 500px;
-  height: 500px;
-  background: var(--accent-glow);
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(193, 95, 60, 0.4) 0%, transparent 70%);
 }
 
 .glow-2 {
-  bottom: -10%;
+  bottom: -15%;
   right: -10%;
-  width: 600px;
-  height: 600px;
-  background: rgba(177, 173, 161, 0.15); /* secondary glow */
-  animation-delay: -4s;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(177, 173, 161, 0.18) 0%, transparent 70%);
+  animation-delay: -5s;
 }
 
 .hero-content {
@@ -56,12 +57,23 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  padding: 7px 18px;
+  border-radius: 100px;
+  font-size: 0.82rem;
+  font-weight: 600;
   margin-bottom: 2rem;
   color: var(--accent-primary);
+  background: rgba(193, 95, 60, 0.08);
+  border: 1px solid rgba(193, 95, 60, 0.2);
+  backdrop-filter: blur(8px);
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.badge:hover {
+  background: rgba(193, 95, 60, 0.14);
+  border-color: rgba(193, 95, 60, 0.35);
+  box-shadow: 0 0 20px rgba(193, 95, 60, 0.15);
 }
 
 .live-dot {
@@ -69,8 +81,8 @@
   height: 8px;
   background-color: var(--accent-primary);
   border-radius: 50%;
-  box-shadow: 0 0 10px var(--accent-primary);
-  animation: pulse-glow 2s infinite;
+  box-shadow: 0 0 8px var(--accent-primary), 0 0 16px rgba(193, 95, 60, 0.4);
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 
 .hero-title {
@@ -113,10 +125,20 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 24px 48px;
+  padding: 28px 56px;
   width: 100%;
   max-width: 700px;
   border-radius: 24px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: box-shadow 0.3s ease;
+}
+
+.hero-stats:hover {
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 30px rgba(193, 95, 60, 0.06);
 }
 
 .stat-item {
