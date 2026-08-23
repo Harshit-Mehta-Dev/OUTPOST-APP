@@ -3017,7 +3017,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
               return (
                     <div className={`message-item${highlightClass}${selectedMessageIds.includes(msg._id || msg.id) ? ' message-item-selected' : ''}`} key={msg._id || msg.id || index}>
-                      <div className="message-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
+                      <div 
+                        className="message-avatar" 
+                        style={{ overflow: 'hidden', position: 'relative', cursor: msg.user?.profilePictureUrl ? 'zoom-in' : 'default' }}
+                        onClick={() => msg.user?.profilePictureUrl && setSelectedImage(msg.user.profilePictureUrl)}
+                      >
                         {msg.user?.profilePictureUrl ? (
                           <img src={msg.user.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
@@ -3087,70 +3091,6 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                               >
                                 <MoreVertical size={14} />
                               </button>
-                              <AnimatePresence>
-                                {activeDropdownId === (msg._id || msg.id) && (
-                                  <motion.div
-                                    initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                    transition={{ duration: 0.15 }}
-                                    className="message-dropdown-menu"
-                                  >
-                                    <button onClick={() => { handleCopyMessage(msg); setActiveDropdownId(null); }}>
-                                      <Copy size={14} /> Copy
-                                    </button>
-                                    <button onClick={() => { toggleMessageSelection(msg._id || msg.id); setActiveDropdownId(null); }}>
-                                      {selectedMessageIds.includes(msg._id || msg.id) ? <CheckSquare size={14} /> : <Square size={14} />} {selectedMessageIds.includes(msg._id || msg.id) ? 'Deselect' : 'Select'}
-                                    </button>
-                                    <button onClick={() => { toggleMessageStar(msg._id || msg.id); setActiveDropdownId(null); }}>
-                                      <Star size={14} fill={starredMessageIds.includes(msg._id || msg.id) ? 'currentColor' : 'none'} /> {starredMessageIds.includes(msg._id || msg.id) ? 'Unstar' : 'Star'}
-                                    </button>
-                                    <button onClick={() => openForwardPicker([msg._id || msg.id])}>
-                                      <Forward size={14} /> Forward
-                                    </button>
-                                    <button onClick={() => { setMessageInfo(msg); setActiveDropdownId(null); }}>
-                                      <Info size={14} /> Message info
-                                    </button>
-                                    <button onClick={() => { setReplyingTo(msg); setActiveDropdownId(null); }}>
-                                      <Reply size={14} /> Reply
-                                    </button>
-                                    <button onClick={() => { handlePinMessage(msg, currentChannelKey); setActiveDropdownId(null); }}>
-                                      <Pin size={14} /> {msg.isPinned ? "Unpin" : "Pin"}
-                                    </button>
-                                    <button 
-                                      onClick={() => {
-                                        if (starredMessageIds.includes(msg._id || msg.id) && !window.confirm('This message is starred. Do you want to delete it?')) return;
-                                        setMessageToDelete({ 
-                                          id: msg._id || msg.id, 
-                                          channelKey: currentChannelKey,
-                                          isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username 
-                                        });
-                                        setActiveDropdownId(null);
-                                      }}
-                                      className="dropdown-delete"
-                                    >
-                                      <Trash2 size={14} /> Delete
-                                    </button>
-                                    {isGlobalAdmin && !msg.isSystemDeleted && (
-                                      <button 
-                                        onClick={() => {
-                                          setMessageToDelete({ 
-                                            id: msg._id || msg.id, 
-                                            channelKey: currentChannelKey,
-                                            isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username,
-                                            isOperatorMode: true
-                                          });
-                                          setActiveDropdownId(null);
-                                        }}
-                                        className="dropdown-delete"
-                                        title="Operator Override"
-                                      >
-                                        <ShieldAlert size={14} /> Override
-                                      </button>
-                                    )}
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
                             </div>
                           </div>
                         </div>
@@ -3259,6 +3199,72 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                             </div>
                           )}
                         </div>
+                        <AnimatePresence>
+                          {activeDropdownId === (msg._id || msg.id) && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                              animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
+                              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                              transition={{ duration: 0.2 }}
+                              style={{ overflow: 'hidden' }}
+                            >
+                              <div className="message-dropdown-slide">
+                                <button onClick={() => { handleCopyMessage(msg); setActiveDropdownId(null); }}>
+                                  <Copy size={14} /> Copy
+                                </button>
+                                <button onClick={() => { toggleMessageSelection(msg._id || msg.id); setActiveDropdownId(null); }}>
+                                  {selectedMessageIds.includes(msg._id || msg.id) ? <CheckSquare size={14} /> : <Square size={14} />} {selectedMessageIds.includes(msg._id || msg.id) ? 'Deselect' : 'Select'}
+                                </button>
+                                <button onClick={() => { toggleMessageStar(msg._id || msg.id); setActiveDropdownId(null); }}>
+                                  <Star size={14} fill={starredMessageIds.includes(msg._id || msg.id) ? 'currentColor' : 'none'} /> {starredMessageIds.includes(msg._id || msg.id) ? 'Unstar' : 'Star'}
+                                </button>
+                                <button onClick={() => openForwardPicker([msg._id || msg.id])}>
+                                  <Forward size={14} /> Forward
+                                </button>
+                                <button onClick={() => { setMessageInfo(msg); setActiveDropdownId(null); }}>
+                                  <Info size={14} /> Message info
+                                </button>
+                                <button onClick={() => { setReplyingTo(msg); setActiveDropdownId(null); }}>
+                                  <Reply size={14} /> Reply
+                                </button>
+                                <button onClick={() => { handlePinMessage(msg, currentChannelKey); setActiveDropdownId(null); }}>
+                                  <Pin size={14} /> {msg.isPinned ? "Unpin" : "Pin"}
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    if (starredMessageIds.includes(msg._id || msg.id) && !window.confirm('This message is starred. Do you want to delete it?')) return;
+                                    setMessageToDelete({ 
+                                      id: msg._id || msg.id, 
+                                      channelKey: currentChannelKey,
+                                      isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username 
+                                    });
+                                    setActiveDropdownId(null);
+                                  }}
+                                  className="dropdown-delete"
+                                >
+                                  <Trash2 size={14} /> Delete
+                                </button>
+                                {isGlobalAdmin && !msg.isSystemDeleted && (
+                                  <button 
+                                    onClick={() => {
+                                      setMessageToDelete({ 
+                                        id: msg._id || msg.id, 
+                                        channelKey: currentChannelKey,
+                                        isOwnMessage: msg.user?.username === currentUser?.username || msg.user === currentUser?.username,
+                                        isOperatorMode: true
+                                      });
+                                      setActiveDropdownId(null);
+                                    }}
+                                    className="dropdown-delete"
+                                    title="Operator Override"
+                                  >
+                                    <ShieldAlert size={14} /> Override
+                                  </button>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
 
                     </div>
