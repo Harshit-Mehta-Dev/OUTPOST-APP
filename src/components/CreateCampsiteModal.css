@@ -388,20 +388,21 @@
   border-top: 1px solid var(--border-glass);
   background: var(--bg-secondary);
   display: flex;
-  justify-content: space-between;
+  gap: 16px;
   align-items: center;
 }
 
 .cancel-btn {
   background: transparent;
-  border: none;
+  border: 1px solid var(--border-glass);
   color: var(--text-secondary);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 12px 24px;
+  border-radius: 8px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .cancel-btn:hover {
@@ -410,6 +411,7 @@
 }
 
 .submit-btn {
+  flex: 1;
   background: var(--accent-primary);
   color: white;
   border: none;
