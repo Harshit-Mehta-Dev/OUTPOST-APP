@@ -12,16 +12,17 @@
 .outpost-top-bar {
   height: 54px;
   background: var(--bg-glass);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   border-bottom: 1px solid var(--border-glass);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   z-index: 50;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 24px rgba(0,0,0,0.25), inset 0 -1px 0 rgba(255,255,255,0.04);
   flex-shrink: 0;
+  transition: box-shadow 0.3s ease;
 }
 
 .top-bar-left {
@@ -133,15 +134,24 @@
   font-weight: bold;
   font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
 }
 
-.campsite-item:hover, .campsite-item.active {
+.campsite-item:hover {
+  border-radius: 16px;
+  background: rgba(var(--brand-primary), 0.15);
+  border-color: rgba(var(--brand-primary), 0.4);
+  color: rgb(var(--brand-primary));
+  box-shadow: 0 0 16px rgba(var(--brand-primary), 0.2);
+  transform: scale(1.05);
+}
+
+.campsite-item.active {
   border-radius: 16px;
   background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
   color: white;
-  transition: background 0.6s ease-in-out, border-color 0.6s ease-in-out, color 0.6s ease-in-out;
+  box-shadow: 0 4px 16px rgba(var(--brand-primary), 0.4);
 }
 
 .campsite-item.active::before {
@@ -226,23 +236,24 @@
   justify-content: space-between;
   padding: 8px;
   margin-bottom: 2px;
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .expedition-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text-primary);
+  transform: translateX(2px);
 }
 
 .expedition-item.active {
-  background: rgba(var(--brand-primary), 0.15);
+  background: rgba(var(--brand-primary), 0.12);
   border-left: 2px solid rgb(var(--brand-primary));
   color: rgb(var(--brand-primary));
   font-weight: 600;
-  transition: background 0.6s ease-in-out, border-color 0.6s ease-in-out, color 0.6s ease-in-out;
+  box-shadow: inset 2px 0 8px rgba(var(--brand-primary), 0.1);
 }
 
 .delete-channel-btn {
