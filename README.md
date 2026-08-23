@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Harshit-Mehta-Dev/OUTPOST-APP/main/public/logo.png" alt="Outpost Logo" width="150" />
+  <img src="https://outpost-app-a0c.pages.dev/logo.png" alt="Outpost Logo" width="160" />
 </div>
 
 # 🛡️ OUTPOST BETA v3.1
