@@ -316,3 +316,179 @@ input:checked + .slider:before {
     margin-bottom: 15px;
   }
 }
+
+/* ===== CENSORSHIP PROTOCOL STYLES ===== */
+
+/* Tab button — censorship variant */
+.ops-tab-btn.censorship:hover,
+.ops-tab-btn.censorship.active {
+  background: rgba(180, 0, 0, 0.1);
+  color: #ff4d4d;
+  border-left: 3px solid #ff4d4d;
+}
+.ops-tab-btn.censorship.censorship-active {
+  animation: censorTabPulse 2.5s ease-in-out infinite;
+}
+@keyframes censorTabPulse {
+  0%, 100% { background: rgba(180, 0, 0, 0.08); }
+  50% { background: rgba(180, 0, 0, 0.2); }
+}
+
+/* Badge ON pill */
+.censorship-badge {
+  margin-left: auto;
+  background: #ff4d4d;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+  animation: badgeBlink 1.2s step-end infinite;
+}
+@keyframes badgeBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Status Banner */
+.censorship-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+.censorship-status-banner.active {
+  background: rgba(255, 60, 60, 0.1);
+  border-color: rgba(255, 60, 60, 0.4);
+  animation: bannerFlicker 3s ease-in-out infinite;
+}
+@keyframes bannerFlicker {
+  0%, 100% { box-shadow: 0 0 0 rgba(255,60,60,0); }
+  50% { box-shadow: 0 0 16px rgba(255,60,60,0.3); }
+}
+.censorship-status-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+.censorship-status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.censorship-status-text strong {
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+}
+.censorship-status-banner.active .censorship-status-text strong {
+  color: #ff4d4d;
+}
+.censorship-status-text span {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+/* Section active state */
+.censorship-section-active {
+  border-color: rgba(255, 60, 60, 0.35) !important;
+  background: rgba(255, 60, 60, 0.05) !important;
+}
+
+/* Custom censorship toggle switch — RED */
+.censorship-switch {
+  position: relative;
+  display: inline-block;
+  width: 56px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.censorship-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.censorship-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  transition: 0.4s;
+  border-radius: 28px;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.censorship-slider::before {
+  content: '';
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 3px;
+  background: #aaa;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+.censorship-switch input:checked + .censorship-slider {
+  background: linear-gradient(135deg, #ff3b30, #c0000c);
+  border-color: #ff3b30;
+  animation: sliderGlow 1.5s ease-in-out infinite;
+}
+.censorship-switch input:checked + .censorship-slider::before {
+  transform: translateX(28px);
+  background: #fff;
+}
+@keyframes sliderGlow {
+  0%, 100% { box-shadow: 0 0 6px rgba(255,60,48,0.5); }
+  50% { box-shadow: 0 0 18px rgba(255,60,48,0.9); }
+}
+
+/* Reason textarea */
+.censorship-reason-input {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.censorship-reason-input:focus {
+  outline: none;
+  border-color: rgba(255, 60, 60, 0.5);
+}
+
+/* Info card */
+.censorship-info-card {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+.censorship-info-card h4 {
+  color: var(--text-secondary) !important;
+}
+.censorship-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.censorship-info-list li {
+  font-size: 0.87rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Mobile: allow the Censorship Protocol badge to wrap */
+@media (max-width: 768px) {
+  .ops-tab-btn.censorship span { display: none; }
+  .censorship-badge { margin-left: 4px; }
+}

@@ -44,7 +44,11 @@ const campsiteSchema = new mongoose.Schema({
     label: { type: String, default: 'Clear Skies' },
     updatedBy: { type: String },
     updatedAt: { type: Date }
-  }
+  },
+
+  // Censorship Protocol (Admin/Developer controlled)
+  censorshipEnabled: { type: Boolean, default: false },
+  censorshipReason: { type: String, default: '' }
 }, { timestamps: true });
 
 // Performance Indexes

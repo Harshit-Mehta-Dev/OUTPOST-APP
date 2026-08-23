@@ -1947,3 +1947,97 @@
   }
 }
 
+/* ===============================================================
+   🚫 CENSORSHIP PROTOCOL — GLITCH TEXT + BORDER CORRUPTION
+   =============================================================== */
+
+.glitch-text { position: relative; }
+.glitch-text::before, .glitch-text::after {
+  content: attr(data-text);
+  position: absolute; inset: 0;
+  font-size: inherit; font-weight: inherit;
+  letter-spacing: inherit; text-transform: inherit;
+  opacity: 0.75;
+}
+.glitch-text::before { left: 2px; color: #00ffff; clip-path: polygon(0 15%, 100% 15%, 100% 40%, 0 40%); animation: glitchTop 2.5s steps(1) infinite; }
+.glitch-text::after  { left: -2px; color: #ff00ff; clip-path: polygon(0 55%, 100% 55%, 100% 80%, 0 80%); animation: glitchBottom 2.5s steps(1) infinite 0.4s; }
+@keyframes glitchTop    { 0%,92%,100%{transform:translate(0)} 94%{transform:translate(-4px,-2px)} 96%{transform:translate(4px,0)} 98%{transform:translate(-2px,2px)} }
+@keyframes glitchBottom { 0%,90%,100%{transform:translate(0)} 92%{transform:translate(4px,2px)} 95%{transform:translate(-3px,-1px)} 98%{transform:translate(2px,1px)} }
+
+/* Sweeping red glow border on top & bottom of entire app */
+.censorship-active-border::before,
+.censorship-active-border::after {
+  content: '';
+  position: fixed;
+  left: 0; right: 0; height: 3px;
+  z-index: 9999; pointer-events: none;
+  background: linear-gradient(90deg, transparent 0%, #ff0040 20%, #ff00cc 50%, #ff0040 80%, transparent 100%);
+  background-size: 300% 100%;
+  box-shadow: 0 0 18px 5px rgba(255, 0, 60, 0.7);
+  animation: corruptSweepH 1.2s linear infinite;
+}
+.censorship-active-border::before { top: 0; }
+.censorship-active-border::after  { bottom: 0; animation-direction: reverse; }
+@keyframes corruptSweepH {
+  0%   { background-position: -100% 0; opacity: 0.8; }
+  50%  { opacity: 1; }
+  100% { background-position: 200% 0; opacity: 0.8; }
+}
+
+/* Left & right flickering borders via inset box-shadow */
+.censorship-active-border .basecamp-layout { animation: censorBorderFlicker 0.9s steps(1) infinite; }
+@keyframes censorBorderFlicker {
+  0%   { box-shadow: inset 3px 0 0 rgba(255,0,80,0.8), inset -3px 0 0 rgba(255,0,80,0.8), inset 3px 0 20px rgba(255,0,80,0.3), inset -3px 0 20px rgba(255,0,80,0.3); }
+  25%  { box-shadow: inset 3px 0 0 rgba(220,0,180,0.9), inset -3px 0 0 rgba(220,0,180,0.9), inset 3px 0 25px rgba(220,0,180,0.4), inset -3px 0 25px rgba(220,0,180,0.4); }
+  50%  { box-shadow: inset 3px 0 0 rgba(255,0,80,0.5), inset -3px 0 0 rgba(255,0,80,0.5), inset 3px 0 12px rgba(255,0,80,0.2), inset -3px 0 12px rgba(255,0,80,0.2); }
+  75%  { box-shadow: inset 3px 0 0 rgba(255,60,0,0.9), inset -3px 0 0 rgba(255,60,0,0.9), inset 3px 0 22px rgba(255,60,0,0.4), inset -3px 0 22px rgba(255,60,0,0.4); }
+  100% { box-shadow: inset 3px 0 0 rgba(255,0,80,0.8), inset -3px 0 0 rgba(255,0,80,0.8), inset 3px 0 20px rgba(255,0,80,0.3), inset -3px 0 20px rgba(255,0,80,0.3); }
+}
+
+/* Compact pulsing status bar at top of chat area */
+.censorship-status-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 16px;
+  background: rgba(100, 0, 0, 0.6);
+  border-bottom: 1px solid rgba(255, 40, 40, 0.45);
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em;
+  color: #ff5555; text-transform: uppercase;
+  flex-shrink: 0;
+  animation: statusBarPulse 1.8s ease-in-out infinite;
+  position: relative; z-index: 10;
+}
+@keyframes statusBarPulse {
+  0%,100% { background: rgba(100, 0, 0, 0.6); }
+  50%      { background: rgba(155, 0, 0, 0.75); }
+}
+.censorship-status-icon { font-size: 0.9rem; flex-shrink: 0; }
+.censorship-status-text { flex: 1; color: #ff4444; }
+.censorship-status-reason {
+  color: rgba(255,200,200,0.75); font-size: 0.72rem; font-weight: 500;
+  text-transform: none; letter-spacing: 0;
+  max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Blocked input bar */
+.censorship-input-blocked {
+  width: 100%; display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 14px 16px;
+  color: rgba(255, 80, 80, 0.9);
+  font-size: 0.9rem; font-weight: 600;
+  background: rgba(255, 30, 30, 0.07);
+  border: 1px solid rgba(255, 30, 30, 0.3);
+  border-radius: 10px; text-align: center;
+  cursor: not-allowed; user-select: none;
+  animation: inputBlockedBlink 2s ease-in-out infinite;
+}
+@keyframes inputBlockedBlink {
+  0%,100% { border-color: rgba(255,30,30,0.25); box-shadow: none; }
+  50%      { border-color: rgba(255,30,30,0.7); box-shadow: 0 0 10px rgba(255,0,0,0.18); }
+}
+
+@media (max-width: 480px) {
+  .censorship-status-bar { font-size: 0.66rem; padding: 5px 10px; gap: 5px; }
+  .censorship-status-reason { display: none; }
+}
+
+

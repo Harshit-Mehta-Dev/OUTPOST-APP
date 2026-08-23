@@ -320,4 +320,37 @@ router.post('/:id/roles/assign', requireAuth, async (req, res) => {
     }
     });
 
-    module.exports = router;
+    // PATCH toggle censorship on a campsite (Admin/Developer only)
+    router.patch('/:id/censorship', requireAuth, async (req, res) => {
+      try {
+        const { censorshipEnabled, censorshipReason, adminEmail } = req.body;
+        const camp = await Campsite.findById(req.params.id);
+        if (!camp) return res.status(404).json({ message: 'Campsite not found' });
+
+        // Security: only the campsite admin or the global developer may toggle censorship
+        const isGlobalDev = adminEmail?.toLowerCase()?.trim() === 'harshitmehta1012@gmail.com';
+        const isCampAdmin = camp.adminEmail?.toLowerCase()?.trim() === adminEmail?.toLowerCase()?.trim();
+        if (!isGlobalDev && !isCampAdmin) {
+          return res.status(403).json({ error: 'Unauthorized — only Admin or Developer can toggle Censorship.' });
+        }
+
+        camp.censorshipEnabled = !!censorshipEnabled;
+        camp.censorshipReason = censorshipReason || '';
+        const updatedCamp = await camp.save();
+
+        // Broadcast the new censorship state to EVERY member of this campsite room in real-time
+        if (req.io) {
+          req.io.to(`camp_${camp._id}`).emit('censorship_updated', {
+            campsiteId: String(camp._id),
+            censorshipEnabled: updatedCamp.censorshipEnabled,
+            censorshipReason: updatedCamp.censorshipReason
+          });
+        }
+
+        res.json({ success: true, censorshipEnabled: updatedCamp.censorshipEnabled, censorshipReason: updatedCamp.censorshipReason });
+      } catch (err) {
+        res.status(400).json({ error: err.message });
+      }
+    });
+
+module.exports = router;

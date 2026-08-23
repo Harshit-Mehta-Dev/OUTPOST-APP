@@ -644,7 +644,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       replyTo: m.replyTo,
       isPinned: m.isPinned || false,
       likes: m.likes || [],
-      reactions: m.reactions || []
+      reactions: m.reactions || [],
+      campsiteId: m.campsiteId,
+      censorshipEnabled: m.censorshipEnabled,
+      censorshipReason: m.censorshipReason
     };
   };
 
@@ -722,15 +725,43 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           return true;
         });
 
+        // 3. Process any System Censorship messages to restore state
+        const systemMsgs = validFetched.filter(m => m.type === 'system_censorship_toggle' && m.campsiteId);
+        if (systemMsgs.length > 0) {
+          const latestToggle = systemMsgs[systemMsgs.length - 1]; // Use the most recent state
+          try {
+            const saved = JSON.parse(localStorage.getItem('outpost_censorship') || '{}');
+            if (saved[latestToggle.campsiteId]?.enabled !== !!latestToggle.censorshipEnabled || 
+                saved[latestToggle.campsiteId]?.reason !== latestToggle.censorshipReason) {
+              saved[latestToggle.campsiteId] = {
+                enabled: !!latestToggle.censorshipEnabled,
+                reason: latestToggle.censorshipReason || ''
+              };
+              localStorage.setItem('outpost_censorship', JSON.stringify(saved));
+              
+              // Only update state if it changed
+              setCampsites(prev => prev.map(c => {
+                if (String(c.id || c._id) === latestToggle.campsiteId) {
+                  return { ...c, censorshipEnabled: !!latestToggle.censorshipEnabled, censorshipReason: latestToggle.censorshipReason || '' };
+                }
+                return c;
+              }));
+            }
+          } catch(e) {}
+        }
+        
+        // Filter out system messages from chat UI
+        const validFetchedUI = validFetched.filter(m => m.type !== 'system_censorship_toggle');
+
         setMessagesByChannel(prev => {
           const existing = prev[currentChannelKey] || [];
-          const fetchedIds = new Set(validFetched.map(m => String(m.id || m._id)));
+          const fetchedIds = new Set(validFetchedUI.map(m => String(m.id || m._id)));
           // Keep local-only optimistic messages not yet confirmed by the server
           const localOnly = existing.filter(m => {
             const id = String(m.id || m._id || '');
             return id.startsWith('local-') && !fetchedIds.has(id) && !deletedIds.has(id);
           });
-          const merged = [...validFetched, ...localOnly].sort(
+          const merged = [...validFetchedUI, ...localOnly].sort(
             (a, b) => (a.receivedAt || 0) - (b.receivedAt || 0)
           );
           return { ...prev, [currentChannelKey]: merged };
@@ -864,6 +895,31 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   // Listen for real-time messages and member events
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {
+      // Intercept real-time censorship broadcast
+      if (newMessage.type === 'system_censorship_toggle' && newMessage.campsiteId) {
+        try {
+          const saved = JSON.parse(localStorage.getItem('outpost_censorship') || '{}');
+          if (saved[newMessage.campsiteId]?.enabled !== !!newMessage.censorshipEnabled || 
+              saved[newMessage.campsiteId]?.reason !== newMessage.censorshipReason) {
+            saved[newMessage.campsiteId] = {
+              enabled: !!newMessage.censorshipEnabled,
+              reason: newMessage.censorshipReason || ''
+            };
+            localStorage.setItem('outpost_censorship', JSON.stringify(saved));
+            
+            setCampsites(prev => prev.map(c => {
+              if (String(c.id || c._id) === newMessage.campsiteId) {
+                return { ...c, censorshipEnabled: !!newMessage.censorshipEnabled, censorshipReason: newMessage.censorshipReason || '' };
+              }
+              return c;
+            }));
+          }
+        } catch(e) {}
+        
+        // Return early to not show this system message in the chat
+        return;
+      }
+
       setMessagesByChannel(prev => {
         const currentMessages = prev[newMessage.channelKey] || [];
         const incomingId = newMessage._id || newMessage.id;
@@ -1106,6 +1162,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
     };
     socket.on('campsite_updated', handleCampsiteUpdated);
 
+    // Real-time censorship state sync — emitted by backend after DB update
+    const handleCensorshipUpdated = ({ campsiteId, censorshipEnabled, censorshipReason }) => {
+      setCampsites(prev => prev.map(c => {
+        const cId = String(c._id || c.id);
+        if (cId === String(campsiteId)) {
+          return { ...c, censorshipEnabled, censorshipReason: censorshipReason || '' };
+        }
+        return c;
+      }));
+      // Also persist to localStorage so it survives page refresh
+      try {
+        const store = JSON.parse(localStorage.getItem('outpost_censorship') || '{}');
+        store[String(campsiteId)] = { enabled: censorshipEnabled, reason: censorshipReason || '' };
+        localStorage.setItem('outpost_censorship', JSON.stringify(store));
+      } catch(e) {}
+    };
+    socket.on('censorship_updated', handleCensorshipUpdated);
+
     return () => {
       socket.off('receive_message', handleReceiveMessage);
       socket.off("broadcast-typing-start", handleTypingStart);
@@ -1125,6 +1199,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       socket.off("server_alert", handleServerAlert);
       socket.off("new_public_campsite");
       socket.off("campsite_updated", handleCampsiteUpdated);
+      socket.off("censorship_updated", handleCensorshipUpdated);
     };
   }, [currentChannelKey]);
 
@@ -1156,8 +1231,26 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               };
             }
             
+            // Restore censorship state from localStorage (survives backend overwrite on refresh/re-login)
+            let censorshipStore = {};
+            try { censorshipStore = JSON.parse(localStorage.getItem('outpost_censorship') || '{}'); } catch(e) {}
+
             // Only show campsites the user is a member of in the sidebar
-            const merged = [...formattedCamps];
+            const merged = [...formattedCamps].map(c => {
+              const cKey = String(c.id || c._id);
+              if (censorshipStore[cKey]) {
+                return { ...c, censorshipEnabled: censorshipStore[cKey].enabled, censorshipReason: censorshipStore[cKey].reason || '' };
+              }
+              return c;
+            });
+
+            // Also restore for HQ if it was censored
+            if (hq) {
+              const hqCensor = censorshipStore['1'];
+              if (hqCensor) {
+                hq = { ...hq, censorshipEnabled: hqCensor.enabled, censorshipReason: hqCensor.reason || '' };
+              }
+            }
             
             return hq ? [hq, ...merged] : merged;
           });
@@ -1175,6 +1268,10 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   }, [messages]);
 
   const handleSendMessage = async () => {
+    // CENSORSHIP PROTOCOL: Block all non-admin/non-developer sends at the function level
+    if (activeCampsite?.censorshipEnabled && !isCampAdmin) {
+      return; // Hard stop — UI already shows blocked state, this is the security guard
+    }
     if (inputText.trim()) {
       // The AI Ranger check was blocking message sending and causing lag because the endpoint doesn't exist.
       // We skip this check to fix the message sending delay.
@@ -1806,6 +1903,35 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   const handleUpdateCampsite = (campId, updates) => {
+    // Persist censorship settings to dedicated localStorage key so they survive refresh/re-login
+    if ('censorshipEnabled' in updates || 'censorshipReason' in updates) {
+      try {
+        const saved = JSON.parse(localStorage.getItem('outpost_censorship') || '{}');
+        const enabled = 'censorshipEnabled' in updates ? updates.censorshipEnabled : (saved[String(campId)]?.enabled || false);
+        const reason = 'censorshipReason' in updates ? (updates.censorshipReason || '') : (saved[String(campId)]?.reason || '');
+        
+        saved[String(campId)] = { enabled, reason };
+        localStorage.setItem('outpost_censorship', JSON.stringify(saved));
+        
+        // Broadcast via socket as a special system message to the current channel so it syncs to everyone
+        if (socket && socket.connected) {
+          socket.emit('send_message', {
+            channelKey: currentChannelKey, 
+            user: { 
+              username: currentUser?.username || 'Scout', 
+              profilePictureUrl: currentUser?.profilePictureUrl || '',
+              level: currentUser?.level || 1 
+            },
+            time: new Date().toLocaleTimeString(),
+            type: "system_censorship_toggle",
+            campsiteId: String(campId),
+            censorshipEnabled: enabled,
+            censorshipReason: reason,
+            text: `[SYSTEM] Censorship state changed to ${enabled}`
+          });
+        }
+      } catch (e) {}
+    }
     setCampsites(prev => prev.map(c => {
       if (c.id === campId || c._id === campId) {
         return { ...c, ...updates };
@@ -1876,11 +2002,20 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   // Determine if the current user is an admin for the active campsite
+  // Security: We validate against backend-provided fields (adminEmail, adminUsername from DB)
+  // NOT against any user-controlled display name or username.
   const normalizedUserEmail = currentUser?.email?.toLowerCase()?.trim();
   const isGlobalAdmin = normalizedUserEmail === 'harshitmehta1012@gmail.com';
   const isCampAdmin = activeCampsite?.id === 1 
     ? isGlobalAdmin 
-    : (activeCampsite?.adminEmail?.toLowerCase()?.trim() === normalizedUserEmail || isGlobalAdmin);
+    : (
+        // Primary: match against backend-stored adminEmail (set when campsite was created)
+        (activeCampsite?.adminEmail?.toLowerCase()?.trim() === normalizedUserEmail) ||
+        // Fallback: check memberRoles object from backend (also set server-side)
+        (activeCampsite?.memberRoles?.[currentUser?.username] === 'Commander') ||
+        // Global developer override
+        isGlobalAdmin
+      );
 
   const handleLogout = async () => {
     localStorage.removeItem('outpost_user'); 
@@ -1897,7 +2032,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   return (
-    <div className="outpost-app-wrapper">
+    <div className={`outpost-app-wrapper${activeCampsite?.censorshipEnabled && !isCampAdmin ? ' censorship-active-border' : ''}`}>
       {!activeTheme?.isDynamic && <AnimatedMesh />}
       {activeTheme?.isDynamic && activeTheme?.id.startsWith('gradient-bars') && (
         <div style={{ opacity: 0.15, position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
@@ -2612,7 +2747,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     style={{ background: 'var(--bg-card)', border: '1px solid var(--accent-primary)', borderRadius: '16px', padding: '24px', maxWidth: '400px', width: '90%', color: 'var(--text-primary)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                      <h3 style={{ fontSize: '14px', fontFamily: 'monospace', color: 'var(--accent-primary)', textTransform: 'uppercase' }}>INTERCEPT: {selectedPopupAlert.campsiteName}</h3>
+                      <h3 style={{ fontSize: '14px', fontFamily: 'monospace', color: 'var(--accent-primary)', textTransform: 'uppercase' }}>📡 {selectedPopupAlert.campsiteName}</h3>
                       <button onClick={() => setSelectedPopupAlert(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={18} /></button>
                     </div>
                     <div style={{ marginBottom: '20px' }}>
@@ -2898,13 +3033,27 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </div>
         </div>
 
-
+        {/* ===== CENSORSHIP PROTOCOL — Border corruption effect only, NON-BLOCKING ===== */}
+        {activeCampsite?.censorshipEnabled && !isCampAdmin && activeChannel !== 'Ai-Scout' && activeChannel !== 'Basecamp-Board' && activeChannel !== 'Chill-Zone' && (
+          <div className="censorship-status-bar">
+            <span className="censorship-status-icon">⛔</span>
+            <span className="censorship-status-text glitch-text" data-text="SIGNAL BLACKOUT — CHAT LOCKED">
+              SIGNAL BLACKOUT — CHAT LOCKED
+            </span>
+            {activeCampsite?.censorshipReason && (
+              <span className="censorship-status-reason">· {activeCampsite.censorshipReason}</span>
+            )}
+          </div>
+        )}
 
         <div className="chat-messages" style={{ display: (activeChannel === 'Ai-Scout' || activeChannel === 'Basecamp-Board' || activeChannel === 'Chill-Zone') ? 'none' : undefined }}>
+
           <div className="chat-welcome">
+
             <div className="welcome-icon">
               <Hash size={40} />
             </div>
+
             <h1>Welcome to #{activeChannel}!</h1>
             <p>This is the start of the #{activeChannel} expedition. Please review the community guidelines before participating.</p>
             
@@ -3030,7 +3179,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                             const userRoleName = activeCampsite?.memberRoles?.[username];
                             const userRoleColor = activeCampsite?.roles?.find(r => r.name === userRoleName)?.color || 'var(--text-primary)';
                             
-                            const isDeveloper = msg.user?.isGlobalAdmin || username.toLowerCase().includes('harshit mehta');
+                            // Security: isDeveloper must come from isGlobalAdmin (email-based, set server-side) NOT username string matching
+                            const isDeveloper = isGlobalAdmin && (msg.user?.username === currentUser?.username);
                             const isAdmin = !isDeveloper && ((activeCampsite?.adminUsername && username === activeCampsite?.adminUsername) || (activeCampsite?.adminEmail && userEmail === activeCampsite?.adminEmail) || userRoleName?.toUpperCase() === 'ADMIN');
                             
                             return (
@@ -3326,6 +3476,11 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             {activeCampsite?.bannedUsers?.includes(currentUser?.username) ? (
               <div style={{ width: '100%', textAlign: 'center', padding: '12px', color: '#ff4444', fontWeight: 'bold', background: 'rgba(255,0,0,0.1)', borderRadius: '8px' }}>
                 🚫 You have been permanently banned from chatting in this group.
+              </div>
+            ) : activeCampsite?.censorshipEnabled && !isCampAdmin ? (
+              <div className="censorship-input-blocked">
+                <span>⛔</span>
+                <span>Chat is locked by Admin. You cannot send messages during Censorship Protocol.</span>
               </div>
             ) : (
               <>
@@ -3794,6 +3949,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
             onDeleteCampsite={handleDeleteCampsite}
             onUpdateCampsite={handleUpdateCampsite}
             onLeaveCampsite={handleLeaveCampsite}
+            currentUser={currentUser}
           />
         )}
         <UserProfileModal 

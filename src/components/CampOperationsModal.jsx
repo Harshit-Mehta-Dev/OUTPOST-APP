@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Users, Shield, Trash2, Plus, UserPlus, LogOut, Wrench, Palette, ChevronDown, Check } from 'lucide-react';
+import { X, Users, Shield, Trash2, Plus, UserPlus, LogOut, Wrench, Palette, ChevronDown, Check, Radio } from 'lucide-react';
 import './CampOperationsModal.css';
 
-const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCampsite, onUpdateCampsite, onLeaveCampsite }) => {
+const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCampsite, onUpdateCampsite, onLeaveCampsite, currentUser }) => {
   const [activeTab, setActiveTab] = useState('personnel');
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   
@@ -13,6 +13,9 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
   const [newRoleName, setNewRoleName] = useState('');
   const [newRoleColor, setNewRoleColor] = useState('#5865F2');
   const [assignDropdownFor, setAssignDropdownFor] = useState(null); // which user's dropdown is open
+
+  // Censorship state
+  const [censorshipReason, setCensorshipReason] = useState(campsite?.censorshipReason || '');
 
   if (!isOpen || !campsite) return null;
 
@@ -144,6 +147,14 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
               >
                 <Wrench size={18} /> The Role Forge
               </button>
+              <button 
+                className={`ops-tab-btn censorship ${activeTab === 'censorship' ? 'active' : ''} ${campsite?.censorshipEnabled ? 'censorship-active' : ''}`}
+                onClick={() => setActiveTab('censorship')}
+              >
+                <Radio size={18} />
+                <span>Censorship Protocol</span>
+                {campsite?.censorshipEnabled && <span className="censorship-badge">ON</span>}
+              </button>
             </>
           )}
           
@@ -165,6 +176,7 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
               {activeTab === 'personnel' && 'Personnel Management'}
               {activeTab === 'safety' && 'Perimeter Safety'}
               {activeTab === 'roles' && 'The Role Forge'}
+              {activeTab === 'censorship' && 'Censorship Protocol'}
               {activeTab === 'destruction' && (isAdmin ? 'Danger Perimeter' : 'Leave Bootcamp')}
             </h2>
             <button className="close-btn" onClick={onClose}><X size={20} /></button>
@@ -384,6 +396,106 @@ const CampOperationsModal = ({ isOpen, onClose, campsite, isAdmin, onDeleteCamps
                       </label>
                     </div>
                   ))}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'censorship' && isAdmin && (
+              <motion.div key="censorship" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                {/* Status Banner */}
+                <div className={`censorship-status-banner ${campsite?.censorshipEnabled ? 'active' : ''}`}>
+                  <div className="censorship-status-icon">
+                    {campsite?.censorshipEnabled ? '📡' : '🔕'}
+                  </div>
+                  <div className="censorship-status-text">
+                    <strong>{campsite?.censorshipEnabled ? 'CENSORSHIP ACTIVE' : 'CENSORSHIP INACTIVE'}</strong>
+                    <span>{campsite?.censorshipEnabled
+                      ? 'Chat is locked. Only you (Admin) can broadcast messages.'
+                      : 'Normal messaging is permitted for all members.'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Main toggle section */}
+                <div className={`ops-section ${campsite?.censorshipEnabled ? 'censorship-section-active' : ''}`}>
+                  <h4>Signal Blackout Toggle</h4>
+                  <p>When activated, a corruption animation floods the chat and all regular users are blocked from sending messages. Only you (Admin / Developer) can broadcast to the group.</p>
+                  
+                  <div className="toggle-row" style={{ marginTop: '15px' }}>
+                    <div className="toggle-info">
+                      <strong style={{ color: campsite?.censorshipEnabled ? '#ff4d4d' : 'var(--text-primary)' }}>
+                        {campsite?.censorshipEnabled ? '⛔ Censorship Enabled' : 'Enable Censorship Blackout'}
+                      </strong>
+                      <span>Applies immediately. All members will see the corruption overlay.</span>
+                    </div>
+                    <label className="censorship-switch">
+                      <input
+                        type="checkbox"
+                        checked={!!campsite?.censorshipEnabled}
+                        onChange={async () => {
+                          const newState = !campsite?.censorshipEnabled;
+                          const campId = campsite.id || campsite._id;
+                          const token = localStorage.getItem('outpost_token');
+                          const apiBase = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
+                          try {
+                            const res = await fetch(`${apiBase}/api/campsites/${campId}/censorship`, {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                              body: JSON.stringify({
+                                censorshipEnabled: newState,
+                                censorshipReason: newState ? censorshipReason : '',
+                                adminEmail: currentUser?.email
+                              })
+                            });
+                            if (res.ok) {
+                              // Update local state optimistically — socket will sync others
+                              onUpdateCampsite(campId, {
+                                censorshipEnabled: newState,
+                                censorshipReason: newState ? censorshipReason : ''
+                              });
+                            } else {
+                              const err = await res.json();
+                              console.error('Censorship toggle failed:', err);
+                            }
+                          } catch (e) {
+                            // Fallback to local-only if backend is unreachable
+                            onUpdateCampsite(campId, { censorshipEnabled: newState, censorshipReason: newState ? censorshipReason : '' });
+                          }
+                        }}
+                      />
+                      <span className="censorship-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Reason / Broadcast message */}
+                <div className="ops-section">
+                  <h4>Blackout Reason <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>(optional)</span></h4>
+                  <p>A message displayed to users explaining the censorship event. Leave blank for a silent lockdown.</p>
+                  <textarea
+                    className="censorship-reason-input"
+                    placeholder="e.g. This channel is under temporary maintenance by the admin..."
+                    value={censorshipReason}
+                    rows={3}
+                    onChange={e => {
+                      setCensorshipReason(e.target.value);
+                      if (campsite?.censorshipEnabled) {
+                        onUpdateCampsite((campsite.id || campsite._id), { censorshipReason: e.target.value });
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Info card */}
+                <div className="ops-section censorship-info-card">
+                  <h4>⚙️ How It Works</h4>
+                  <ul className="censorship-info-list">
+                    <li>🔴 Activating this blocks ALL regular users from sending messages.</li>
+                    <li>🎭 A glitch & corruption animation overlays the chat area.</li>
+                    <li>👑 Only Admin or Developer accounts can still broadcast messages.</li>
+                    <li>🌐 Works on both Public and Private groups instantly.</li>
+                    <li>🔓 Deactivating restores normal chat immediately.</li>
+                  </ul>
                 </div>
               </motion.div>
             )}
