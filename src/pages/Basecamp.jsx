@@ -2032,7 +2032,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   };
 
   return (
-    <div className={`outpost-app-wrapper${activeCampsite?.censorshipEnabled && !isCampAdmin ? ' censorship-active-border' : ''}`}>
+    <div className={`outpost-app-wrapper${activeCampsite?.censorshipEnabled ? ' censorship-active-border' : ''}`}>
       {!activeTheme?.isDynamic && <AnimatedMesh />}
       {activeTheme?.isDynamic && activeTheme?.id.startsWith('gradient-bars') && (
         <div style={{ opacity: 0.15, position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
@@ -3004,7 +3004,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </div>
 
         {/* ===== CENSORSHIP PROTOCOL — Border corruption effect only, NON-BLOCKING ===== */}
-        {activeCampsite?.censorshipEnabled && !isCampAdmin && activeChannel !== 'Ai-Scout' && activeChannel !== 'Basecamp-Board' && activeChannel !== 'Chill-Zone' && (
+        {activeCampsite?.censorshipEnabled && activeChannel !== 'Ai-Scout' && activeChannel !== 'Basecamp-Board' && activeChannel !== 'Chill-Zone' && (
           <div className="censorship-status-bar">
             <span className="censorship-status-icon">⛔</span>
             <span className="censorship-status-text glitch-text" data-text="SIGNAL BLACKOUT — CHAT LOCKED">
