@@ -16,11 +16,11 @@
 .create-camp-modal {
   background: var(--bg-primary);
   border: 1px solid var(--border-glass);
-  border-radius: 16px;
+  border-radius: 20px;
   width: 100%;
-  max-width: 560px;
+  max-width: 860px;
   overflow: hidden;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
 }
@@ -61,34 +61,56 @@
 }
 
 .modal-content {
-  padding: 24px 32px;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* LEFT PANEL */
+.modal-left-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.02);
+  border-right: 1px solid var(--border-glass);
+  padding: 32px 24px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  max-height: 70vh;
+  align-items: center;
+  gap: 20px;
+}
+
+.emblem-hint {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* RIGHT PANEL */
+.modal-right-panel {
+  flex: 1;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   overflow-y: auto;
 }
 
-.modal-content::-webkit-scrollbar {
-  width: 6px;
-}
-.modal-content::-webkit-scrollbar-thumb {
+.modal-right-panel::-webkit-scrollbar { width: 4px; }
+.modal-right-panel::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
-/* Identity Section */
-.identity-section {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-}
+/* Identity Section (legacy - removed) */
 
 .emblem-upload {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  border: 2px dashed var(--text-secondary);
+  border: 2px dashed rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -98,6 +120,7 @@
   transition: all 0.2s ease;
   flex-shrink: 0;
   color: var(--text-secondary);
+  background: var(--bg-secondary);
 }
 
 .emblem-upload:hover {
@@ -138,7 +161,7 @@
 }
 
 .name-input-wrapper {
-  flex: 1;
+  width: 100%;
 }
 
 .name-input-wrapper label {

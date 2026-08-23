@@ -157,8 +157,9 @@ const CreateCampsiteModal = ({ isOpen, onClose, onCampsiteCreated }) => {
             </div>
 
             <div className="modal-content">
-              {/* 1. Identity Section */}
-              <div className="identity-section">
+
+              {/* LEFT PANEL — Emblem + Name */}
+              <div className="modal-left-panel">
                 <label htmlFor="emblem-upload-input" className="emblem-upload">
                   {emblemImage ? (
                     <img src={emblemImage} alt="Emblem" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -167,7 +168,7 @@ const CreateCampsiteModal = ({ isOpen, onClose, onCampsiteCreated }) => {
                       {campsiteName.charAt(0).toUpperCase()}
                     </div>
                   ) : (
-                    <Upload size={24} color="rgba(255,255,255,0.5)" />
+                    <Upload size={28} color="rgba(255,255,255,0.4)" />
                   )}
                   <div className="emblem-overlay">
                     <Upload size={20} />
@@ -180,7 +181,8 @@ const CreateCampsiteModal = ({ isOpen, onClose, onCampsiteCreated }) => {
                     onChange={handleImageUpload}
                   />
                 </label>
-                
+                <p className="emblem-hint">Click to upload<br/>campsite emblem</p>
+
                 <div className="name-input-wrapper">
                   <label>Campsite Name</label>
                   <input 
@@ -194,102 +196,105 @@ const CreateCampsiteModal = ({ isOpen, onClose, onCampsiteCreated }) => {
                 </div>
               </div>
 
-              {/* 2. Templates */}
-              <div className="templates-section">
-                <div className="modal-section-title">Select Your Camp Layout</div>
-                <div className="templates-grid">
-                  <div 
-                    className={`template-card ${selectedTemplate === 'gaming' ? 'active' : ''}`}
-                    onClick={() => setSelectedTemplate('gaming')}
-                  >
-                    <div className="template-icon"><Gamepad2 size={24} /></div>
-                    <span>Gaming Guild</span>
-                  </div>
-                  <div 
-                    className={`template-card ${selectedTemplate === 'dev' ? 'active' : ''}`}
-                    onClick={() => setSelectedTemplate('dev')}
-                  >
-                    <div className="template-icon"><Code2 size={24} /></div>
-                    <span>Dev Tavern</span>
-                  </div>
-                  <div 
-                    className={`template-card ${selectedTemplate === 'casual' ? 'active' : ''}`}
-                    onClick={() => setSelectedTemplate('casual')}
-                  >
-                    <div className="template-icon"><Tent size={24} /></div>
-                    <span>Casual Camp</span>
-                  </div>
-                </div>
-              </div>
+              {/* RIGHT PANEL — Layout + Visibility + Advanced */}
+              <div className="modal-right-panel">
 
-              {/* 3. Visibility */}
-              <div className="visibility-section">
-                <div className="modal-section-title">Camp Visibility</div>
-                <div className="visibility-options">
-                  <div 
-                    className={`radio-card ${isPublic ? 'active' : ''}`}
-                    onClick={() => setIsPublic(true)}
-                  >
-                    <Globe size={20} className="radio-icon" />
-                    <div className="radio-text">
-                      <h4>Public Basecamp</h4>
-                      <p>Discoverable by anyone in the Outpost network.</p>
-                    </div>
-                  </div>
-                  <div 
-                    className={`radio-card ${!isPublic ? 'active' : ''}`}
-                    onClick={() => setIsPublic(false)}
-                  >
-                    <Lock size={20} className="radio-icon" />
-                    <div className="radio-text">
-                      <h4>Hidden Outpost</h4>
-                      <p>Invite-only. Hidden from search directories.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. Advanced Options */}
-              <div className="advanced-accordion">
-                <div className="accordion-header" onClick={() => setShowAdvanced(!showAdvanced)}>
-                  <ChevronRight size={16} className={`accordion-icon ${showAdvanced ? 'open' : ''}`} />
-                  Advanced Operations
-                </div>
-                
-                <AnimatePresence>
-                  {showAdvanced && (
-                    <motion.div 
-                      className="advanced-content"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                {/* Templates */}
+                <div className="templates-section">
+                  <div className="modal-section-title">Select Your Camp Layout</div>
+                  <div className="templates-grid">
+                    <div 
+                      className={`template-card ${selectedTemplate === 'gaming' ? 'active' : ''}`}
+                      onClick={() => setSelectedTemplate('gaming')}
                     >
-                      <div className="advanced-grid">
-                        <div className="advanced-item">
-                          <label>Default Region</label>
-                          <select value={region} onChange={(e) => setRegion(e.target.value)}>
-                            <option>US East</option>
-                            <option>US West</option>
-                            <option>EU Central</option>
-                            <option>Asia Pacific</option>
-                          </select>
-                        </div>
-                        <div className="advanced-item">
-                          <label>Auto-Welcome Bot</label>
-                          <div className="toggle-switch" onClick={() => setAutoWelcome(!autoWelcome)}>
-                            <div className={`toggle-bg ${autoWelcome ? 'active' : ''}`}>
-                              <div className="toggle-knob"></div>
+                      <div className="template-icon"><Gamepad2 size={24} /></div>
+                      <span>Gaming Guild</span>
+                    </div>
+                    <div 
+                      className={`template-card ${selectedTemplate === 'dev' ? 'active' : ''}`}
+                      onClick={() => setSelectedTemplate('dev')}
+                    >
+                      <div className="template-icon"><Code2 size={24} /></div>
+                      <span>Dev Tavern</span>
+                    </div>
+                    <div 
+                      className={`template-card ${selectedTemplate === 'casual' ? 'active' : ''}`}
+                      onClick={() => setSelectedTemplate('casual')}
+                    >
+                      <div className="template-icon"><Tent size={24} /></div>
+                      <span>Casual Camp</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visibility */}
+                <div className="visibility-section">
+                  <div className="modal-section-title">Camp Visibility</div>
+                  <div className="visibility-options">
+                    <div 
+                      className={`radio-card ${isPublic ? 'active' : ''}`}
+                      onClick={() => setIsPublic(true)}
+                    >
+                      <Globe size={22} className="radio-icon" />
+                      <div className="radio-text">
+                        <h4>Public Basecamp</h4>
+                        <p>Discoverable by anyone in the Outpost network.</p>
+                      </div>
+                    </div>
+                    <div 
+                      className={`radio-card ${!isPublic ? 'active' : ''}`}
+                      onClick={() => setIsPublic(false)}
+                    >
+                      <Lock size={22} className="radio-icon" />
+                      <div className="radio-text">
+                        <h4>Hidden Outpost</h4>
+                        <p>Invite-only. Hidden from search directories.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Advanced */}
+                <div className="advanced-accordion">
+                  <div className="accordion-header" onClick={() => setShowAdvanced(!showAdvanced)}>
+                    <ChevronRight size={16} className={`accordion-icon ${showAdvanced ? 'open' : ''}`} />
+                    Advanced Operations
+                  </div>
+                  <AnimatePresence>
+                    {showAdvanced && (
+                      <motion.div 
+                        className="advanced-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="advanced-grid">
+                          <div className="advanced-item">
+                            <label>Default Region</label>
+                            <select value={region} onChange={(e) => setRegion(e.target.value)}>
+                              <option>US East</option>
+                              <option>US West</option>
+                              <option>EU Central</option>
+                              <option>Asia Pacific</option>
+                            </select>
+                          </div>
+                          <div className="advanced-item">
+                            <label>Auto-Welcome Bot</label>
+                            <div className="toggle-switch" onClick={() => setAutoWelcome(!autoWelcome)}>
+                              <div className={`toggle-bg ${autoWelcome ? 'active' : ''}`}>
+                                <div className="toggle-knob"></div>
+                              </div>
+                              <span>{autoWelcome ? 'Enabled' : 'Disabled'}</span>
                             </div>
-                            <span>{autoWelcome ? 'Enabled' : 'Disabled'}</span>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
+              </div>
             </div>
 
             <div className="modal-footer">
