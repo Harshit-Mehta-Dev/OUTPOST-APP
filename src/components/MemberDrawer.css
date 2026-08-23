@@ -1,29 +1,44 @@
+.member-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 9998;
+}
+
 .member-drawer {
-  position: absolute;
-  top: 60px; /* Below the top bar */
+  position: fixed;
+  top: 54px; /* Below the main outpost top bar */
   right: 0;
-  width: 260px;
-  height: calc(100vh - 60px);
-  z-index: 100;
+  bottom: 0;
+  width: 290px;
+  max-width: 85vw;
+  height: calc(100dvh - 54px);
+  z-index: 9999;
+  background: var(--bg-secondary) !important;
   border-left: 1px solid var(--border-glass);
   display: flex;
   flex-direction: column;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.75), inset 1px 0 0 rgba(255, 255, 255, 0.05);
 }
 
 .drawer-header {
+  height: 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 0 18px;
   border-bottom: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
 }
 
 .drawer-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
+  gap: 10px;
+  font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -39,26 +54,38 @@
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  padding: 6px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .drawer-close-btn:hover {
-  background: var(--bg-glass);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
+  transform: scale(1.1);
 }
 
 .drawer-members-list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 14px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.drawer-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
 }
 
 /* Custom Scrollbar for Drawer */
@@ -77,20 +104,24 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: default;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid transparent;
 }
 
 .member-item:hover {
-  background-color: var(--bg-glass);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-glass);
+  transform: translateX(-2px);
 }
 
 .member-avatar-wrapper {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
 }
 
@@ -106,7 +137,7 @@
   width: 100%;
   height: 100%;
   border-radius: 10px;
-  background: var(--accent-primary);
+  background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
   color: #fff;
   display: flex;
   align-items: center;
@@ -114,6 +145,7 @@
   font-weight: bold;
   font-size: 14px;
   border: 1px solid var(--border-glass);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .member-status-dot {
@@ -123,27 +155,32 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid var(--bg-primary); /* Match background roughly */
+  border: 2px solid var(--bg-secondary);
 }
 
 .member-status-dot.online {
-  background-color: var(--accent-primary);
+  background-color: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
 }
 
 .member-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow: hidden;
 }
 
 .member-name {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .member-role {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
