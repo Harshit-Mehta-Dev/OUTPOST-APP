@@ -2287,7 +2287,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         )}
 
       {/* 3. Main Chat View */}
-      <main className={`chat-view glass-panel ${isDrawerOpen ? 'drawer-open' : ''}`}>
+      <main className="chat-view glass-panel">
         <header className="outpost-top-bar">
           <div className="top-bar-left">
             <button 
