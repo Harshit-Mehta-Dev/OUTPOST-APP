@@ -2,16 +2,19 @@
   <img src="https://raw.githubusercontent.com/Harshit-Mehta-Dev/OUTPOST-APP/main/public/logo.png" alt="Outpost Logo" width="150" />
 </div>
 
-# 🛡️ OUTPOST 
+# 🛡️ OUTPOST BETA v3.1
 
 <a href="https://outpost-app-a0c.pages.dev">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=E11D48&center=true&vCenter=true&width=435&lines=Secure+Community+Basecamp;Real-time+Tactical+Comms;Gamified+Level+Progression" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=E11D48&center=true&vCenter=true&width=435&lines=Outpost+Beta+v3.1+is+Live;Secure+Community+Basecamp;Real-time+Tactical+Comms;Gamified+Level+Progression" alt="Typing SVG" />
 </a>
 
 **A sovereign, hyper-fast, and highly-secure communication platform designed to redefine how technical teams and gaming squads deploy basecamps and manage perimeters.**
 
 [![Live Deployment](https://img.shields.io/badge/Live_Deployment-Cloudflare_Pages-F38020?style=for-the-badge&logo=cloudflare)](https://outpost-app-a0c.pages.dev)
 [![Backend Node](https://img.shields.io/badge/Backend_Server-Render-46E3B7?style=for-the-badge&logo=render)](https://outpost-app.onrender.com)
+[![Version](https://img.shields.io/badge/Version-v3.1_Beta-blue?style=for-the-badge)](https://github.com/Harshit-Mehta-Dev/OUTPOST-APP)
+
+> 📘 **Full Technical & Feature Documentation:** See [OUTPOST_MASTER_DOCUMENTATION.md](./OUTPOST_MASTER_DOCUMENTATION.md) for the exhaustive specification covering all features, database schemas, and architectural diagrams.
 
 ---
 
