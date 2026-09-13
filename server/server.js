@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
+const path = require('path');
 const { Server } = require('socket.io');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -10,7 +11,11 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger_output.json');
 const svgCaptcha = require('svg-captcha');
 const jwt = require('jsonwebtoken');
+
+// Multi-path dotenv resolution
 require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const basicAuth = require('express-basic-auth');
 
@@ -43,20 +48,27 @@ const morgan = require('morgan');
 const { ServerApiVersion } = require('mongodb');
 
 // MongoDB Connection — connect FIRST before any routes or sockets are registered
-mongoose.connect(process.env.MONGODB_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-})
-.then(() => console.log('✅ Connected to MongoDB Atlas'))
-.catch(err => console.error('❌ Failed to connect to MongoDB', err));
+const mongoUri = process.env.MONGODB_URI;
+if (mongoUri && process.env.NODE_ENV !== 'test') {
+  mongoose.connect(mongoUri, {
+    serverSelectionTimeoutMS: 5000,
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  })
+  .then(() => console.log('✅ Connected to MongoDB Atlas'))
+  .catch(err => console.error('❌ Failed to connect to MongoDB (Atlas may be paused or offline):', err.message));
+} else if (process.env.NODE_ENV !== 'test') {
+  console.warn('⚠️ MONGODB_URI is not defined. Running in degraded DB mode.');
+}
 
 // MongoDB reconnect/disconnect event hooks
 mongoose.connection.on('disconnected', () => console.warn('⚠️  MongoDB disconnected. Mongoose will auto-reconnect...'));
 mongoose.connection.on('reconnected', () => console.log('✅ MongoDB reconnected.'));
 mongoose.connection.on('error', (err) => console.error('❌ MongoDB connection error:', err.message));
+
 
 // Global Crash Handlers
 process.on('uncaughtException', (err) => {
@@ -355,11 +367,6 @@ app.get('/api/auth/captcha', (req, res) => {
   
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.json({ image: captcha.data, captchaId });
-});
-
-// Health Check for Keep-Alive
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', time: new Date() });
 });
 
 const Message = require('./models/Message');
