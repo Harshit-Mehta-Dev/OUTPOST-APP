@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const uri = 'mongodb+srv://harshitmehta1313_db_user:gX6uH9swZQ1uHZXo@cluster-outpost.nmytljf.mongodb.net/outpost?retryWrites=true&w=majority&appName=Cluster-OUTPOST';
+require('dotenv').config();
+const uri = process.env.MONGODB_URI;
 mongoose.connect(uri).then(async () => {
   const db = mongoose.connection.db;
   const messages = await db.collection('messages').find({ channelKey: '1_1', type: { $ne: 'text' } }).sort({createdAt: -1}).limit(5).toArray();

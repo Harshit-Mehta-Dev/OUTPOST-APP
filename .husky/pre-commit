@@ -11,7 +11,8 @@ if git diff --cached --name-only | grep -qiE '\.env$|\.env\.local$|\.env\.produc
 fi
 
 # Specific secret regex scanner (AWS, DB URIs, Stripe, JWT, GitHub Tokens)
-if git diff --cached -- ':!*.husky/*' | grep -qiE '(AKIA[0-9A-Z]{16}|mongodb\+srv://|postgres://|sk_live_[0-9a-zA-Z]+|eyJ[A-Za-z0-9_=]+\.[A-Za-z0-9_=]+\.?[A-Za-z0-9_.+/=-]*|ghp_[a-zA-Z0-9]{36})'; then
+# Only checks ADDED lines (starting with +), not removed lines
+if git diff --cached -- ':!*.husky/*' | grep -E '^\+' | grep -qiE '(AKIA[0-9A-Z]{16}|mongodb\+srv://|postgres://|sk_live_[0-9a-zA-Z]+|eyJ[A-Za-z0-9_=]+\.[A-Za-z0-9_=]+\.?[A-Za-z0-9_.+/=-]*|ghp_[a-zA-Z0-9]{36})'; then
   echo "========================================="
   echo "🚨 CRITICAL SECURITY ALERT 🚨"
   echo "Hardcoded secrets (AWS keys, DB URIs, Passwords) detected in staged files."
