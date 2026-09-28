@@ -40,7 +40,7 @@
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "tailwind-merge": "^3.6.0",
-    "three": "^0.184.0"
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
