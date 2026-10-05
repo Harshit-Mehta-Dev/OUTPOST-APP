@@ -37,7 +37,7 @@
     "morgan": "^1.11.0",
     "node-fetch": "^2.7.0",
     "node-nlp": "^5.0.0-alpha.5",
-    "nodemailer": "^9.0.3",
+    "nodemailer": "^10.0.13",
     "qrcode": "^1.5.4",
     "rate-limit-redis": "^5.0.0",
     "redis": "^6.0.0",
