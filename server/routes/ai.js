@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const requireAuth = require('../middleware/auth');
 const Message = require('../models/Message');
-const scoutVault = require('../utils/scoutVault');
+const dismw = require('../security/dismw');
+const scoutVault = dismw.dismwVault;
 const { processMessage } = require('../ai/nlpEngine');
 const AI_BOT_AVATAR = 'https://api.dicebear.com/7.x/bottts/svg?seed=Ai-Scout&backgroundColor=4facfe';
 
@@ -56,15 +57,18 @@ router.post('/chat', requireAuth, async (req, res) => {
       console.warn(`[SECURITY ALERT] User ${username} triggered security guardrail. Strike ${strikes}/3`);
 
       if (strikes >= 3) {
+        // Place user into D.I.S.M.W quarantine
+        dismw.quarantineEntity(username, '3-Strike AI Safety & Security violation');
+
         // Trigger force logout
         io.to(`user-room-${username}`).emit('force_logout', { 
-          reason: 'Security Intervention: Multiple violations of safety protocols. You have been logged out.' 
+          reason: 'D.I.S.M.W Security Intervention: Multiple safety protocol violations. You have been quarantined and logged out.' 
         });
         
         // Reset strikes after logout
         securityStrikes.delete(username);
         
-        const saved = broadcastAiMessage(`🚨 Security Protocol Activated. User ${username} has been forcefully logged out due to repeated security policy violations.`);
+        const saved = broadcastAiMessage(`🚨 D.I.S.M.W Security Protocol Activated. User ${username} has been quarantined and forcefully logged out due to repeated security policy violations.`);
         return res.status(403).json({ success: false, error: 'SECURITY_LOGOUT_TRIGGERED', message: saved });
       } else {
         // Add warning to AI message

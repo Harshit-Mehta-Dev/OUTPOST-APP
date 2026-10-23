@@ -228,15 +228,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- Scout-Guardian Security Layer ---
-const scoutGuardian = require('./middleware/scoutGuardian');
-app.use(scoutGuardian);
+// --- D.I.S.M.W Security Engine (Deep Intelligence Security Monitoring Wall) ---
+// Integrates Scout-Guardian (WAF & Rate Limiting) and Scout-Vault (AES-256 E2EE Cryptography)
+const dismw = require('./security/dismw');
+app.use(dismw.dismwWallMiddleware);
 
-// Scout-Guardian Real-Time Security Telemetry Endpoint
-app.get('/api/security/scout-guardian/status', (req, res) => {
-  const metrics = scoutGuardian.getTelemetry ? scoutGuardian.getTelemetry() : {};
+// D.I.S.M.W Frontier Security Monitoring Wall Status Endpoint
+app.get('/api/security/dismw/wall-status', (req, res) => {
+  const telemetry = dismw.getTelemetry();
   res.status(200).json({
-    system: 'Scout-Guardian Security Engine',
+    engine: 'D.I.S.M.W',
+    fullName: 'Deep Intelligence Security Monitoring Wall',
+    defenseStatus: 'ARMED_AEGIS',
+    architecture: 'Unified Frontier Security Shield (Guardian WAF + Vault E2EE + Hash Chain)',
+    telemetry,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Legacy Scout-Guardian Endpoint (Maintained for backward compatibility)
+app.get('/api/security/scout-guardian/status', (req, res) => {
+  const metrics = dismw.getTelemetry().guardian || {};
+  res.status(200).json({
+    system: 'Scout-Guardian Security Engine (Under D.I.S.M.W)',
     status: 'ACTIVE_AEGIS',
     protectionMode: 'Defense-In-Depth (Swiss Cheese Architecture)',
     limits: {
