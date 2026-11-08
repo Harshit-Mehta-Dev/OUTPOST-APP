@@ -1,0 +1,54 @@
+---
+- name: Configure Nagios NRPE allowed hosts
+  lineinfile:
+    path: /etc/nagios/nrpe.cfg
+    regexp: '^allowed_hosts='
+    line: "allowed_hosts=127.0.0.1,::1,{{ nagios_server_ip }}"
+    state: present
+
+- name: Deploy custom check scripts for Outpost
+  copy:
+    dest: /usr/lib/nagios/plugins/check_outpost_health.sh
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      RES=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/api/health)
+      if [ "$RES" -eq 200 ]; then
+        echo "OK - Outpost API service is running (HTTP 200)"
+        exit 0
+      else
+        echo "CRITICAL - Outpost API returned HTTP $RES"
+        exit 2
+      fi
+
+- name: Deploy custom D.I.S.M.W check script
+  copy:
+    dest: /usr/lib/nagios/plugins/check_dismw_status.sh
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      STATUS=$(curl -s http://127.0.0.1:5000/api/security/dismw/wall-status | jq -r '.defenseStatus // empty')
+      if [ "$STATUS" == "ARMED_AEGIS" ]; then
+        echo "OK - D.I.S.M.W Wall Defense Status is ARMED_AEGIS"
+        exit 0
+      elif [ -z "$STATUS" ]; then
+        echo "CRITICAL - Unable to reach D.I.S.M.W wall endpoint"
+        exit 2
+      else
+        echo "WARNING - D.I.S.M.W state anomalous: $STATUS"
+        exit 1
+      fi
+
+- name: Register NRPE command definitions
+  blockinfile:
+    path: /etc/nagios/nrpe.cfg
+    marker: "# {mark} ANSIBLE MANAGED OUTPOST CHECKS"
+    block: |
+      command[check_outpost_api]=/usr/lib/nagios/plugins/check_outpost_health.sh
+      command[check_outpost_dismw]=/usr/lib/nagios/plugins/check_dismw_status.sh
+
+- name: Restart nagios-nrpe-server
+  systemd:
+    name: nagios-nrpe-server
+    state: restarted
+    enabled: yes

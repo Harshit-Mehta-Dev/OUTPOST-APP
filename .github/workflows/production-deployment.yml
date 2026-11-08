@@ -29,11 +29,34 @@ jobs:
       - name: Run Jest Test Suite
         run: npm run test
 
-  # 2. Deploy Frontend to Cloudflare Pages
+  # 2. Infra-as-Code & Config Automation Validation (Puppet + Ansible + Nagios)
+  validate-iac-pipeline:
+    name: Validate Puppet, Ansible & Nagios Configs
+    runs-on: ubuntu-latest
+    needs: [run-tests]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Ansible & Shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible shellcheck jq
+
+      - name: Verify Ansible Playbook Syntax
+        run: |
+          ansible-playbook -i ops/ansible/inventory/hosts.ini ops/ansible/site.yml --syntax-check
+
+      - name: Validate Nagios Plugins Executability
+        run: |
+          chmod +x ops/nagios/plugins/*.sh ops/pipeline/*.sh
+          shellcheck ops/nagios/plugins/*.sh ops/pipeline/*.sh || true
+
+  # 3. Deploy Frontend to Cloudflare Pages
   deploy-frontend:
     name: Deploy Frontend (Cloudflare)
     runs-on: ubuntu-latest
-    needs: [run-tests]
+    needs: [validate-iac-pipeline]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -61,7 +84,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name outpost-app --commit-dirty=true
 
-  # 2. Trigger Backend Deployments on Render
+  # 4. Trigger Backend Deployments on Render
   deploy-backend:
     name: Deploy Microservices (Render)
     runs-on: ubuntu-latest
@@ -101,7 +124,7 @@ jobs:
             curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
           fi
 
-  # 3. Backup Supabase Database
+  # 5. Backup Supabase Database
   backup-database:
     name: Backup Database (Supabase)
     runs-on: ubuntu-latest

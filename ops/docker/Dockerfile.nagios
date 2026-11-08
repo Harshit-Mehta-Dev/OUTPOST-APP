@@ -1,0 +1,26 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    nagios4 \
+    nagios-plugins \
+    nagios-nrpe-plugin \
+    curl \
+    jq \
+    apache2 \
+    libapache2-mod-auth-nz-external \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY ops/nagios/etc/nagios.cfg /etc/nagios4/nagios.cfg
+COPY ops/nagios/etc/objects/outpost-hosts.cfg /etc/nagios4/conf.d/outpost-hosts.cfg
+COPY ops/nagios/etc/objects/outpost-services.cfg /etc/nagios4/conf.d/outpost-services.cfg
+COPY ops/nagios/plugins/check_dismw_security.sh /usr/lib/nagios/plugins/check_dismw_security.sh
+COPY ops/nagios/plugins/check_outpost_api.sh /usr/lib/nagios/plugins/check_outpost_api.sh
+COPY ops/nagios/plugins/check_supabase_health.sh /usr/lib/nagios/plugins/check_supabase_health.sh
+
+RUN chmod +x /usr/lib/nagios/plugins/check_*.sh
+
+EXPOSE 80
+
+CMD ["sh", "-c", "service nagios4 start && apache2ctl -D FOREGROUND"]

@@ -1,0 +1,37 @@
+---
+# Master Orchestration Playbook for OUTPOST Infrastructure
+- name: Phase 1 - Enforce Baseline Node Environment & Dependencies
+  hosts: outpost_cluster
+  become: yes
+  tasks:
+    - name: Ensure required system packages are installed
+      apt:
+        name:
+          - curl
+          - git
+          - build-essential
+          - ufw
+          - fail2ban
+          - jq
+          - nagios-nrpe-server
+          - nagios-plugins
+        state: present
+        update_cache: yes
+
+- name: Phase 2 - Deploy & Configure Outpost Core App
+  hosts: outpost_api
+  become: yes
+  roles:
+    - outpost_app
+
+- name: Phase 3 - Arm D.I.S.M.W Frontier Security Aegis
+  hosts: outpost_api
+  become: yes
+  roles:
+    - security_dismw
+
+- name: Phase 4 - Provision Monitoring Agent & NRPE Hooks for Nagios
+  hosts: outpost_cluster
+  become: yes
+  roles:
+    - monitoring_agent

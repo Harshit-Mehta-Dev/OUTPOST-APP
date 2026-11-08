@@ -1,0 +1,76 @@
+---
+- name: Ensure Outpost deployment directory exists
+  file:
+    path: "{{ outpost_app_dir }}"
+    state: directory
+    owner: deploy
+    group: deploy
+    mode: '0755'
+
+- name: Sync application release codebase
+  git:
+    repo: 'https://github.com/Harshit-Mehta-Dev/OUTPOST-APP.git'
+    dest: "{{ outpost_app_dir }}"
+    version: main
+    force: yes
+  become_user: deploy
+
+- name: Install root dependencies
+  command: npm ci --omit=dev
+  args:
+    chdir: "{{ outpost_app_dir }}"
+  become_user: deploy
+
+- name: Install server dependencies
+  command: npm ci --omit=dev
+  args:
+    chdir: "{{ outpost_app_dir }}/server"
+  become_user: deploy
+
+- name: Ensure PM2 process manager is globally installed
+  npm:
+    name: pm2
+    global: yes
+    state: present
+
+- name: Ensure Outpost systemd service definition exists
+  copy:
+    dest: /etc/systemd/system/outpost-app.service
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=OUTPOST Enterprise Application Service
+      After=network.target
+
+      [Service]
+      Type=simple
+      User=deploy
+      WorkingDirectory={{ outpost_app_dir }}
+      ExecStart=/usr/bin/node server/server.js
+      Restart=always
+      RestartSec=10
+      StandardOutput=syslog
+      StandardError=syslog
+      SyslogIdentifier=outpost-app
+      Environment=NODE_ENV=production
+      Environment=PORT=5000
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Reload systemd daemon & start Outpost service
+  systemd:
+    name: outpost-app
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+- name: Validate local Outpost health endpoint
+  uri:
+    url: "http://127.0.0.1:5000/api/health"
+    status_code: 200
+    timeout: 10
+  register: outpost_health
+  until: outpost_health.status == 200
+  retries: 5
+  delay: 3

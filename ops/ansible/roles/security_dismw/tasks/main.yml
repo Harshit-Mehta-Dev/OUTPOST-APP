@@ -1,0 +1,36 @@
+---
+- name: Verify D.I.S.M.W security engine modules exist
+  stat:
+    path: "{{ outpost_app_dir }}/server/security/dismw/index.js"
+  register: dismw_module
+
+- name: Fail if D.I.S.M.W module is missing
+  fail:
+    msg: "FATAL: D.I.S.M.W Security Engine not found in target path!"
+  when: not dismw_module.stat.exists
+
+- name: Enforce D.I.S.M.W environment configuration
+  lineinfile:
+    path: "{{ outpost_app_dir }}/server/.env"
+    line: "DISMW_SECURITY_STATUS={{ dismw_status }}"
+    state: present
+    create: yes
+    mode: '0600'
+    owner: deploy
+    group: deploy
+
+- name: Audit D.I.S.M.W Wall Telemetry endpoint
+  uri:
+    url: "http://127.0.0.1:5000/api/security/dismw/wall-status"
+    method: GET
+    status_code: 200
+  register: dismw_telemetry
+  retries: 3
+  delay: 2
+
+- name: Confirm D.I.S.M.W Aegis state is ARMED
+  assert:
+    that:
+      - dismw_telemetry.json.defenseStatus == 'ARMED_AEGIS'
+    fail_msg: "D.I.S.M.W Frontier Security is NOT in ARMED_AEGIS state!"
+    success_msg: "D.I.S.M.W Frontier Wall is ACTIVE and ARMED."

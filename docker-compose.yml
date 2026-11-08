@@ -111,6 +111,23 @@ services:
     networks:
       - outpost-network
 
+  # Nagios Enterprise Monitoring Container
+  nagios:
+    build:
+      context: .
+      dockerfile: ops/docker/Dockerfile.nagios
+    restart: unless-stopped
+    ports:
+      - "8085:80"
+    environment:
+      - NAGIOS_ADMIN_USER=nagiosadmin
+      - NAGIOS_ADMIN_PASS=outpost_secure_admin_2026
+    depends_on:
+      - backend
+    logging: *default-logging
+    networks:
+      - outpost-network
+
 networks:
   outpost-network:
     driver: bridge
