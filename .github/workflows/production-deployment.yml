@@ -24,7 +24,7 @@ jobs:
       - name: Install Dependencies
         run: |
           npm ci || npm install
-          cd server && (npm ci || npm install)
+          cd server && (npm ci --ignore-scripts || npm install --ignore-scripts)
 
       - name: Run Jest Test Suite
         run: npm run test

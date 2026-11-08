@@ -1,12 +1,19 @@
 const sharp = require('sharp');
-const ffmpeg = require('fluent-ffmpeg');
-const ffmpegStatic = require('ffmpeg-static');
+let ffmpeg = null;
+let ffmpegStatic = null;
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-// Set ffmpeg path
-ffmpeg.setFfmpegPath(ffmpegStatic);
+try {
+  ffmpeg = require('fluent-ffmpeg');
+  ffmpegStatic = require('ffmpeg-static');
+  if (ffmpeg && ffmpegStatic) {
+    ffmpeg.setFfmpegPath(ffmpegStatic);
+  }
+} catch (err) {
+  console.warn('⚠️ fluent-ffmpeg or ffmpeg-static not available. Audio compression will fallback to uncompressed.');
+}
 
 /**
  * Compresses base64 encoded media depending on its type
@@ -36,6 +43,9 @@ async function compressMediaPayload(base64Data, mediaType) {
       return `data:image/webp;base64,${compressedBuffer.toString('base64')}`;
 
     } else if (mediaType === 'audio') {
+      if (!ffmpeg || !ffmpegStatic) {
+        return base64Data; // Fallback if binary is omitted/not installed
+      }
       // Compress Audio using ffmpeg
       return new Promise((resolve, reject) => {
         const tempId = crypto.randomBytes(16).toString('hex');
