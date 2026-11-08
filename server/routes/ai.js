@@ -1,22 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const requireAuth = require('../middleware/auth');
-const Message = require('../models/Message');
 const dismw = require('../security/dismw');
-const scoutVault = dismw.dismwVault;
 const { processMessage } = require('../ai/nlpEngine');
 const AI_BOT_AVATAR = 'https://api.dicebear.com/7.x/bottts/svg?seed=Ai-Scout&backgroundColor=4facfe';
-
-const supabase = require('../supabaseClient');
-const syncMessageToSupabase = async (messageDoc) => {
-  try {
-    if (!supabase) return;
-    const { _id, __v, ...data } = messageDoc.toObject ? messageDoc.toObject() : messageDoc;
-    await supabase.from('messages').upsert({ id: _id.toString(), ...data }, { onConflict: 'id' });
-  } catch (err) {
-    console.error('Supabase sync error:', err.message);
-  }
-};
 
 // Helper: format AI message for frontend without saving to DB
 const broadcastAiMessage = (text) => {
@@ -89,7 +76,7 @@ router.post('/chat', requireAuth, async (req, res) => {
     try {
       const saved = broadcastAiMessage(`⚠️ Ai-Scout had an internal error: ${err.message}`);
       return res.status(200).json({ success: true, message: saved });
-    } catch(e2) {
+    } catch {
       return res.status(500).json({ error: err.message });
     }
   }
