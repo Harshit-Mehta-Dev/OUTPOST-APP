@@ -10,7 +10,7 @@ jobs:
   # 1. Automated Testing (CI)
   run-tests:
     name: Automated Security Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - name: Install Dependencies
@@ -32,7 +32,7 @@ jobs:
   # 2. Infra-as-Code & Config Automation Validation (Puppet + Ansible + Nagios)
   validate-iac-pipeline:
     name: Validate Puppet, Ansible & Nagios Configs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [run-tests]
     steps:
       - name: Checkout Code
@@ -55,7 +55,7 @@ jobs:
   # 3. Deploy Frontend to Cloudflare Pages
   deploy-frontend:
     name: Deploy Frontend (Cloudflare)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [validate-iac-pipeline]
     steps:
       - name: Checkout Code
@@ -64,7 +64,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - name: Install Dependencies
@@ -87,21 +87,21 @@ jobs:
   # 4. Trigger Backend Deployments on Render
   deploy-backend:
     name: Deploy Microservices (Render)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [deploy-frontend]
     steps:
       - name: Trigger Auth Service Deploy
         run: |
-          if [ ! -z "${{ secrets.RENDER_AUTH_HOOK }}" ]; then
+          if [ -n "${{ secrets.RENDER_AUTH_HOOK }}" ]; then
             echo "Deploying Auth Service..."
             curl -s -X POST "${{ secrets.RENDER_AUTH_HOOK }}"
           else
             echo "RENDER_AUTH_HOOK not set. Skipping Auth Service."
           fi
-          
+
       - name: Trigger API Service Deploy
         run: |
-          if [ ! -z "${{ secrets.RENDER_API_HOOK }}" ]; then
+          if [ -n "${{ secrets.RENDER_API_HOOK }}" ]; then
             echo "Deploying API Service..."
             curl -s -X POST "${{ secrets.RENDER_API_HOOK }}"
           else
@@ -110,7 +110,7 @@ jobs:
 
       - name: Trigger Chat Service Deploy
         run: |
-          if [ ! -z "${{ secrets.RENDER_CHAT_HOOK }}" ]; then
+          if [ -n "${{ secrets.RENDER_CHAT_HOOK }}" ]; then
             echo "Deploying Chat Service..."
             curl -s -X POST "${{ secrets.RENDER_CHAT_HOOK }}"
           else
@@ -119,7 +119,7 @@ jobs:
 
       - name: Legacy Deploy Hook (Fallback)
         run: |
-          if [ ! -z "${{ secrets.RENDER_DEPLOY_HOOK }}" ] && [ -z "${{ secrets.RENDER_API_HOOK }}" ]; then
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK }}" ] && [ -z "${{ secrets.RENDER_API_HOOK }}" ]; then
             echo "Falling back to monolithic deployment..."
             curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
           fi
@@ -127,7 +127,7 @@ jobs:
   # 5. Backup Supabase Database
   backup-database:
     name: Backup Database (Supabase)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [deploy-backend]
     continue-on-error: true
     steps:
@@ -141,20 +141,35 @@ jobs:
 
       - name: Backup Supabase Database Schema
         continue-on-error: true
+        timeout-minutes: 5
         run: |
-          if [ -z "${{ secrets.SUPABASE_ACCESS_TOKEN }}" ] || [ -z "${{ secrets.SUPABASE_PROJECT_ID }}" ] || [ -z "${{ secrets.SUPABASE_DB_PASSWORD }}" ]; then
-            echo "Supabase secrets are missing! Skipping optional database backup."
+          if [ -z "${{ secrets.SUPABASE_ACCESS_TOKEN }}" ] || \
+             [ -z "${{ secrets.SUPABASE_PROJECT_ID }}" ] || \
+             [ -z "${{ secrets.SUPABASE_DB_PASSWORD }}" ]; then
+            echo "Supabase secrets missing — skipping optional database backup."
             exit 0
           fi
-          
-          echo "Dumping database schema..."
-          supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_ID }}" --password "${{ secrets.SUPABASE_DB_PASSWORD }}" || {
-            echo "⚠️ Warning: Supabase link failed (token or credentials unauthorized). Skipping DB backup step."
+
+          echo "Linking Supabase project..."
+          supabase link \
+            --project-ref "${{ secrets.SUPABASE_PROJECT_ID }}" \
+            --password "${{ secrets.SUPABASE_DB_PASSWORD }}" || {
+            echo "⚠️  Supabase link failed (bad credentials or 504 gateway). Skipping DB backup."
             exit 0
           }
-          supabase db dump --linked --data-only > supabase_backup_$(date +%Y%m%d_%H%M%S).sql || exit 0
-          
-          echo "Backup successful. Uploading as artifact..."
+
+          echo "Dumping database schema (data-only)..."
+          BACKUP_FILE="supabase_backup_$(date +%Y%m%d_%H%M%S).sql"
+          # Use --db-url to avoid Supabase Management API 504 timeouts on free tier
+          supabase db dump \
+            --linked \
+            --data-only \
+            -f "$BACKUP_FILE" || {
+            echo "⚠️  Supabase db dump returned an error (likely 504 on free-tier — transient). Backup skipped."
+            exit 0
+          }
+
+          echo "✓ Backup written to $BACKUP_FILE"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}

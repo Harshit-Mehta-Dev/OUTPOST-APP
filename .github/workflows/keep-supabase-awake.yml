@@ -9,7 +9,7 @@ on:
 jobs:
   keep-render-awake:
     name: Ping Render Microservices
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Ping Outpost API Primary Health
         run: |
@@ -25,7 +25,7 @@ jobs:
 
   keep-supabase-awake:
     name: Query Supabase Real Database
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Query Supabase REST API (Live Database Read)
         run: |
