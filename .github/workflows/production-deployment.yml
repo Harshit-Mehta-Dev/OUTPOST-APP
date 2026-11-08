@@ -28,6 +28,13 @@ jobs:
 
       - name: Run Jest Test Suite
         run: npm run test
+        env:
+          NODE_ENV: test
+          # Stub secrets so server boots without real DB connections
+          MONGODB_URI: ""
+          REDIS_URL: ""
+          JWT_SECRET: "ci-test-secret-stub"
+          SUPABASE_URL: "https://idivdegwxgwudgxcuaso.supabase.co"
 
   # 2. Infra-as-Code & Config Automation Validation (Puppet + Ansible + Nagios)
   validate-iac-pipeline:

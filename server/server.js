@@ -521,7 +521,7 @@ const SOCKET_RATE_LIMIT = 15; // Max events per window
 const SOCKET_RATE_WINDOW = 10000; // 10 seconds
 
 // Memory cleanup for stale rate limiters
-setInterval(() => {
+const socketCleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [socketId, data] of socketRateLimiters.entries()) {
     if (now - data.startTime > SOCKET_RATE_WINDOW * 2) {
@@ -529,6 +529,7 @@ setInterval(() => {
     }
   }
 }, 60000);
+if (socketCleanupTimer.unref) socketCleanupTimer.unref();
 
 // Socket.io logic
 io.on('connection', (socket) => {
@@ -1035,7 +1036,9 @@ app.use(errorHandler);
 const { trainModel } = require('./ai/nlpEngine');
 
 // Trigger background training globally so it works for ALL microservices (apiService, chatService, etc)
-trainModel().catch(err => console.error('❌ Failed to train NLP model in background:', err));
+if (process.env.NODE_ENV !== 'test') {
+  trainModel().catch(err => console.error('❌ Failed to train NLP model in background:', err));
+}
 
 const PORT = process.env.PORT || 5000;
 if (require.main === module) {

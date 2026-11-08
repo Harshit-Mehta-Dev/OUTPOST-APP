@@ -39,7 +39,7 @@ const telemetry = {
 const ipRequestLogs = new Map(); // IP -> Array of timestamps
 
 // Cleanup expired IP rate limit logs every 5 minutes to manage memory usage
-setInterval(() => {
+const ipCleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const [ip, timestamps] of ipRequestLogs.entries()) {
     const valid = timestamps.filter(t => t > now - 60000);
@@ -51,6 +51,7 @@ setInterval(() => {
   }
   telemetry.activeIpTrackerCount = ipRequestLogs.size;
 }, 300000);
+if (ipCleanupInterval.unref) ipCleanupInterval.unref();
 
 /**
  * Route Subnet Tier Classification
