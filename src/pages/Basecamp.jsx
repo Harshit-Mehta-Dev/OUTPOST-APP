@@ -2762,8 +2762,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
         <header className="chat-header">
           <div className="chat-title">
-            <Hash size={24} className="chat-title-icon" />
-            <h2>{activeChannel}</h2>
+            {activeChannel === 'Basecamp-Board' ? (
+              <Pin size={22} className="chat-title-icon" style={{ color: 'var(--accent-primary)' }} />
+            ) : (
+              <Hash size={24} className="chat-title-icon" />
+            )}
+            <h2>{activeChannel === 'Basecamp-Board' ? 'Basecamp Board' : activeChannel}</h2>
           </div>
           <div className="chat-header-actions" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* Mini player embedded in header */}
@@ -2801,39 +2805,41 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               </div>
             )}
 
-            <button 
-              className="clear-chat-btn"
-              onClick={() => {
-                if (window.confirm("Are you sure you want to permanently clear this chat history from your dashboard? Other users will still see it.")) {
-                   const newTimestamps = { ...clearedTimestamps, [currentChannelKey]: Date.now() };
-                   setClearedTimestamps(newTimestamps);
-                   localStorage.setItem('outpost_cleared_chats', JSON.stringify(newTimestamps));
-                }
-              }}
-              style={{
-                background: 'transparent',
-                color: 'var(--text-secondary)',
-                border: '1px solid var(--border-glass)',
-                padding: '0 12px',
-                height: '32px',
-                borderRadius: '8px',
-                fontSize: '11px',
-                fontFamily: 'monospace',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.color = '#ff3b30'; e.currentTarget.style.borderColor = 'rgba(255, 59, 48, 0.4)'; e.currentTarget.style.background = 'rgba(255, 59, 48, 0.05)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-glass)'; e.currentTarget.style.background = 'transparent'; }}
-              title="Clear Chat For Me"
-            >
-              <Trash2 size={14} /> <span className="hide-on-mobile uppercase-text" style={{textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px'}}>Clear Chat</span>
-            </button>
+            {activeChannel !== 'Basecamp-Board' && (
+              <button 
+                className="clear-chat-btn"
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to permanently clear this chat history from your dashboard? Other users will still see it.")) {
+                     const newTimestamps = { ...clearedTimestamps, [currentChannelKey]: Date.now() };
+                     setClearedTimestamps(newTimestamps);
+                     localStorage.setItem('outpost_cleared_chats', JSON.stringify(newTimestamps));
+                  }
+                }}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-glass)',
+                  padding: '0 12px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontFamily: 'monospace',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.color = '#ff3b30'; e.currentTarget.style.borderColor = 'rgba(255, 59, 48, 0.4)'; e.currentTarget.style.background = 'rgba(255, 59, 48, 0.05)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-glass)'; e.currentTarget.style.background = 'transparent'; }}
+                title="Clear Chat For Me"
+              >
+                <Trash2 size={14} /> <span className="hide-on-mobile uppercase-text" style={{textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px'}}>Clear Chat</span>
+              </button>
+            )}
             <button 
               className={`icon-btn ${isDrawerOpen ? 'active' : ''}`}
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}

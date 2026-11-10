@@ -29,6 +29,7 @@
   --accent-primary: rgb(var(--brand-primary)); 
   --accent-secondary: var(--brand-gradient-end); 
   --accent-glow: rgba(var(--brand-primary), 0.3);
+  --accent-hover: #a84c2d;
   
   --text-primary: #1a1a1a;
   --text-secondary: #5c5c5c;
