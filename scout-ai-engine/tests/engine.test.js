@@ -37,4 +37,18 @@ test('Scout Engine Cognitive Test Suite', async (t) => {
     assert.strictEqual(context[0].role, 'user');
     assert.strictEqual(context[1].role, 'bot');
   });
+
+  await t.test('6. Time Agent computes real-time clock and India timezone', async () => {
+    const res = await engine.think('what is the time now?');
+    assert.strictEqual(res.agent, 'TimeAgent');
+    assert.ok(res.text.includes('India (IST'));
+    assert.ok(res.text.includes('UTC+5:30'));
+    assert.ok(res.text.includes('Harshit Mehta'));
+  });
+
+  await t.test('7. Developer and Country origin query answered correctly', async () => {
+    const res = await engine.think('which country are you from');
+    assert.ok(res.text.includes('India'));
+    assert.ok(res.text.includes('Harshit Mehta'));
+  });
 });

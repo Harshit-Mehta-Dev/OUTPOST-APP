@@ -64,6 +64,50 @@ class MathAgent {
   }
 }
 
+class TimeAgent {
+  evaluate(text) {
+    const clean = text.toLowerCase().trim();
+    const isTimeQuery = /(what('?s|\s+is)?\s+the\s+time|what\s+time|current\s+time|clock|time\s+now|tell\s+me\s+the\s+time)/i.test(clean);
+    
+    if (!isTimeQuery) return null;
+
+    const now = new Date();
+
+    // Indian Standard Time (IST - Asia/Kolkata, UTC+5:30)
+    const istOptions = {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    const istString = new Intl.DateTimeFormat('en-IN', istOptions).format(now);
+
+    // UTC
+    const utcOptions = {
+      timeZone: 'UTC',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    };
+    const utcString = new Intl.DateTimeFormat('en-US', utcOptions).format(now);
+
+    // Local runtime time
+    const localTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+    return `⏰ **Real-Time Clock & Timezones:**\n\n` +
+      `🇮🇳 **India (IST - Developer Base):** ${istString} (UTC+5:30)\n` +
+      `🌐 **UTC Time:** ${utcString} UTC\n` +
+      `💻 **System Local Time:** ${localTime}\n\n` +
+      `*Developed with pride in India by Harshit Mehta.*`;
+  }
+}
+
 class NavigationAgent {
   constructor() {
     this.guides = {
@@ -97,6 +141,7 @@ class GeneralIntelligenceAgent {
 module.exports = {
   SecurityAgent,
   MathAgent,
+  TimeAgent,
   NavigationAgent,
   GeneralIntelligenceAgent
 };

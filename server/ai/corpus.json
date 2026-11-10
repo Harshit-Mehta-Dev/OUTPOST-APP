@@ -364,6 +364,36 @@
       "answers": [
         "👋 Goodbye, Scout! It was great chatting with you! The #Ai-Scout channel will always be here whenever you need guidance or just want to talk. Have an amazing time on Outpost HQ! 🌟 See you next time!"
       ]
+    },
+    {
+      "intent": "bot.origin_country",
+      "utterances": [
+        "which country are you from",
+        "where are you from",
+        "what country is this from",
+        "where is developer from",
+        "developer country",
+        "where was outpost made",
+        "where was scout ai made",
+        "country of origin"
+      ],
+      "answers": [
+        "🇮🇳 Outpost HQ and Ai-Scout are proudly engineered and created in **India** by developer **Harshit Mehta**! We operate across global timezones with roots firmly in India."
+      ]
+    },
+    {
+      "intent": "system.time",
+      "utterances": [
+        "what is the time",
+        "what time is it",
+        "current time",
+        "tell me the time",
+        "time in india",
+        "what timezone do you use"
+      ],
+      "answers": [
+        "⏰ Outpost HQ tracks live synchronized timestamps across global zones. For our primary developer base in India (IST / Asia/Kolkata), the timezone is **UTC+5:30**."
+      ]
     }
   ]
 }

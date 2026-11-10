@@ -18,6 +18,7 @@ const ScoutMemory = require('./memory/ScoutMemory');
 const {
   SecurityAgent,
   MathAgent,
+  TimeAgent,
   NavigationAgent,
   GeneralIntelligenceAgent
 } = require('./agents/CognitiveAgents');
@@ -30,6 +31,7 @@ class ScoutEngine {
     // Multi-agent cluster
     this.securityAgent = new SecurityAgent();
     this.mathAgent = new MathAgent();
+    this.timeAgent = new TimeAgent();
     this.navigationAgent = new NavigationAgent();
     this.generalAgent = new GeneralIntelligenceAgent();
 
@@ -123,6 +125,20 @@ class ScoutEngine {
         confidence: 1.0,
         isThreat: false,
         agent: 'MathAgent'
+      };
+    }
+
+    // Phase 2b: Real-Time Clock & Timezone Engine
+    const timeResponse = this.timeAgent.evaluate(userMessage);
+    if (timeResponse) {
+      this.memory.remember(userId, 'user', userMessage);
+      this.memory.remember(userId, 'bot', timeResponse);
+      return {
+        text: timeResponse,
+        intent: 'system.time_lookup',
+        confidence: 1.0,
+        isThreat: false,
+        agent: 'TimeAgent'
       };
     }
 
