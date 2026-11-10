@@ -199,29 +199,42 @@ const BasecampBoard = ({ campsiteId, currentUser }) => {
       )}
 
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content new-note-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Create Sticky Note</h3>
-              <button onClick={() => setIsModalOpen(false)} className="close-btn"><X size={20} /></button>
+        <div className="bb-modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="bb-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="bb-modal-header">
+              <div className="bb-modal-title-row">
+                <span className="bb-modal-badge">Sticky Note</span>
+                <h3>Create New Sticky Note</h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsModalOpen(false)} 
+                className="bb-close-btn"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
             </div>
             
-            <form onSubmit={handleCreate}>
-              <div className="form-group">
-                <label>Title</label>
+            <form onSubmit={handleCreate} className="bb-modal-form">
+              <div className="bb-form-group">
+                <label htmlFor="bb-note-title">Title</label>
                 <input
+                  id="bb-note-title"
                   type="text"
                   maxLength={50}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="e.g. Hiking this weekend!"
                   required
+                  autoFocus
                 />
               </div>
               
-              <div className="form-group">
-                <label>Message</label>
+              <div className="bb-form-group">
+                <label htmlFor="bb-note-body">Message</label>
                 <textarea
+                  id="bb-note-body"
                   maxLength={200}
                   value={newBody}
                   onChange={(e) => setNewBody(e.target.value)}
@@ -231,24 +244,37 @@ const BasecampBoard = ({ campsiteId, currentUser }) => {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Color</label>
-                <div className="color-picker">
+              <div className="bb-form-group">
+                <label>Note Color</label>
+                <div className="bb-color-picker">
                   {colors.map(color => (
                     <button
                       key={color}
                       type="button"
-                      className={`color-option ${newColor === color ? 'selected' : ''}`}
+                      className={`bb-color-swatch ${newColor === color ? 'selected' : ''}`}
                       style={{ backgroundColor: color }}
                       onClick={() => setNewColor(color)}
+                      aria-label={`Select color ${color}`}
                     />
                   ))}
                 </div>
               </div>
 
-              <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="submit-btn" disabled={!newTitle.trim() || !newBody.trim()}>Post Note</button>
+              <div className="bb-modal-actions">
+                <button 
+                  type="button" 
+                  className="bb-btn-cancel" 
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="bb-btn-submit" 
+                  disabled={!newTitle.trim() || !newBody.trim()}
+                >
+                  Post Note
+                </button>
               </div>
             </form>
           </div>
