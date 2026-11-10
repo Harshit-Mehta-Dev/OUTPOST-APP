@@ -51,4 +51,55 @@ test('Scout Engine Cognitive Test Suite', async (t) => {
     assert.ok(res.text.includes('India'));
     assert.ok(res.text.includes('Harshit Mehta'));
   });
+
+  await t.test('8. Action Agent initiates campsite workflow, asks requirements, and executes on confirmation', async () => {
+    const userId = 'flow_user_99';
+    // Step 1: initiate trigger
+    const step1 = await engine.think('create a new campsite', userId);
+    assert.strictEqual(step1.agent, 'ActionAgent');
+    assert.ok(step1.text.includes('Step 1'));
+
+    // Step 2: give name
+    const step2 = await engine.think('Nova Outpost', userId);
+    assert.ok(step2.text.includes('Step 2'));
+    assert.ok(step2.text.includes('Nova Outpost'));
+
+    // Step 3: select template
+    const step3 = await engine.think('gaming', userId);
+    assert.ok(step3.text.includes('Step 3'));
+    assert.ok(step3.text.includes('GAMING'));
+
+    // Step 4: select visibility -> prompts confirmation
+    const step4 = await engine.think('public', userId);
+    assert.ok(step4.text.includes('Campsite Requirements Summary'));
+    assert.strictEqual(step4.action.type, 'CONFIRMATION_REQUIRED');
+
+    // Step 5: confirm -> triggers automatic creation payload
+    const step5 = await engine.think('yes', userId);
+    assert.ok(step5.text.includes('Campfire Ignited'));
+    assert.strictEqual(step5.action.type, 'CREATE_CAMPSITE');
+    assert.strictEqual(step5.action.payload.name, 'Nova Outpost');
+    assert.strictEqual(step5.action.payload.template, 'gaming');
+  });
+
+  await t.test('9. Action Agent initiates expedition channel workflow and executes on confirmation', async () => {
+    const userId = 'channel_user_77';
+    // Step 1: initiate trigger
+    const step1 = await engine.think('initiate expedition', userId);
+    assert.strictEqual(step1.agent, 'ActionAgent');
+
+    // Step 2: name
+    const step2 = await engine.think('strategy-room', userId);
+    assert.ok(step2.text.includes('Step 2'));
+
+    // Step 3: type -> prompts confirmation
+    const step3 = await engine.think('voice', userId);
+    assert.strictEqual(step3.action.type, 'CONFIRMATION_REQUIRED');
+
+    // Step 4: confirm -> triggers automatic channel creation
+    const step4 = await engine.think('yes', userId);
+    assert.strictEqual(step4.action.type, 'CREATE_CHANNEL');
+    assert.strictEqual(step4.action.payload.name, 'strategy-room');
+    assert.strictEqual(step4.action.payload.type, 'voice');
+  });
 });

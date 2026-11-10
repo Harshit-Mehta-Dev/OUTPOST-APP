@@ -138,10 +138,13 @@ class GeneralIntelligenceAgent {
   }
 }
 
+const ActionAgent = require('./ActionAgent');
+
 module.exports = {
   SecurityAgent,
   MathAgent,
   TimeAgent,
+  ActionAgent,
   NavigationAgent,
   GeneralIntelligenceAgent
 };

@@ -16,7 +16,7 @@ const SkeletonMessage = () => (
   </div>
 );
 
-const AiNexus = ({ currentUser }) => {
+const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
@@ -89,12 +89,20 @@ const AiNexus = ({ currentUser }) => {
         throw new Error(data.error || 'Unknown server error.');
       }
 
-      setMessages(prev => [...prev, {
+      const aiMsg = {
         id: 'b-' + Date.now(),
         role: 'bot',
         text: data.message?.text || 'I got a blank response. Try again!',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        action: data.message?.action || null
+      };
+
+      setMessages(prev => [...prev, aiMsg]);
+
+      // Automatically execute confirmed actions if present
+      if (data.message?.action && typeof onExecuteAction === 'function') {
+        onExecuteAction(data.message.action);
+      }
     } catch (err) {
       setMessages(prev => [...prev, {
         id: 'e-' + Date.now(),
@@ -181,6 +189,33 @@ const AiNexus = ({ currentUser }) => {
                 <button onClick={() => setInfoMessage(msg)} title="Message information"><Info size={14} /></button>
               </div>
               <span className="ainex-bubble-text">{msg.text}</span>
+              {msg.action && msg.action.type === 'CONFIRMATION_REQUIRED' && (
+                <div className="ainex-action-buttons">
+                  <button 
+                    className="ainex-action-btn ainex-action-confirm"
+                    onClick={() => {
+                      setInput('Yes');
+                      setTimeout(() => sendMessage(), 50);
+                    }}
+                  >
+                    <Check size={14} /> Confirm & Execute
+                  </button>
+                  <button 
+                    className="ainex-action-btn ainex-action-cancel"
+                    onClick={() => {
+                      setInput('Cancel');
+                      setTimeout(() => sendMessage(), 50);
+                    }}
+                  >
+                    <X size={14} /> Cancel
+                  </button>
+                </div>
+              )}
+              {msg.action && (msg.action.type === 'CREATE_CAMPSITE' || msg.action.type === 'CREATE_CHANNEL' || msg.action.type === 'CREATE_NOTE') && (
+                <div className="ainex-action-badge">
+                  <Sparkles size={12} /> Automated Execution Success
+                </div>
+              )}
               <span className="ainex-bubble-time">{msg.time}</span>
             </div>
             {msg.role === 'user' && (

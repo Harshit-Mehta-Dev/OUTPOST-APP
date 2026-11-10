@@ -19,6 +19,7 @@ const {
   SecurityAgent,
   MathAgent,
   TimeAgent,
+  ActionAgent,
   NavigationAgent,
   GeneralIntelligenceAgent
 } = require('./agents/CognitiveAgents');
@@ -32,6 +33,7 @@ class ScoutEngine {
     this.securityAgent = new SecurityAgent();
     this.mathAgent = new MathAgent();
     this.timeAgent = new TimeAgent();
+    this.actionAgent = new ActionAgent();
     this.navigationAgent = new NavigationAgent();
     this.generalAgent = new GeneralIntelligenceAgent();
 
@@ -139,6 +141,21 @@ class ScoutEngine {
         confidence: 1.0,
         isThreat: false,
         agent: 'TimeAgent'
+      };
+    }
+
+    // Phase 2c: Conversational Action Execution Engine (Campsites, Expeditions, Notes)
+    const actionResult = this.actionAgent.evaluate(userMessage, userId);
+    if (actionResult) {
+      this.memory.remember(userId, 'user', userMessage);
+      this.memory.remember(userId, 'bot', actionResult.text);
+      return {
+        text: actionResult.text,
+        intent: 'action.execute',
+        confidence: 1.0,
+        isThreat: false,
+        agent: 'ActionAgent',
+        action: actionResult.action || null
       };
     }
 

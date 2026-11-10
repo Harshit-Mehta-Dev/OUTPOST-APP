@@ -2855,7 +2855,32 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </header>
 
         {activeChannel === 'Ai-Scout' ? (
-          <AiNexus currentUser={currentUser} />
+          <AiNexus 
+            currentUser={currentUser} 
+            activeCampsite={activeCampsite}
+            onExecuteAction={(action) => {
+              if (!action) return;
+              if (action.type === 'CREATE_CAMPSITE') {
+                handleCampsiteCreated(action.payload);
+              } else if (action.type === 'CREATE_CHANNEL') {
+                handleCreateChannel(action.payload);
+              } else if (action.type === 'CREATE_NOTE') {
+                // Post sticky note to current campsite Basecamp Board
+                const apiBase = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
+                fetch(`${apiBase}/api/board`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    campsiteId: currentCampsiteId,
+                    title: action.payload.title,
+                    body: action.payload.body,
+                    author: currentUser?.username || 'Scout',
+                    color: action.payload.color || '#fef3c7'
+                  })
+                }).catch(err => console.warn('Automated note creation warning:', err));
+              }
+            }}
+          />
         ) : activeChannel === 'Basecamp-Board' ? (
           <BasecampBoard campsiteId={currentCampsiteId} currentUser={currentUser} />
         ) : null}

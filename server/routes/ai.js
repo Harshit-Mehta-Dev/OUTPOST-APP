@@ -20,13 +20,14 @@ try {
 const fallbackNlp = require('../ai/nlpEngine');
 
 // Helper: format AI message for frontend without saving to DB
-const broadcastAiMessage = (text) => {
+const broadcastAiMessage = (text, action = null) => {
   return {
     channelKey: '1_Ai-Scout',
     user: { username: 'Ai-Scout', profilePictureUrl: AI_BOT_AVATAR, level: 99 },
     text: text,
     time: 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    type: 'text'
+    type: 'text',
+    action: action || null
   };
 };
 
@@ -49,11 +50,13 @@ router.post('/chat', requireAuth, async (req, res) => {
     let aiResult;
     let isThreat = false;
     let aiText = '';
+    let aiAction = null;
 
     if (scoutEngine && scoutEngine.isTrained) {
       const cognitiveResult = await scoutEngine.think(message, req.user?.username || 'scout_user');
       aiText = cognitiveResult.text;
       isThreat = cognitiveResult.isThreat;
+      aiAction = cognitiveResult.action || null;
     } else {
       aiResult = await fallbackNlp.processMessage(message);
       aiText = typeof aiResult === 'object' ? aiResult.answer : aiResult;
@@ -90,10 +93,10 @@ router.post('/chat', requireAuth, async (req, res) => {
     // -------------------------------
 
     // Add a slight artificial delay to make it feel like AI is "thinking"
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('✅ Local AI responded, length:', aiText.length);
+    await new Promise(resolve => setTimeout(resolve, 600));
+    console.log('✅ Local AI responded, length:', aiText.length, 'action:', aiAction?.type || 'none');
 
-    const saved = broadcastAiMessage(aiText);
+    const saved = broadcastAiMessage(aiText, aiAction);
     return res.status(200).json({ success: true, message: saved });
 
   } catch (err) {
