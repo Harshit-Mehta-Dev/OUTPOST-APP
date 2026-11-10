@@ -1,0 +1,29 @@
+{
+  "name": "@outpost/scout-ai-engine",
+  "version": "1.0.0",
+  "description": "Autonomous Scout AI Engine — Deep Multi-Layer Neural Network, Multi-Agent Cognitive Thought Processor, Episodic Memory & Zero-Trust Defense Shield",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "train": "node src/scripts/train.js",
+    "test": "node --test tests/**/*.test.js"
+  },
+  "keywords": [
+    "scout-ai",
+    "neural-network",
+    "cognitive-architecture",
+    "multi-agent",
+    "nlp",
+    "outpost",
+    "dismw",
+    "security"
+  ],
+  "author": "Harshit Mehta (OUTPOST Core Architect)",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  }
+}

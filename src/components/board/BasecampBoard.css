@@ -137,6 +137,26 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
+/* Dark mode — soften pastel note borders and strengthen shadow */
+[data-theme='dark'] .sticky-note {
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='dark'] .sticky-note:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme='dark'] .delete-note-btn {
+  background: rgba(0, 0, 0, 0.15);
+  color: #6b7280;
+}
+
+[data-theme='dark'] .reaction-btn {
+  background: rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
 .delete-note-btn {
   position: absolute;
   top: 10px;
@@ -301,6 +321,29 @@
 .picker-emoji:hover {
   background: #f3f4f6;
   transform: scale(1.2);
+}
+
+/* Dark mode overrides for reaction picker */
+[data-theme='dark'] .reaction-picker {
+  background: #1e1e28;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='dark'] .picker-emoji:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .add-reaction-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #9ca3af;
+}
+
+[data-theme='dark'] .add-reaction-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #f3f4f6;
 }
 
 /* ==============================================================================
@@ -543,6 +586,12 @@
   border: 2.5px solid #ffffff;
   box-shadow: 0 0 0 3px var(--accent-primary);
   transform: scale(1.12);
+}
+
+/* In light mode, the white border is invisible — use accent ring alone */
+:root:not([data-theme='dark']) .bb-color-swatch.selected {
+  border: 2.5px solid var(--accent-primary);
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--accent-primary);
 }
 
 /* Actions */

@@ -1,0 +1,104 @@
+{
+  "intents": [
+    {
+      "intent": "greetings.hello",
+      "utterances": [
+        "hello",
+        "hi",
+        "hey",
+        "greetings",
+        "good morning",
+        "good evening",
+        "what's up",
+        "hey scout",
+        "hello scout"
+      ],
+      "answers": [
+        "Greetings, Scout! Ready for today's expedition in Outpost HQ?",
+        "Hey there! Scout AI online and operational. How can I assist you?",
+        "Hello! All Outpost systems are nominal. What can I do for you today?"
+      ]
+    },
+    {
+      "intent": "bot.status",
+      "utterances": [
+        "who are you",
+        "what is your name",
+        "what are you",
+        "tell me about yourself",
+        "what can you do",
+        "how do you work"
+      ],
+      "answers": [
+        "I am **Ai-Scout** — an autonomous multi-agent cognitive intelligence powering Outpost HQ. Built with deep multi-layer neural networks, contextual memory, and D.I.S.M.W security protection.",
+        "I'm your dedicated Outpost companion! I provide system guidance, calculate technical queries, guide navigation across campsites, and ensure zero-trust safety protocols."
+      ]
+    },
+    {
+      "intent": "guide.basecamp",
+      "utterances": [
+        "what is basecamp board",
+        "how to use basecamp board",
+        "how do sticky notes work",
+        "post sticky note",
+        "tell me about basecamp"
+      ],
+      "answers": [
+        "⛺ **Basecamp Board** is your digital sticky-wall! Click on **# Basecamp-Board** in the left sidebar, click **'New Note'**, pick your favorite pastel color, and pin updates for your campsite members to view and react with emojis!"
+      ]
+    },
+    {
+      "intent": "guide.chillzone",
+      "utterances": [
+        "what is chill zone",
+        "how to listen to music",
+        "lofi music",
+        "spotify player",
+        "play music"
+      ],
+      "answers": [
+        "🎵 Click **Chill Zone** in your channel list or tap the mini player in your header! You can listen to seamless lofi, chill study beats, and jazz streams 24/7 without interrupting your chats."
+      ]
+    },
+    {
+      "intent": "guide.channels",
+      "utterances": [
+        "how to create channel",
+        "campsite channels",
+        "voice channels",
+        "voice expedition",
+        "where to chat"
+      ],
+      "answers": [
+        "💬 Outpost features dedicated text channels (`#community-chat`, `#ideas`, `#dev-talk`, `#announcements`) and voice rooms in the left sidebar. Click the `+` icon next to CAMPSITES to launch a new channel!"
+      ]
+    },
+    {
+      "intent": "guide.security",
+      "utterances": [
+        "is outpost secure",
+        "what is dismw",
+        "what is scout guardian",
+        "encryption in outpost"
+      ],
+      "answers": [
+        "🛡️ Outpost is reinforced by **D.I.S.M.W** (Deep Intelligence Security Monitoring Wall) and **Scout-Guardian** WAF. All communications feature AES-256 E2EE, HMAC SHA-256 integrity hashing, and 3-strike threat quarantine."
+      ]
+    },
+    {
+      "intent": "smalltalk.thanks",
+      "utterances": [
+        "thank you",
+        "thanks",
+        "appreciate it",
+        "good job",
+        "awesome"
+      ],
+      "answers": [
+        "Always an honor to assist, Scout! Keep exploring.",
+        "You're very welcome! Let me know if you need anything else.",
+        "Glad I could help. Outpost is always ready!"
+      ]
+    }
+  ]
+}

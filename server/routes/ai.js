@@ -1,9 +1,23 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const requireAuth = require('../middleware/auth');
 const dismw = require('../security/dismw');
-const { processMessage } = require('../ai/nlpEngine');
 const AI_BOT_AVATAR = 'https://api.dicebear.com/7.x/bottts/svg?seed=Ai-Scout&backgroundColor=4facfe';
+
+// Load Scout-AI Deep Engine with fallback to local nlpEngine
+let scoutEngine = null;
+try {
+  const ScoutEngine = require('../../scout-ai-engine/src/index');
+  scoutEngine = new ScoutEngine();
+  scoutEngine.initialize().catch(err => {
+    console.warn('⚠️ ScoutEngine deep network warm-up deferred:', err.message);
+  });
+} catch (e) {
+  console.warn('⚠️ Could not load @outpost/scout-ai-engine, using fallback engine:', e.message);
+}
+
+const fallbackNlp = require('../ai/nlpEngine');
 
 // Helper: format AI message for frontend without saving to DB
 const broadcastAiMessage = (text) => {
@@ -32,11 +46,22 @@ router.post('/chat', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Message cannot be empty.' });
     }
 
-    const aiResult = await processMessage(message);
-    let aiText = typeof aiResult === 'object' ? aiResult.answer : aiResult;
+    let aiResult;
+    let isThreat = false;
+    let aiText = '';
+
+    if (scoutEngine && scoutEngine.isTrained) {
+      const cognitiveResult = await scoutEngine.think(message, req.user?.username || 'scout_user');
+      aiText = cognitiveResult.text;
+      isThreat = cognitiveResult.isThreat;
+    } else {
+      aiResult = await fallbackNlp.processMessage(message);
+      aiText = typeof aiResult === 'object' ? aiResult.answer : aiResult;
+      isThreat = typeof aiResult === 'object' && aiResult.isSecurityThreat;
+    }
 
     // --- 3-STRIKE SECURITY LOGIC ---
-    if (typeof aiResult === 'object' && aiResult.isSecurityThreat) {
+    if (isThreat) {
       const username = req.user.username;
       let strikes = (securityStrikes.get(username) || 0) + 1;
       securityStrikes.set(username, strikes);
