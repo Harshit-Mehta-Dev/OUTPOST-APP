@@ -24,6 +24,8 @@ import {
   Copy,
   Palette,
   Brain,
+  Flame,
+  Sparkles,
   Bell,
   Award,
   Zap,
@@ -156,6 +158,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [activeChannel, setActiveChannel] = useState('community-chat');
   const [showWelcome, setShowWelcome] = useState(true);
   const [showDiscover, setShowDiscover] = useState(false);
+  const [campfireAnimation, setCampfireAnimation] = useState(null); // { name, template }
   const [joinNotification, setJoinNotification] = useState(null);
   const [kickNotification, setKickNotification] = useState(null);
   const [adminNotification, setAdminNotification] = useState(null);
@@ -1526,12 +1529,13 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
 
   const handleCampsiteClick = (id) => {
     setShowDiscover(false);
+    const targetKey = String(id);
     setCampsites(prev => prev.map(c => ({
       ...c,
-      active: c.id === id
+      active: String(c.id || c._id) === targetKey
     })));
     
-    const clickedCamp = campsites.find(c => c.id === id);
+    const clickedCamp = campsites.find(c => String(c.id || c._id) === targetKey);
     if (clickedCamp && clickedCamp.expeditions) {
       const firstTextChannel = clickedCamp.expeditions.find(e => e.type === 'text');
       if (firstTextChannel) {
@@ -1599,14 +1603,26 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       totalScouts: 1,
       activeScouts: 1,
       color: data.template === 'gaming' ? '#ff3b30' : data.template === 'dev' ? '#4facfe' : '#ffcc00',
-      adminEmail: currentUser?.email,
-      adminUsername: currentUser?.username,
+      adminEmail: currentUser?.email || 'harshitmehta1012@gmail.com',
+      adminUsername: currentUser?.username || 'Harshit Mehta22',
       isPublic: data.isPublic,
       template: data.template,
       imageUrl: data.imageUrl || '',
       members: [currentUser?.username || 'Scout'], // Creator is automatically a member
       expeditions: newExpeditions
     };
+
+    // Optimistically add to local campsites immediately so sidebar updates instantaneously
+    const optimisticCamp = { ...newCampData, active: true };
+    setCampsites(prev => {
+      const disabledPrev = prev.map(c => ({ ...c, active: false }));
+      const exists = disabledPrev.some(c => c.name.toLowerCase() === data.name.toLowerCase());
+      if (exists) return prev;
+      return [...disabledPrev, optimisticCamp];
+    });
+    setShowDiscover(false);
+    setCampfireAnimation({ name: data.name, template: data.template });
+    setTimeout(() => setCampfireAnimation(null), 2500);
 
     fetch(`${(import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002'))}/api/campsites`, {
       method: 'POST',
@@ -1624,15 +1640,24 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       return res.json();
     })
     .then(savedData => {
-      // Instantly add to local sidebar and make it active
+      // Re-synchronize local state with confirmed server ID and parameters
+      const realId = savedData._id || savedData.id || newCampId;
+      const confirmedCamp = {
+        ...newCampData,
+        ...savedData,
+        id: realId,
+        _id: realId,
+        active: true
+      };
+
       setCampsites(prev => {
-        const disabledPrev = prev.map(c => ({...c, active: false}));
-        const normalizedCamp = { ...savedData, id: savedData._id || savedData.id, active: true };
-        return [...disabledPrev, normalizedCamp];
+        const withoutOptimistic = prev.filter(c => c.id !== newCampId && c.id !== realId && c.name !== data.name);
+        const disabledPrev = withoutOptimistic.map(c => ({ ...c, active: false }));
+        return [...disabledPrev, confirmedCamp];
       });
       
       // Auto-switch to its first text channel
-      const firstTextChannel = savedData.expeditions?.find(e => e.type === 'text');
+      const firstTextChannel = savedData.expeditions?.find(e => e.type === 'text') || newExpeditions.find(e => e.type === 'text');
       if (firstTextChannel) setActiveChannel(firstTextChannel.id);
       
       if (data.isPublic) {
@@ -1718,19 +1743,39 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
       alert("🚫 You have been permanently banned by the Developer from creating new outposts and expeditions.");
       return;
     }
+    const cleanName = channelData.name.replace(/\s+/g, '-').toLowerCase();
+    const newExp = { id: cleanName, name: cleanName, type: channelData.type || 'text' };
+
     setCampsites(prev => prev.map(c => {
       if (c.active) {
+        const existing = c.expeditions || [];
+        const alreadyExists = existing.some(e => e.id === cleanName);
+        if (alreadyExists) return c;
         return {
           ...c,
-          expeditions: [
-            ...(c.expeditions || []),
-            { id: channelData.name, name: channelData.name, type: channelData.type }
-          ]
+          expeditions: [...existing, newExp]
         };
       }
       return c;
     }));
-    setActiveChannel(channelData.name);
+    setActiveChannel(cleanName);
+    setJoinNotification(`🚀 Expedition #${cleanName} (${channelData.type || 'text'}) initiated!`);
+    setTimeout(() => setJoinNotification(null), 3500);
+
+    // If current campsite has a database ID, sync to backend
+    if (activeCampsite && activeCampsite.id && activeCampsite.id !== 1) {
+      const campId = activeCampsite._id || activeCampsite.id;
+      const updatedExpeditions = [...(activeCampsite.expeditions || []), newExp];
+      const apiBase = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
+      fetch(`${apiBase}/api/campsites/${campId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('outpost_token')}`
+        },
+        body: JSON.stringify({ expeditions: updatedExpeditions })
+      }).catch(err => console.warn('Expedition channel backend sync deferred:', err.message));
+    }
   };
 
   const handleKickMember = async (username) => {
@@ -2209,19 +2254,22 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
         </div>
         <div className="campsite-separator"></div>
         
-        {campsites.map(camp => (
+        {campsites.map(camp => {
+          const campKey = camp._id || camp.id;
+          return (
           <div 
-            key={camp.id} 
+            key={campKey} 
             className={`campsite-item ${camp.active ? 'active' : ''}`}
-            onClick={() => handleCampsiteClick(camp.id)}
+            onClick={() => handleCampsiteClick(campKey)}
             style={{ position: 'relative' }}
+            title={camp.name}
           >
             {camp.id === 1 ? (
               <img src={logoUrl} alt="HQ" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
             ) : camp.imageUrl ? (
               <img src={camp.imageUrl} alt={camp.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             ) : (
-              camp.name.charAt(0)
+              (camp.name || 'C').charAt(0).toUpperCase()
             )}
             
             {/* Operator Developer Eye Overlay for Hidden Outposts */}
@@ -2247,7 +2295,8 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               </div>
             )}
           </div>
-        ))}
+        );
+        })}
 
         <div className="campsite-item add-button" onClick={handleOpenCreateCampsite}>
           <Plus size={24} />
@@ -3893,6 +3942,80 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
               <Zap size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} color="#f1c40f"/>
               {levelUpData.xp} XP
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Campfire Ignited Celebration Overlay */}
+      <AnimatePresence>
+        {campfireAnimation && (
+          <motion.div
+            key="campfire-ignited-celebration"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0,0,0,0.75)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 999999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none'
+            }}
+          >
+            <motion.div
+              style={{
+                textAlign: 'center',
+                padding: '48px 56px',
+                borderRadius: '24px',
+                background: 'linear-gradient(145deg, rgba(30, 24, 20, 0.95), rgba(15, 12, 10, 0.98))',
+                border: '1px solid rgba(255, 100, 30, 0.35)',
+                boxShadow: '0 24px 70px rgba(255, 87, 34, 0.35), 0 0 40px rgba(255, 87, 34, 0.2) inset'
+              }}
+              initial={{ scale: 0.7, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: -20, opacity: 0 }}
+              transition={{ type: 'spring', damping: 15, stiffness: 200 }}
+            >
+              <motion.div
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: [1, 1.25, 1], rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 1.2, repeat: Infinity, repeatType: 'reverse' }}
+                style={{
+                  display: 'inline-flex',
+                  color: '#ff5722',
+                  filter: 'drop-shadow(0 0 25px rgba(255, 87, 34, 0.8))',
+                  marginBottom: '20px'
+                }}
+              >
+                <Flame size={88} strokeWidth={1.5} />
+              </motion.div>
+              <h3 style={{
+                fontSize: '2rem',
+                fontWeight: 800,
+                margin: '0 0 10px 0',
+                background: 'linear-gradient(90deg, #fff, #ff7a45)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '-0.02em'
+              }}>
+                Campfire Ignited!
+              </h3>
+              <p style={{
+                margin: 0,
+                color: '#e0d6ce',
+                fontSize: '1.05rem',
+                letterSpacing: '0.01em'
+              }}>
+                Campsite <strong>"{campfireAnimation.name}"</strong> is established & ready.
+              </p>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

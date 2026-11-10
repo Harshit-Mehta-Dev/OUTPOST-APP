@@ -68,15 +68,61 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST a new campsite
-router.post('/', requireAuth, validate(campsiteValidation.createCampsite), async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
     const User = require('../models/User'); // Import here to avoid circular dep if any, or just at top
-    const user = await User.findOne({ email: req.body.adminEmail });
+    const userEmail = req.body.adminEmail || req.user.email;
+    const user = await User.findOne({ email: userEmail });
     if (user && user.isGloballyRestricted) {
       return res.status(403).json({ error: 'You are permanently banned from creating new outposts.' });
     }
 
-    const newCamp = new Campsite(req.body);
+    let template = req.body.template || 'casual';
+    let category = req.body.category || 'Casual';
+    let icon = req.body.icon || '🏕️';
+    if (template === 'gaming') { category = 'Gaming'; icon = '🎮'; }
+    else if (template === 'dev') { category = 'Tech & Dev'; icon = '💻'; }
+
+    let expeditions = req.body.expeditions;
+    if (!expeditions || !Array.isArray(expeditions) || expeditions.length === 0) {
+      if (template === 'gaming') {
+        expeditions = [
+          { id: 'lobby', name: 'lobby', type: 'text' },
+          { id: 'patch-notes', name: 'patch-notes', type: 'text' },
+          { id: 'The Frontlines', name: 'The Frontlines', type: 'voice' },
+        ];
+      } else if (template === 'dev') {
+        expeditions = [
+          { id: 'general-dev', name: 'general-dev', type: 'text' },
+          { id: 'code-review', name: 'code-review', type: 'text' },
+          { id: 'Pair-Programming', name: 'Pair-Programming', type: 'voice' },
+        ];
+      } else {
+        expeditions = [
+          { id: 'chit-chat', name: 'chit-chat', type: 'text' },
+          { id: 'memes', name: 'memes', type: 'text' },
+          { id: 'Around the Fire', name: 'Around the Fire', type: 'voice' },
+        ];
+      }
+    }
+
+    const campPayload = {
+      ...req.body,
+      id: req.body.id || Date.now().toString(),
+      adminEmail: userEmail || 'harshitmehta1012@gmail.com',
+      adminUsername: req.body.adminUsername || req.user.username || 'Scout',
+      description: req.body.description || `Outpost created by ${req.user?.username || 'Scout'}`,
+      category: category,
+      icon: icon,
+      color: req.body.color || (template === 'gaming' ? '#ff3b30' : template === 'dev' ? '#4facfe' : '#ffcc00'),
+      totalScouts: req.body.totalScouts || 1,
+      activeScouts: req.body.activeScouts || 1,
+      template: template,
+      members: req.body.members && req.body.members.length > 0 ? req.body.members : [req.user?.username || 'Scout'],
+      expeditions: expeditions
+    };
+
+    const newCamp = new Campsite(campPayload);
     const savedCamp = await newCamp.save();
     syncCampsiteToSupabase(savedCamp);
     
