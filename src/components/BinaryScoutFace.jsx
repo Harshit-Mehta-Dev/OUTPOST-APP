@@ -3,12 +3,12 @@ import './BinaryScoutFace.css';
 
 /**
  * BinaryScoutFace
- * Renders an interactive cybernetic AI neural face formed by binary digits (0 and 1).
+ * Cybernetic AI face rendered cleanly in binary 0 & 1 characters.
  * Features:
- * - Dynamic binary particle grid shaping the AI face contours (eyes, brow, nose bridge, lips, neural aura).
- * - Real-time animation that blinks, looks around smoothly, and modulates mouth movements when Scout is speaking.
- * - Gentle floating binary matrix rain in the ambient perimeter.
- * - Subdued cyber-amber / neon orange glow aligned with Outpost's aesthetic.
+ * - High-visibility luminous glowing binary contours (eyes, brows, nose, lips, jawline)
+ * - Eye-blinking cycles, natural gaze drift, speaking mouth modulation
+ * - Ambient background falling matrix binary rain
+ * - High-contrast neon amber glow tuned for Outpost dark aesthetic
  */
 const BinaryScoutFace = ({ isSpeaking = false, isThinking = false }) => {
   const canvasRef = useRef(null);
@@ -20,92 +20,87 @@ const BinaryScoutFace = ({ isSpeaking = false, isThinking = false }) => {
     if (!ctx) return;
 
     let animationFrameId;
-    let width = (canvas.width = canvas.parentElement?.clientWidth || 800);
-    let height = (canvas.height = canvas.parentElement?.clientHeight || 600);
 
-    const handleResize = () => {
-      if (!canvas || !canvas.parentElement) return;
-      width = canvas.width = canvas.parentElement.clientWidth;
-      height = canvas.height = canvas.parentElement.clientHeight;
+    const updateDimensions = () => {
+      const parent = canvas.parentElement;
+      const w = parent ? parent.clientWidth : window.innerWidth;
+      const h = parent ? parent.clientHeight : window.innerHeight;
+      canvas.width = Math.max(w, 320);
+      canvas.height = Math.max(h, 320);
     };
-    window.addEventListener('resize', handleResize);
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
 
     // Matrix background binary stream particles
-    const columns = Math.floor(width / 24);
-    const rainDrops = Array.from({ length: columns }, () => Math.random() * -50);
+    let columns = Math.floor(canvas.width / 26);
+    let rainDrops = Array.from({ length: columns }, () => Math.random() * -60);
 
     // AI Facial node definitions in normalized coordinates (-1 to 1)
     const generateFacePoints = () => {
       const points = [];
 
-      // 1. Face oval / chin contour
-      for (let angle = 0; angle < Math.PI * 2; angle += 0.08) {
+      // 1. Jawline & Chin contour (dense binary curve)
+      for (let angle = 0; angle <= Math.PI * 2; angle += 0.07) {
         const x = Math.sin(angle) * 0.72;
-        // Egg-shaped multiplier for jawline
         const yMod = angle > Math.PI ? 0.95 : 1.25;
-        const y = -Math.cos(angle) * 0.95 * yMod;
-        points.push({ x, y, size: 10, type: 'contour', baseAlpha: 0.28 });
+        const y = -Math.cos(angle) * 0.92 * yMod;
+        points.push({ x, y, size: 12, type: 'contour', baseAlpha: 0.55 });
       }
 
-      // Inner jawline & cheeks
-      for (let angle = 0.3; angle < Math.PI - 0.3; angle += 0.12) {
+      // Inner cheek structure
+      for (let angle = 0.35; angle < Math.PI - 0.35; angle += 0.1) {
         const x = Math.cos(angle) * 0.52;
-        const y = Math.sin(angle) * 0.85 + 0.1;
-        points.push({ x, y, size: 9, type: 'cheek', baseAlpha: 0.22 });
-        points.push({ x: -x, y, size: 9, type: 'cheek', baseAlpha: 0.22 });
+        const y = Math.sin(angle) * 0.82 + 0.08;
+        points.push({ x, y, size: 11, type: 'cheek', baseAlpha: 0.45 });
+        points.push({ x: -x, y, size: 11, type: 'cheek', baseAlpha: 0.45 });
       }
 
-      // 2. Forehead Neural Nodes / Cyber Crown
-      for (let i = -0.55; i <= 0.55; i += 0.09) {
-        points.push({ x: i, y: -0.78, size: 9, type: 'forehead', baseAlpha: 0.32 });
-        points.push({ x: i * 0.8, y: -0.9, size: 8, type: 'forehead', baseAlpha: 0.2 });
+      // 2. Forehead Cyber Arc
+      for (let i = -0.58; i <= 0.58; i += 0.08) {
+        points.push({ x: i, y: -0.75, size: 11, type: 'forehead', baseAlpha: 0.55 });
+        points.push({ x: i * 0.82, y: -0.88, size: 10, type: 'forehead', baseAlpha: 0.4 });
       }
 
-      // 3. Eyebrows
-      for (let i = 0.12; i <= 0.46; i += 0.05) {
-        // Left eyebrow
-        points.push({ x: -i, y: -0.36 + (i - 0.25) * 0.2, size: 11, type: 'brow', baseAlpha: 0.65 });
-        // Right eyebrow
-        points.push({ x: i, y: -0.36 + (i - 0.25) * 0.2, size: 11, type: 'brow', baseAlpha: 0.65 });
+      // 3. Eyebrows (Distinct strong binary arches)
+      for (let i = 0.12; i <= 0.48; i += 0.04) {
+        // Left brow
+        points.push({ x: -i, y: -0.36 + (i - 0.25) * 0.22, size: 13, type: 'brow', baseAlpha: 0.9 });
+        // Right brow
+        points.push({ x: i, y: -0.36 + (i - 0.25) * 0.22, size: 13, type: 'brow', baseAlpha: 0.9 });
       }
 
-      // 4. Eyes (Almond cybernetic contours)
-      // Left eye
+      // 4. Eyes (High-contrast almond eyes with glowing pupil core)
       const leftEyeCenter = { x: -0.28, y: -0.16 };
-      for (let a = 0; a < Math.PI * 2; a += 0.22) {
-        const rx = 0.12 * Math.cos(a);
-        const ry = 0.065 * Math.sin(a);
-        points.push({ x: leftEyeCenter.x + rx, y: leftEyeCenter.y + ry, size: 11, type: 'left_eye_contour', baseAlpha: 0.85 });
+      for (let a = 0; a < Math.PI * 2; a += 0.18) {
+        const rx = 0.13 * Math.cos(a);
+        const ry = 0.07 * Math.sin(a);
+        points.push({ x: leftEyeCenter.x + rx, y: leftEyeCenter.y + ry, size: 13, type: 'left_eye_contour', baseAlpha: 0.95 });
       }
-      // Left pupil
-      points.push({ x: leftEyeCenter.x, y: leftEyeCenter.y, size: 13, type: 'left_pupil', baseAlpha: 0.95 });
+      points.push({ x: leftEyeCenter.x, y: leftEyeCenter.y, size: 15, type: 'left_pupil', baseAlpha: 1.0 });
 
-      // Right eye
       const rightEyeCenter = { x: 0.28, y: -0.16 };
-      for (let a = 0; a < Math.PI * 2; a += 0.22) {
-        const rx = 0.12 * Math.cos(a);
-        const ry = 0.065 * Math.sin(a);
-        points.push({ x: rightEyeCenter.x + rx, y: rightEyeCenter.y + ry, size: 11, type: 'right_eye_contour', baseAlpha: 0.85 });
+      for (let a = 0; a < Math.PI * 2; a += 0.18) {
+        const rx = 0.13 * Math.cos(a);
+        const ry = 0.07 * Math.sin(a);
+        points.push({ x: rightEyeCenter.x + rx, y: rightEyeCenter.y + ry, size: 13, type: 'right_eye_contour', baseAlpha: 0.95 });
       }
-      // Right pupil
-      points.push({ x: rightEyeCenter.x, y: rightEyeCenter.y, size: 13, type: 'right_pupil', baseAlpha: 0.95 });
+      points.push({ x: rightEyeCenter.x, y: rightEyeCenter.y, size: 15, type: 'right_pupil', baseAlpha: 1.0 });
 
-      // 5. Nose bridge & tip
-      for (let y = -0.12; y <= 0.18; y += 0.06) {
-        points.push({ x: 0, y, size: 10, type: 'nose_bridge', baseAlpha: 0.4 });
+      // 5. Nose bridge & nostril dots
+      for (let y = -0.12; y <= 0.18; y += 0.05) {
+        points.push({ x: 0, y, size: 12, type: 'nose_bridge', baseAlpha: 0.65 });
       }
-      points.push({ x: -0.06, y: 0.2, size: 9, type: 'nose', baseAlpha: 0.5 });
-      points.push({ x: 0, y: 0.22, size: 11, type: 'nose', baseAlpha: 0.6 });
-      points.push({ x: 0.06, y: 0.2, size: 9, type: 'nose', baseAlpha: 0.5 });
+      points.push({ x: -0.07, y: 0.20, size: 11, type: 'nose', baseAlpha: 0.75 });
+      points.push({ x: 0, y: 0.22, size: 13, type: 'nose', baseAlpha: 0.85 });
+      points.push({ x: 0.07, y: 0.20, size: 11, type: 'nose', baseAlpha: 0.75 });
 
-      // 6. Mouth & Lips (will morph when speaking!)
-      for (let x = -0.24; x <= 0.24; x += 0.04) {
-        // Upper lip
-        const uy = 0.42 - Math.cos((x / 0.24) * (Math.PI / 2)) * 0.03;
-        points.push({ x, y: uy, size: 10, type: 'lip_upper', baseAlpha: 0.6 });
-        // Lower lip
-        const ly = 0.46 + Math.cos((x / 0.24) * (Math.PI / 2)) * 0.04;
-        points.push({ x, y: ly, size: 10, type: 'lip_lower', baseAlpha: 0.65 });
+      // 6. Mouth & Lips (morphs visibly when speaking)
+      for (let x = -0.25; x <= 0.25; x += 0.035) {
+        const uy = 0.42 - Math.cos((x / 0.25) * (Math.PI / 2)) * 0.03;
+        points.push({ x, y: uy, size: 13, type: 'lip_upper', baseAlpha: 0.9 });
+        const ly = 0.46 + Math.cos((x / 0.25) * (Math.PI / 2)) * 0.04;
+        points.push({ x, y: ly, size: 13, type: 'lip_lower', baseAlpha: 0.95 });
       }
 
       return points;
@@ -119,72 +114,70 @@ const BinaryScoutFace = ({ isSpeaking = false, isThinking = false }) => {
 
     let time = 0;
     let blinkProgress = 0;
-    let nextBlink = 120 + Math.random() * 100;
+    let nextBlink = 120 + Math.random() * 80;
     let isBlinking = false;
 
-    // Smooth head movement
     let targetLookX = 0;
     let targetLookY = 0;
     let currentLookX = 0;
     let currentLookY = 0;
 
     const render = () => {
+      const width = canvas.width;
+      const height = canvas.height;
       time += 0.035;
 
-      // Smooth look drift
-      if (Math.floor(time * 30) % 180 === 0) {
-        targetLookX = (Math.random() - 0.5) * 0.14;
+      // Smooth eye & head gaze shift
+      if (Math.floor(time * 30) % 160 === 0) {
+        targetLookX = (Math.random() - 0.5) * 0.12;
         targetLookY = (Math.random() - 0.5) * 0.08;
       }
       currentLookX += (targetLookX - currentLookX) * 0.04;
       currentLookY += (targetLookY - currentLookY) * 0.04;
 
-      // Handle Blinking
+      // Natural eye blinking
       nextBlink -= 1;
       if (nextBlink <= 0 && !isBlinking) {
         isBlinking = true;
         blinkProgress = 0;
       }
       if (isBlinking) {
-        blinkProgress += 0.18;
+        blinkProgress += 0.2;
         if (blinkProgress >= Math.PI) {
           isBlinking = false;
           blinkProgress = 0;
-          nextBlink = 140 + Math.random() * 160;
+          nextBlink = 120 + Math.random() * 140;
         }
       }
 
       ctx.clearRect(0, 0, width, height);
 
-      // --- 1. Ambient Falling Binary Rain in Background ---
+      // --- 1. Ambient Falling Matrix Binary Rain in Background ---
       ctx.font = '11px monospace';
       for (let i = 0; i < rainDrops.length; i++) {
-        const x = i * 24;
+        const x = i * 26;
         const y = rainDrops[i];
-        const char = (Math.floor(time * 10 + i) % 2 === 0) ? '1' : '0';
+        const char = (Math.floor(time * 8 + i) % 2 === 0) ? '1' : '0';
 
-        ctx.fillStyle = 'rgba(255, 107, 43, 0.055)';
+        ctx.fillStyle = 'rgba(255, 107, 43, 0.12)';
         ctx.fillText(char, x, y);
 
-        rainDrops[i] += 2.2;
+        rainDrops[i] += 2.5;
         if (rainDrops[i] > height) {
           rainDrops[i] = -20;
         }
       }
 
       // --- 2. Render Cybernetic Binary Face ---
-      const centerX = width * 0.5 + currentLookX * 40;
-      const centerY = height * 0.44 + currentLookY * 30;
-      const faceScale = Math.min(width, height) * 0.42;
+      const centerX = width * 0.5 + currentLookX * 45;
+      const centerY = height * 0.42 + currentLookY * 30;
+      const faceScale = Math.min(width, height) * 0.44;
 
-      // Mouth modulation when speaking
-      const mouthMod = isSpeaking ? Math.sin(time * 18) * 0.05 : 0;
+      const mouthMod = isSpeaking ? Math.sin(time * 18) * 0.06 : 0;
       const eyeBlinkScale = isBlinking ? Math.max(0.08, Math.abs(Math.cos(blinkProgress))) : 1;
-
-      // Pulsing aura when thinking or speaking
       const auraPulse = (isSpeaking || isThinking) 
-        ? (0.85 + Math.sin(time * 8) * 0.15) 
-        : (0.7 + Math.sin(time * 2) * 0.08);
+        ? (0.95 + Math.sin(time * 8) * 0.12) 
+        : (0.85 + Math.sin(time * 2) * 0.08);
 
       for (let i = 0; i < faceNodes.length; i++) {
         const node = faceNodes[i];
@@ -199,11 +192,11 @@ const BinaryScoutFace = ({ isSpeaking = false, isThinking = false }) => {
         let ptX = node.x;
         let ptY = node.y;
 
-        // Apply mouth opening motion
+        // Apply mouth opening motion when speaking
         if (node.type === 'lip_lower') {
-          ptY += Math.max(0, mouthMod * 1.6);
+          ptY += Math.max(0, mouthMod * 1.8);
         } else if (node.type === 'lip_upper') {
-          ptY -= Math.max(0, mouthMod * 0.6);
+          ptY -= Math.max(0, mouthMod * 0.7);
         }
 
         // Apply eye blink compression
@@ -215,7 +208,7 @@ const BinaryScoutFace = ({ isSpeaking = false, isThinking = false }) => {
           ptY = -0.16 + dy * eyeBlinkScale;
         }
 
-        // Thinking neural ripple effect
+        // Neural ripple when thinking
         if (isThinking && (node.type === 'forehead' || node.type === 'brow')) {
           ptY += Math.sin(time * 10 + node.x * 6) * 0.02;
         }
@@ -223,16 +216,16 @@ const BinaryScoutFace = ({ isSpeaking = false, isThinking = false }) => {
         const screenX = centerX + ptX * faceScale;
         const screenY = centerY + ptY * faceScale;
 
-        // Color modulation based on node type and status
-        let alpha = node.baseAlpha * auraPulse;
-        let color = `rgba(255, 107, 43, ${alpha})`;
+        // High-clarity color modulation
+        let alpha = Math.min(1, node.baseAlpha * auraPulse);
+        let color = `rgba(255, 120, 50, ${alpha})`;
 
         if (node.type === 'left_pupil' || node.type === 'right_pupil') {
-          color = isSpeaking ? `rgba(255, 230, 150, ${alpha * 1.3})` : `rgba(255, 138, 77, ${alpha * 1.2})`;
+          color = isSpeaking ? `rgba(255, 240, 180, ${alpha})` : `rgba(255, 160, 90, ${alpha})`;
         } else if (node.type === 'lip_upper' || node.type === 'lip_lower') {
-          color = isSpeaking ? `rgba(255, 180, 120, ${Math.min(1, alpha * 1.4)})` : `rgba(255, 107, 43, ${alpha})`;
+          color = isSpeaking ? `rgba(255, 195, 140, ${alpha})` : `rgba(255, 120, 50, ${alpha})`;
         } else if (isThinking && (node.type === 'forehead' || node.type === 'brow')) {
-          color = `rgba(255, 180, 80, ${Math.min(1, alpha * 1.3)})`;
+          color = `rgba(255, 195, 90, ${alpha})`;
         }
 
         ctx.font = `bold ${node.size}px "JetBrains Mono", Consolas, monospace`;
@@ -240,18 +233,16 @@ const BinaryScoutFace = ({ isSpeaking = false, isThinking = false }) => {
         ctx.fillText(node.char, screenX, screenY);
       }
 
-      // Connecting neural synapic lines between key face points
-      ctx.lineWidth = 0.5;
-      ctx.strokeStyle = `rgba(255, 107, 43, ${0.07 * auraPulse})`;
+      // Connecting neural synapse lines between eyes
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = `rgba(255, 120, 50, ${0.12 * auraPulse})`;
       ctx.beginPath();
-      // Left eye contour connect
       const leftEyePoints = faceNodes.filter(n => n.type === 'left_eye_contour');
       for (let j = 0; j < leftEyePoints.length; j++) {
         const next = leftEyePoints[(j + 1) % leftEyePoints.length];
         ctx.moveTo(centerX + leftEyePoints[j].x * faceScale, centerY + leftEyePoints[j].y * faceScale);
         ctx.lineTo(centerX + next.x * faceScale, centerY + next.y * faceScale);
       }
-      // Right eye contour connect
       const rightEyePoints = faceNodes.filter(n => n.type === 'right_eye_contour');
       for (let j = 0; j < rightEyePoints.length; j++) {
         const next = rightEyePoints[(j + 1) % rightEyePoints.length];
@@ -267,7 +258,7 @@ const BinaryScoutFace = ({ isSpeaking = false, isThinking = false }) => {
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', updateDimensions);
     };
   }, [isSpeaking, isThinking]);
 

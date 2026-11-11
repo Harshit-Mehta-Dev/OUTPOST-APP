@@ -1,35 +1,39 @@
 .scout-binary-face-wrapper {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.5s ease;
 }
 
 .scout-binary-face-canvas {
   width: 100%;
   height: 100%;
   display: block;
-  opacity: 0.88;
-  filter: drop-shadow(0 0 16px rgba(255, 107, 43, 0.25));
+  opacity: 0.95;
+  filter: drop-shadow(0 0 18px rgba(255, 107, 43, 0.45));
   transition: filter 0.3s ease;
 }
 
 .scout-binary-face-wrapper.is-speaking .scout-binary-face-canvas {
-  filter: drop-shadow(0 0 24px rgba(255, 107, 43, 0.45));
+  filter: drop-shadow(0 0 28px rgba(255, 120, 50, 0.7));
 }
 
 .scout-binary-face-wrapper.is-thinking .scout-binary-face-canvas {
-  filter: drop-shadow(0 0 20px rgba(255, 180, 70, 0.38));
+  filter: drop-shadow(0 0 24px rgba(255, 180, 70, 0.55));
 }
 
 .scout-face-glow-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 45%, transparent 25%, rgba(18, 17, 19, 0.65) 75%, var(--bg-primary, #121113) 100%);
+  background: radial-gradient(circle at 50% 42%, transparent 35%, rgba(18, 17, 19, 0.45) 75%, rgba(18, 17, 19, 0.8) 100%);
   pointer-events: none;
 }
