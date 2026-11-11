@@ -78,6 +78,7 @@ import HelpDesk from '../components/HelpDesk';
 import FeedbackForm from '../components/FeedbackForm';
 import GroupAdminPanelModal from '../components/modals/GroupAdminPanelModal';
 import ScoutAiModal from '../components/ScoutAiModal';
+import { useSpeechToText } from '../hooks/useSpeechToText';
 import BasecampBoard from '../components/board/BasecampBoard';
 import ScoutWalkthrough from '../components/ScoutWalkthrough';
 
@@ -164,6 +165,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [kickNotification, setKickNotification] = useState(null);
   const [adminNotification, setAdminNotification] = useState(null);
   const [inputText, setInputText] = useState('');
+  const handleLiveSpeech = useCallback((liveText) => {
+    setInputText(liveText);
+  }, []);
+  const { isListening: isChatListening, isSupported: isChatSttSupported, toggleListening: toggleChatListening, stopListening: stopChatListening } = useSpeechToText({
+    onTranscriptChange: handleLiveSpeech
+  });
   const [replyingTo, setReplyingTo] = useState(null);
   const [activeTypers, setActiveTypers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -1273,6 +1280,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   }, [messages]);
 
   const handleSendMessage = async () => {
+    stopChatListening();
     // CENSORSHIP PROTOCOL: Block all non-admin/non-developer sends at the function level
     if (activeCampsite?.censorshipEnabled && !isCampAdmin) {
       return; // Hard stop — UI already shows blocked state, this is the security guard
@@ -3553,7 +3561,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 <input 
                   ref={chatInputRef}
                   type="text" 
-                  placeholder={`Message #${activeChannel}`} 
+                  placeholder={isChatListening ? "Listening live... speak now" : `Message #${activeChannel}`} 
                   className="chat-input"
                   value={inputText}
                   onChange={handleInputChange}
@@ -3561,6 +3569,23 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     if (e.key === 'Enter') handleSendMessage();
                   }}
                 />
+                {isChatSttSupported && (
+                  <button
+                    type="button"
+                    className={`chat-stt-mic-btn ${isChatListening ? 'is-listening' : ''}`}
+                    onClick={() => toggleChatListening(inputText)}
+                    title={isChatListening ? "Stop Speech-to-Text" : "Real-Time Speech-to-Text Dictation"}
+                  >
+                    {isChatListening ? (
+                      <>
+                        <span className="chat-stt-wave" />
+                        <MicOff size={18} />
+                      </>
+                    ) : (
+                      <Mic size={18} />
+                    )}
+                  </button>
+                )}
                 <button className="chat-send-btn" onClick={handleSendMessage}>
                   <Send size={18} />
                 </button>

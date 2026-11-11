@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, Image as ImageIcon, CheckCircle, MessageSquare, Paperclip, User, Trash2, Clock } from 'lucide-react';
+import { X, Send, Image as ImageIcon, CheckCircle, MessageSquare, Paperclip, User, Trash2, Clock, Mic, MicOff } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { useSpeechToText } from '../../hooks/useSpeechToText';
 import './DeveloperHelpDesk.css';
 import '../AiNexus.css';
 
@@ -19,6 +20,11 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
   const [chatMessage, setChatMessage] = useState('');
   const [chatImage, setChatImage] = useState(null);
   const [ticketStatus, setTicketStatus] = useState('Open');
+
+  // Speech to text integration
+  const { isListening: isDevSttListening, isSupported: isDevSttSupported, toggleListening: toggleDevSttListening, stopListening: stopDevSttListening } = useSpeechToText({
+    onTranscriptChange: (text) => setChatMessage(text)
+  });
   const [isUserTyping, setIsUserTyping] = useState(false);
   const typingTimeout = useRef(null);
   const messagesEndRef = useRef(null);
@@ -118,6 +124,7 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
   };
 
   const handleSendChatMessage = () => {
+    stopDevSttListening();
     if (!chatMessage.trim() && !chatImage) return;
 
     const payload = {
@@ -330,7 +337,7 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
                       <input 
                         type="text"
                         className="chat-input"
-                        placeholder="Type your response to the scout..."
+                        placeholder={isDevSttListening ? "Listening live... speak now" : "Type your response to the scout..."}
                         value={chatMessage}
                         onChange={(e) => {
                           setChatMessage(e.target.value);
@@ -341,6 +348,17 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
                         }}
                         onKeyPress={(e) => e.key === 'Enter' && handleSendChatMessage()}
                       />
+                      {isDevSttSupported && (
+                        <button
+                          type="button"
+                          className={`icon-btn attach-btn ${isDevSttListening ? 'is-listening' : ''}`}
+                          onClick={() => toggleDevSttListening(chatMessage)}
+                          title={isDevSttListening ? "Stop Speech-to-Text" : "Live Speech-to-Text"}
+                          style={isDevSttListening ? { color: '#ff3b30', background: 'rgba(255, 59, 48, 0.15)' } : {}}
+                        >
+                          {isDevSttListening ? <MicOff size={20} /> : <Mic size={20} />}
+                        </button>
+                      )}
                       <button 
                         className="icon-btn send-btn"
                         onClick={handleSendChatMessage}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { UploadCloud, CheckCircle, Send, Image as ImageIcon, X, Clock, Lock, MessageSquare, ArrowLeft, User, Paperclip, LifeBuoy, Headset } from 'lucide-react';
+import { UploadCloud, CheckCircle, Send, Image as ImageIcon, X, Clock, Lock, MessageSquare, ArrowLeft, User, Paperclip, LifeBuoy, Headset, Mic, MicOff } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { useSpeechToText } from '../hooks/useSpeechToText';
 import './HelpDesk.css';
 
 const HELPDESK_SOCKET_URL = import.meta.env.VITE_CHAT_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5003');
@@ -28,6 +29,11 @@ const HelpDesk = () => {
   const [chatMessage, setChatMessage] = useState('');
   const [chatImage, setChatImage] = useState(null);
   const [messages, setMessages] = useState([]);
+
+  // Speech to text integration
+  const { isListening: isHelpDeskListening, isSupported: isHelpDeskSttSupported, toggleListening: toggleHelpDeskListening, stopListening: stopHelpDeskListening } = useSpeechToText({
+    onTranscriptChange: (text) => setChatMessage(text)
+  });
   const [ticketStatus, setTicketStatus] = useState('Open');
   const [originalRequestDescription, setOriginalRequestDescription] = useState('');
   const [isDeveloperTyping, setIsDeveloperTyping] = useState(false);
@@ -161,6 +167,7 @@ const HelpDesk = () => {
   };
 
   const handleSendChatMessage = () => {
+    stopHelpDeskListening();
     if (!chatMessage.trim() && !chatImage) return;
 
     const payload = {
@@ -578,11 +585,22 @@ const HelpDesk = () => {
                         <input 
                           type="text"
                           className="chat-input"
-                          placeholder="Type your message..."
+                          placeholder={isHelpDeskListening ? "Listening live... speak now" : "Type your message..."}
                           value={chatMessage}
                           onChange={handleTyping}
                           onKeyPress={(e) => e.key === 'Enter' && handleSendChatMessage()}
                         />
+                        {isHelpDeskSttSupported && (
+                          <button
+                            type="button"
+                            className={`icon-btn attach-btn ${isHelpDeskListening ? 'is-listening' : ''}`}
+                            onClick={() => toggleHelpDeskListening(chatMessage)}
+                            title={isHelpDeskListening ? "Stop Speech-to-Text" : "Live Speech-to-Text"}
+                            style={isHelpDeskListening ? { color: '#ff3b30', background: 'rgba(255, 59, 48, 0.15)' } : {}}
+                          >
+                            {isHelpDeskListening ? <MicOff size={20} /> : <Mic size={20} />}
+                          </button>
+                        )}
                         <button 
                           className="icon-btn send-btn"
                           onClick={handleSendChatMessage}

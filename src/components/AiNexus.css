@@ -225,6 +225,44 @@
 .ainex-send { width: 34px; height: 34px; display: grid; place-items: center; flex-shrink: 0; color: var(--text-secondary); background: rgba(255,255,255,.06); border: 0; border-radius: 9px; opacity: .55; cursor: not-allowed; transition: .2s ease; }
 .ainex-send-active { color: #fff; background: var(--accent-primary); opacity: 1; cursor: pointer; }
 .ainex-send-active:hover { transform: translateY(-1px) rotate(-4deg); filter: brightness(1.1); }
+
+.ainex-mic-btn {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  position: relative;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.ainex-mic-btn:hover {
+  background: rgba(255, 107, 43, 0.12);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+.ainex-mic-btn.is-listening {
+  background: #ff3b30;
+  border-color: #ff3b30;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(255, 59, 48, 0.6);
+  animation: ainexPulse 1.2s infinite;
+}
+.ainex-mic-wave {
+  position: absolute;
+  inset: -3px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 59, 48, 0.5);
+  animation: ainexWaveRing 1.5s infinite ease-out;
+}
+@keyframes ainexWaveRing {
+  0% { transform: scale(0.95); opacity: 1; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
 .ainex-spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.35); border-top-color: white; border-radius: 50%; animation: ainexSpin .7s linear infinite; } 
 @keyframes ainexSpin { to { transform: rotate(360deg); } }
 .ainex-footer-hint { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 7px; color: var(--text-secondary); font-size: 11px; }

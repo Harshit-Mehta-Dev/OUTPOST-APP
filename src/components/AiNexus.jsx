@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Send, 
   RotateCcw, 
@@ -15,10 +15,12 @@ import {
   Volume2, 
   VolumeX, 
   Sliders, 
-  Mic 
+  Mic,
+  MicOff 
 } from 'lucide-react';
 import { adaptAIPromptPayload } from '../lib/aiAdaptation';
 import { scoutVoice } from '../lib/scoutVoice';
+import { useSpeechToText } from '../hooks/useSpeechToText';
 import BinaryScoutFace from './BinaryScoutFace';
 import './AiNexus.css';
 
@@ -59,6 +61,22 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+
+  // Real-time Speech-to-Text Integration
+  const handleSpeechTranscript = useCallback((liveText) => {
+    setInput(liveText);
+    setTimeout(() => {
+      const el = textareaRef.current;
+      if (el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+      }
+    }, 0);
+  }, []);
+
+  const { isListening, isSupported: isSttSupported, toggleListening, stopListening } = useSpeechToText({
+    onTranscriptChange: handleSpeechTranscript
+  });
 
   // Subscribe to voice synthesizer events
   useEffect(() => {
@@ -117,6 +135,7 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
     const text = input.trim();
     if (!text || isLoading) return;
 
+    stopListening();
     setInput('');
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
@@ -399,13 +418,31 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
           <textarea
             ref={textareaRef}
             className="ainex-textarea"
-            placeholder={`Ask Ai-Scout anything...`}
+            placeholder={isListening ? "Listening live... speak now" : "Ask Ai-Scout anything..."}
             value={input}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
             rows={1}
             disabled={isLoading}
           />
+          {isSttSupported && (
+            <button
+              type="button"
+              className={`ainex-mic-btn ${isListening ? 'is-listening' : ''}`}
+              onClick={() => toggleListening(input)}
+              title={isListening ? "Stop Speech-to-Text" : "Start Live Speech-to-Text"}
+              disabled={isLoading}
+            >
+              {isListening ? (
+                <>
+                  <span className="ainex-mic-wave"></span>
+                  <MicOff size={15} />
+                </>
+              ) : (
+                <Mic size={15} />
+              )}
+            </button>
+          )}
           <button
             className={`ainex-send ${input.trim() && !isLoading ? 'ainex-send-active' : ''}`}
             onClick={sendMessage}
