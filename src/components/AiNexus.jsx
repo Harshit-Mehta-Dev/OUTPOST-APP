@@ -1,6 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, RotateCcw, Sparkles, Lock, CheckSquare, Square, Star, Forward, Info, X, Copy, Check } from 'lucide-react';
+import { 
+  Send, 
+  RotateCcw, 
+  Sparkles, 
+  Lock, 
+  CheckSquare, 
+  Square, 
+  Star, 
+  Forward, 
+  Info, 
+  X, 
+  Copy, 
+  Check, 
+  Volume2, 
+  VolumeX, 
+  Sliders, 
+  Mic 
+} from 'lucide-react';
 import { adaptAIPromptPayload } from '../lib/aiAdaptation';
+import { scoutVoice } from '../lib/scoutVoice';
+import BinaryScoutFace from './BinaryScoutFace';
 import './AiNexus.css';
 
 const API_BASE = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
@@ -31,9 +50,28 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
   const [starredMessageIds, setStarredMessageIds] = useState([]);
   const [infoMessage, setInfoMessage] = useState(null);
   const [notice, setNotice] = useState('');
+  
+  // Voice & Face State
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isVoiceMuted, setIsVoiceMuted] = useState(scoutVoice.isMuted);
+  const [voiceProfile, setVoiceProfile] = useState(scoutVoice.voiceProfile);
+  const [showVoiceMenu, setShowVoiceMenu] = useState(false);
+
   const bottomRef = useRef(null);
-  const inputRef = useRef(null);
   const textareaRef = useRef(null);
+
+  // Subscribe to voice synthesizer events
+  useEffect(() => {
+    const unsubscribe = scoutVoice.subscribe((state) => {
+      setIsSpeaking(state.isSpeaking);
+      setIsVoiceMuted(state.isMuted);
+      setVoiceProfile(state.voiceProfile);
+    });
+    return () => {
+      unsubscribe();
+      scoutVoice.stop();
+    };
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,6 +87,30 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
   const handleInput = (e) => {
     setInput(e.target.value);
     autoResize();
+  };
+
+  const toggleVoiceMute = () => {
+    const muted = scoutVoice.toggleMute();
+    setIsVoiceMuted(muted);
+    notify(muted ? 'Scout AI voice muted' : 'Scout AI sweet voice enabled');
+  };
+
+  const changeVoiceProfile = (profile) => {
+    scoutVoice.setProfile(profile);
+    setVoiceProfile(profile);
+    setShowVoiceMenu(false);
+    const profileLabel = profile === 'scout_sweet' ? 'Sweet & Friendly' : profile === 'scout_gentle' ? 'Gentle & Calming' : 'Cyber Neural';
+    notify(`Voice tuned: ${profileLabel}`);
+    // Play quick sample preview
+    scoutVoice.speak(`Hello ${currentUser?.username || 'Scout'}, voice modulation calibrated.`);
+  };
+
+  const speakMessage = (text) => {
+    if (isSpeaking) {
+      scoutVoice.stop();
+    } else {
+      scoutVoice.speak(text);
+    }
   };
 
   const sendMessage = async () => {
@@ -89,15 +151,21 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
         throw new Error(data.error || 'Unknown server error.');
       }
 
+      const responseText = data.message?.text || 'I got a blank response. Try again!';
       const aiMsg = {
         id: 'b-' + Date.now(),
         role: 'bot',
-        text: data.message?.text || 'I got a blank response. Try again!',
+        text: responseText,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         action: data.message?.action || null
       };
 
       setMessages(prev => [...prev, aiMsg]);
+
+      // Speak response aloud with sweet modulated voice
+      if (!scoutVoice.isMuted) {
+        scoutVoice.speak(responseText);
+      }
 
       // Automatically execute confirmed actions if present
       if (data.message?.action && typeof onExecuteAction === 'function') {
@@ -152,14 +220,20 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
     }
   };
 
-  const clearChat = () => setMessages([{
-    id: 'w-' + Date.now(), role: 'bot',
-    text: `Chat cleared! How can I help, ${currentUser?.username || 'Scout'}?`,
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }]);
+  const clearChat = () => {
+    scoutVoice.stop();
+    setMessages([{
+      id: 'w-' + Date.now(), role: 'bot',
+      text: `Chat cleared! How can I help, ${currentUser?.username || 'Scout'}?`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }]);
+  };
 
   return (
     <div className="ainex-container">
+      {/* Background Neural AI Face Rendered in Binary 0 & 1 */}
+      <BinaryScoutFace isSpeaking={isSpeaking} isThinking={isLoading} />
+
       {/* Bot header strip */}
       <div className="ainex-hero">
         <div className="ainex-hero-avatar">
@@ -167,13 +241,77 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
           <span className="ainex-online-dot" />
         </div>
         <div className="ainex-hero-info">
-          <span className="ainex-hero-name">Ai-Scout</span>
-          <span className="ainex-hero-status">● Secure Local Engine</span>
+          <div className="ainex-hero-name-row">
+            <span className="ainex-hero-name">Ai-Scout</span>
+            {isSpeaking && (
+              <span className="ainex-speaking-badge">
+                <span className="ainex-speaking-wave"></span>
+                Speaking
+              </span>
+            )}
+          </div>
+          <span className="ainex-hero-status">● Secure Local Engine · Neural Audio Core</span>
         </div>
-        
-        <button className="ainex-new-chat-btn" onClick={clearChat} title="New conversation">
-          <RotateCcw size={13} /> New Chat
-        </button>
+
+        {/* Voice Modulation & Controls */}
+        <div className="ainex-hero-controls">
+          <div className="ainex-voice-dropdown-wrapper">
+            <button 
+              className={`ainex-icon-btn ${showVoiceMenu ? 'is-active' : ''}`}
+              onClick={() => setShowVoiceMenu(!showVoiceMenu)}
+              title="Voice Modulation Settings"
+            >
+              <Sliders size={14} />
+            </button>
+            {showVoiceMenu && (
+              <div className="ainex-voice-menu">
+                <div className="ainex-voice-menu-header">Voice Modulation</div>
+                <button 
+                  className={`ainex-voice-option ${voiceProfile === 'scout_sweet' ? 'selected' : ''}`}
+                  onClick={() => changeVoiceProfile('scout_sweet')}
+                >
+                  <span className="ainex-voice-dot"></span>
+                  <div>
+                    <strong>Sweet & Friendly</strong>
+                    <small>Warm, melodic & expressive</small>
+                  </div>
+                </button>
+                <button 
+                  className={`ainex-voice-option ${voiceProfile === 'scout_gentle' ? 'selected' : ''}`}
+                  onClick={() => changeVoiceProfile('scout_gentle')}
+                >
+                  <span className="ainex-voice-dot"></span>
+                  <div>
+                    <strong>Gentle & Calm</strong>
+                    <small>Soft, soothing tone</small>
+                  </div>
+                </button>
+                <button 
+                  className={`ainex-voice-option ${voiceProfile === 'scout_cyber' ? 'selected' : ''}`}
+                  onClick={() => changeVoiceProfile('scout_cyber')}
+                >
+                  <span className="ainex-voice-dot"></span>
+                  <div>
+                    <strong>Cyber Neural</strong>
+                    <small>Crisp, sharp tech cadence</small>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button 
+            className={`ainex-icon-btn ${isVoiceMuted ? 'is-muted' : 'is-unmuted'}`}
+            onClick={toggleVoiceMute}
+            title={isVoiceMuted ? "Unmute Scout AI Voice" : "Mute Scout AI Voice"}
+          >
+            {isVoiceMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+          </button>
+
+          <button className="ainex-new-chat-btn" onClick={clearChat} title="New conversation">
+            <RotateCcw size={13} /> New Chat
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -183,6 +321,15 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
             {msg.role === 'bot' && <div className="ainex-bot-icon"><img src="/ai-scout-logo.png" alt="Ai-Scout" className="ainex-custom-logo" /></div>}
             <div className={`ainex-bubble ${msg.role === 'user' ? 'ainex-bubble-user' : 'ainex-bubble-bot'} ${msg.isError ? 'ainex-bubble-error' : ''}`}>
               <div className="ainex-message-actions" aria-label="Message actions">
+                {msg.role === 'bot' && (
+                  <button 
+                    onClick={() => speakMessage(msg.text)} 
+                    title={isSpeaking ? "Stop Voice" : "Play Voice"}
+                    className={isSpeaking ? "is-speaking-btn" : ""}
+                  >
+                    <Volume2 size={14} />
+                  </button>
+                )}
                 <button onClick={() => toggleSelected(msg.id)} title={selectedMessageIds.includes(msg.id) ? 'Deselect message' : 'Select message'}>{selectedMessageIds.includes(msg.id) ? <CheckSquare size={14} /> : <Square size={14} />}</button>
                 <button className={starredMessageIds.includes(msg.id) ? 'is-starred' : ''} onClick={() => toggleStarred(msg.id)} title="Star message"><Star size={14} fill={starredMessageIds.includes(msg.id) ? 'currentColor' : 'none'} /></button>
                 <button onClick={() => forwardMessage(msg)} title="Forward message"><Forward size={14} /></button>
@@ -268,7 +415,7 @@ const AiNexus = ({ currentUser, onExecuteAction, activeCampsite }) => {
           </button>
         </div>
         <div className="ainex-footer-hint">
-          <Lock size={11} /> <span>End-to-End Encrypted · Press Enter to send · Shift+Enter for new line</span>
+          <Lock size={11} /> <span>End-to-End Encrypted · Sweet Voice Audio Active · Press Enter to send</span>
         </div>
       </div>
     </div>
