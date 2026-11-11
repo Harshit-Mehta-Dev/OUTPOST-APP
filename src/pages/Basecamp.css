@@ -975,6 +975,11 @@
   animation: sttPulse 1.2s infinite;
 }
 
+.chat-stt-mic-btn.stt-unsupported {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .chat-stt-wave {
   position: absolute;
   inset: -2px;

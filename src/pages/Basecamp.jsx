@@ -3570,23 +3570,27 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                     if (e.key === 'Enter') handleSendMessage();
                   }}
                 />
-                {isChatSttSupported && (
-                  <button
-                    type="button"
-                    className={`chat-stt-mic-btn ${isChatListening ? 'is-listening' : ''}`}
-                    onClick={() => toggleChatListening(inputText)}
-                    title={isChatListening ? "Stop Speech-to-Text" : "Real-Time Speech-to-Text Dictation"}
-                  >
-                    {isChatListening ? (
-                      <>
-                        <span className="chat-stt-wave" />
-                        <MicOff size={18} />
-                      </>
-                    ) : (
-                      <Mic size={18} />
-                    )}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className={`chat-stt-mic-btn ${isChatListening ? 'is-listening' : ''} ${!isChatSttSupported ? 'stt-unsupported' : ''}`}
+                  onClick={() => isChatSttSupported ? toggleChatListening(inputText) : null}
+                  title={
+                    !isChatSttSupported
+                      ? "Speech-to-Text not supported — please use Chrome/Edge/Brave"
+                      : isChatListening
+                        ? "🔴 Listening… click to stop"
+                        : "🎙️ Click to speak — text appears in real-time"
+                  }
+                >
+                  {isChatListening ? (
+                    <>
+                      <span className="chat-stt-wave" />
+                      <MicOff size={18} />
+                    </>
+                  ) : (
+                    <Mic size={18} />
+                  )}
+                </button>
                 <button className="chat-send-btn" onClick={handleSendMessage}>
                   <Send size={18} />
                 </button>
