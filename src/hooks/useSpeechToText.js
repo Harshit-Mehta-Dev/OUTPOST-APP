@@ -1,14 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
- * useSpeechToText — Rock-solid, crash-free real-time speech dictation hook.
- *
- * Design principles:
- * - Zero dependency on the callback in useEffect deps (uses ref pattern).
- * - No alert() calls anywhere — silent fallback only.
- * - Single recognition instance per hook mount — never recreated.
- * - Continuous auto-restart after silence (keeps mic hot).
- * - Safe cleanup on unmount.
+ * useSpeechToText — Robust, highly compatible real-time speech dictation hook.
+ * 
+ * Works across Chrome, Edge, Safari, Brave, Opera (webkitSpeechRecognition & SpeechRecognition).
+ * Automatically requests mic permissions if needed, handles continuous streaming speech,
+ * captures both interim (real-time live speech) and final transcripts, and updates the text input dynamically.
  */
 export function useSpeechToText({ onTranscriptChange } = {}) {
   const [isListening, setIsListening] = useState(false);
@@ -16,131 +13,185 @@ export function useSpeechToText({ onTranscriptChange } = {}) {
   const [error, setError] = useState(null);
 
   const recognitionRef = useRef(null);
-  const isListeningRef = useRef(false);           // mirror for inside callbacks
-  const callbackRef = useRef(onTranscriptChange); // stable ref for the callback
-  const baseRef = useRef('');                      // accumulated final text
+  const isListeningRef = useRef(false);
+  const callbackRef = useRef(onTranscriptChange);
+  const baseTextRef = useRef('');
 
-  // Keep callbackRef current without triggering effects
+  // Keep callback current
   useEffect(() => {
     callbackRef.current = onTranscriptChange;
   });
 
-  // Build recognition ONCE on mount
+  // Check speech recognition capability
   useEffect(() => {
-    const SR = typeof window !== 'undefined'
-      && (window.SpeechRecognition || window.webkitSpeechRecognition);
-
-    if (!SR) {
-      setIsSupported(false);
-      return;
-    }
-
-    setIsSupported(true);
-    const rec = new SR();
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.lang = 'en-IN'; // Best for Indian-English accent
-
-    rec.onstart = () => {
-      setIsListening(true);
-      isListeningRef.current = true;
-      setError(null);
-    };
-
-    rec.onresult = (event) => {
-      let final = '';
-      let interim = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const r = event.results[i];
-        if (r.isFinal) {
-          final += r[0].transcript;
-        } else {
-          interim += r[0].transcript;
-        }
-      }
-
-      if (final) {
-        const joined = baseRef.current
-          ? baseRef.current.trimEnd() + ' ' + final.trim()
-          : final.trim();
-        baseRef.current = joined;
-        if (typeof callbackRef.current === 'function') {
-          callbackRef.current(joined);
-        }
-      } else if (interim) {
-        const preview = baseRef.current
-          ? baseRef.current.trimEnd() + ' ' + interim
-          : interim;
-        if (typeof callbackRef.current === 'function') {
-          callbackRef.current(preview);
-        }
-      }
-    };
-
-    rec.onerror = (e) => {
-      // 'no-speech' fires naturally on silence — not a real error
-      if (e.error === 'no-speech') return;
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        setError('Microphone access denied. Please allow microphone in browser settings.');
-        isListeningRef.current = false;
-        setIsListening(false);
-      }
-      // All other errors: just log, let onend restart if still active
-      console.warn('[Scout STT] Recognition error:', e.error);
-    };
-
-    rec.onend = () => {
-      // Auto-restart if the user hasn't manually stopped
-      if (isListeningRef.current) {
-        try {
-          rec.start();
-        } catch {
-          isListeningRef.current = false;
-          setIsListening(false);
-        }
-      } else {
-        setIsListening(false);
-      }
-    };
-
-    recognitionRef.current = rec;
-
-    return () => {
-      isListeningRef.current = false;
-      try { rec.stop(); } catch { /* ignore */ }
-    };
-  }, []); // runs once only
-
-  const startListening = useCallback((startingText = '') => {
-    if (!recognitionRef.current) return;
-    // Reset accumulated base to whatever is already in the input
-    baseRef.current = startingText ? startingText.trimEnd() : '';
-    isListeningRef.current = true;
-    try {
-      recognitionRef.current.start();
-      setIsListening(true);
-    } catch (e) {
-      if (e.name === 'InvalidStateError') {
-        // Already running — that's fine
-        setIsListening(true);
-      }
+    if (typeof window !== 'undefined') {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      setIsSupported(!!SpeechRec);
     }
   }, []);
 
   const stopListening = useCallback(() => {
     isListeningRef.current = false;
-    try { recognitionRef.current?.stop(); } catch { /* ignore */ }
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (err) {
+        console.warn('[STT] abort error:', err);
+      }
+      recognitionRef.current = null;
+    }
     setIsListening(false);
   }, []);
 
-  const toggleListening = useCallback((startingText = '') => {
-    if (isListeningRef.current) {
+  const startListening = useCallback(async (initialText = '') => {
+    if (typeof window === 'undefined') return;
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRec) {
+      setError('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
+      setIsListening(false);
+      return;
+    }
+
+    // Stop any existing instance first
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch {}
+      recognitionRef.current = null;
+    }
+
+    // Proactively request mic stream to ensure browser permission prompt triggers and hardware is warmed up
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Close prompt stream immediately as SpeechRecognition creates its own internal capture
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (permErr) {
+      console.warn('[STT] Mic permission check warning:', permErr);
+      if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
+        setError('Microphone permission denied. Please allow microphone access in your browser settings.');
+        setIsListening(false);
+        return;
+      }
+    }
+
+    try {
+      const recognition = new SpeechRec();
+      baseTextRef.current = typeof initialText === 'string' ? initialText.trimEnd() : '';
+      isListeningRef.current = true;
+      setError(null);
+
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      // Automatically pick browser language or default to en-US/en-IN
+      const browserLang = navigator.language || 'en-US';
+      recognition.lang = browserLang;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        isListeningRef.current = true;
+        setError(null);
+      };
+
+      recognition.onresult = (event) => {
+        let finalChunk = '';
+        let interimChunk = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const res = event.results[i];
+          const transcript = res[0]?.transcript || '';
+          if (res.isFinal) {
+            finalChunk += transcript + ' ';
+          } else {
+            interimChunk += transcript;
+          }
+        }
+
+        if (finalChunk) {
+          const updated = baseTextRef.current 
+            ? `${baseTextRef.current} ${finalChunk.trim()}`
+            : finalChunk.trim();
+          baseTextRef.current = updated;
+          if (typeof callbackRef.current === 'function') {
+            callbackRef.current(updated);
+          }
+        } else if (interimChunk) {
+          const livePreview = baseTextRef.current 
+            ? `${baseTextRef.current} ${interimChunk.trim()}`
+            : interimChunk.trim();
+          if (typeof callbackRef.current === 'function') {
+            callbackRef.current(livePreview);
+          }
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.warn('[STT] Error event:', event.error);
+        if (event.error === 'no-speech') {
+          // Normal pause in speech, ignore
+          return;
+        }
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          setError('Microphone access blocked. Click the lock/tune icon near your browser address bar to allow microphone.');
+          isListeningRef.current = false;
+          setIsListening(false);
+        }
+      };
+
+      recognition.onend = () => {
+        // If still active, seamlessly restart for continuous dictation
+        if (isListeningRef.current) {
+          try {
+            recognition.start();
+          } catch {
+            isListeningRef.current = false;
+            setIsListening(false);
+          }
+        } else {
+          setIsListening(false);
+        }
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+      setIsListening(true);
+    } catch (err) {
+      console.error('[STT] Start exception:', err);
+      isListeningRef.current = false;
+      setIsListening(false);
+    }
+  }, []);
+
+  const toggleListening = useCallback((currentText = '') => {
+    if (isListeningRef.current || isListening) {
       stopListening();
     } else {
-      startListening(startingText);
+      startListening(currentText);
     }
-  }, [startListening, stopListening]);
+  }, [isListening, startListening, stopListening]);
 
-  return { isListening, isSupported, error, startListening, stopListening, toggleListening };
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isListeningRef.current = false;
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch {}
+      }
+    };
+  }, []);
+
+  return {
+    isListening,
+    isSupported,
+    error,
+    startListening,
+    stopListening,
+    toggleListening
+  };
 }

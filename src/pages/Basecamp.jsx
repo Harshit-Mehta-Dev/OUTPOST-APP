@@ -3572,14 +3572,12 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                 />
                 <button
                   type="button"
-                  className={`chat-stt-mic-btn ${isChatListening ? 'is-listening' : ''} ${!isChatSttSupported ? 'stt-unsupported' : ''}`}
-                  onClick={() => isChatSttSupported ? toggleChatListening(inputText) : null}
+                  className={`chat-stt-mic-btn ${isChatListening ? 'is-listening' : ''}`}
+                  onClick={() => toggleChatListening(inputText)}
                   title={
-                    !isChatSttSupported
-                      ? "Speech-to-Text not supported — please use Chrome/Edge/Brave"
-                      : isChatListening
-                        ? "🔴 Listening… click to stop"
-                        : "🎙️ Click to speak — text appears in real-time"
+                    isChatListening
+                      ? "🔴 Listening live... click to stop"
+                      : "🎙️ Click to speak (Speech-to-Text)"
                   }
                 >
                   {isChatListening ? (
