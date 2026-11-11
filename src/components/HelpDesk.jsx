@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UploadCloud, CheckCircle, Send, Image as ImageIcon, X, Clock, Lock, MessageSquare, ArrowLeft, User, Paperclip, LifeBuoy, Headset, Mic, MicOff } from 'lucide-react';
 import { io } from 'socket.io-client';
@@ -31,8 +31,9 @@ const HelpDesk = () => {
   const [messages, setMessages] = useState([]);
 
   // Speech to text integration
+  const handleHelpDeskSpeech = useCallback((text) => setChatMessage(text), []);
   const { isListening: isHelpDeskListening, isSupported: isHelpDeskSttSupported, toggleListening: toggleHelpDeskListening, stopListening: stopHelpDeskListening } = useSpeechToText({
-    onTranscriptChange: (text) => setChatMessage(text)
+    onTranscriptChange: handleHelpDeskSpeech
   });
   const [ticketStatus, setTicketStatus] = useState('Open');
   const [originalRequestDescription, setOriginalRequestDescription] = useState('');

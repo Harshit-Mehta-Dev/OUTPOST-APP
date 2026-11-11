@@ -19,6 +19,9 @@ export function useSpeechToText({ onTranscriptChange, currentText = '', autoAppe
   const recognitionRef = useRef(null);
   const baseTextRef = useRef(currentText);
   const activeListeningRef = useRef(false);
+  // Store callback in a ref so changing it never causes the recognition setup useEffect to re-run
+  const onTranscriptChangeRef = useRef(onTranscriptChange);
+  useEffect(() => { onTranscriptChangeRef.current = onTranscriptChange; }, [onTranscriptChange]);
 
   useEffect(() => {
     const SpeechRecognition = typeof window !== 'undefined' && 
@@ -57,16 +60,16 @@ export function useSpeechToText({ onTranscriptChange, currentText = '', autoAppe
             : finalSegment.trim();
           baseTextRef.current = newBase;
           setInterimText('');
-          if (typeof onTranscriptChange === 'function') {
-            onTranscriptChange(newBase);
+          if (typeof onTranscriptChangeRef.current === 'function') {
+            onTranscriptChangeRef.current(newBase);
           }
         } else if (interimSegment) {
           setInterimText(interimSegment);
-          if (typeof onTranscriptChange === 'function') {
+          if (typeof onTranscriptChangeRef.current === 'function') {
             const preview = baseTextRef.current 
               ? (baseTextRef.current.trim() + ' ' + interimSegment.trim())
               : interimSegment.trim();
-            onTranscriptChange(preview);
+            onTranscriptChangeRef.current(preview);
           }
         }
       };
@@ -113,7 +116,7 @@ export function useSpeechToText({ onTranscriptChange, currentText = '', autoAppe
         }
       }
     };
-  }, [onTranscriptChange]);
+  }, []);
 
   const startListening = useCallback((startingText = '') => {
     if (!recognitionRef.current) {

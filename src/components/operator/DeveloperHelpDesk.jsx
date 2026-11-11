@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, Image as ImageIcon, CheckCircle, MessageSquare, Paperclip, User, Trash2, Clock, Mic, MicOff } from 'lucide-react';
 import { io } from 'socket.io-client';
@@ -22,8 +22,9 @@ const DeveloperHelpDesk = ({ onClose, currentUser }) => {
   const [ticketStatus, setTicketStatus] = useState('Open');
 
   // Speech to text integration
+  const handleDevSpeech = useCallback((text) => setChatMessage(text), []);
   const { isListening: isDevSttListening, isSupported: isDevSttSupported, toggleListening: toggleDevSttListening, stopListening: stopDevSttListening } = useSpeechToText({
-    onTranscriptChange: (text) => setChatMessage(text)
+    onTranscriptChange: handleDevSpeech
   });
   const [isUserTyping, setIsUserTyping] = useState(false);
   const typingTimeout = useRef(null);
