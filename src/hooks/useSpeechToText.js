@@ -120,7 +120,7 @@ export function useSpeechToText({ onTranscriptChange, currentText = '', autoAppe
 
   const startListening = useCallback((startingText = '') => {
     if (!recognitionRef.current) {
-      alert('Speech Recognition is not supported in this browser. Please use Google Chrome, Brave, or Edge.');
+      console.warn('[Scout STT] Speech Recognition not supported in this browser.');
       return;
     }
 
