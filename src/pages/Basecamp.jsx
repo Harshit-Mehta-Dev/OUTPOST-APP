@@ -77,6 +77,7 @@ import GradientBars from '../components/ui/gradient-bars-background';
 import HelpDesk from '../components/HelpDesk';
 import FeedbackForm from '../components/FeedbackForm';
 import GroupAdminPanelModal from '../components/modals/GroupAdminPanelModal';
+import ScoutAiModal from '../components/ScoutAiModal';
 import BasecampBoard from '../components/board/BasecampBoard';
 import ScoutWalkthrough from '../components/ScoutWalkthrough';
 
@@ -377,6 +378,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false); // Mobile Sliding Drawer
   const [channelToDelete, setChannelToDelete] = useState(null);
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
+  const [isScoutAiModalOpen, setIsScoutAiModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [messageToDelete, setMessageToDelete] = useState(null);
   const [levelUpData, setLevelUpData] = useState(null);
@@ -3539,6 +3541,7 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
                   onClose={() => setIsAttachmentOpen(false)}
                   onSendMedia={handleSendMediaMessage}
                   onSendPoll={handleSendPollMessage}
+                  onOpenScoutAi={() => setIsScoutAiModalOpen(true)}
                 />
                 <button 
                   className="chat-attach-btn" 
@@ -4187,6 +4190,34 @@ const Basecamp = ({ isDarkMode, toggleTheme }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ScoutAiModal
+        isOpen={isScoutAiModalOpen}
+        onClose={() => setIsScoutAiModalOpen(false)}
+        currentUser={currentUser}
+        activeCampsite={activeCampsite}
+        onExecuteAction={(action) => {
+          if (!action) return;
+          if (action.type === 'CREATE_CAMPSITE') {
+            handleCampsiteCreated(action.payload);
+          } else if (action.type === 'CREATE_CHANNEL') {
+            handleCreateChannel(action.payload);
+          } else if (action.type === 'CREATE_NOTE') {
+            const apiBase = import.meta.env.VITE_CORE_API_URL || (import.meta.env.PROD ? 'https://outpost-app.onrender.com' : 'http://localhost:5002');
+            fetch(`${apiBase}/api/board`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                campsiteId: currentCampsiteId,
+                title: action.payload.title,
+                body: action.payload.body,
+                color: action.payload.color || '#fffae0',
+                author: currentUser?.username || 'Scout'
+              })
+            }).catch(e => console.error('Failed to post sticky note:', e));
+          }
+        }}
+      />
 
       <GroupAdminPanelModal
         isOpen={isAdminPanelOpen}

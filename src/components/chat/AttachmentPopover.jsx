@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Image, BarChart3, X, Plus, Mic, Square, MoreHorizontal } from "lucide-react";
 import "./AttachmentPopover.css";
 
-export default function AttachmentPopover({ isOpen, onClose, onSendMedia, onSendPoll }) {
+export default function AttachmentPopover({ isOpen, onClose, onSendMedia, onSendPoll, onOpenScoutAi }) {
   const [showPollCreator, setShowPollCreator] = useState(false);
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState(["", ""]);
@@ -154,11 +154,21 @@ export default function AttachmentPopover({ isOpen, onClose, onSendMedia, onSend
                 </button>
 
                 <button
-                  className="attachment-popover-btn"
-                  style={{ opacity: 0.5, cursor: 'not-allowed' }}
+                  type="button"
+                  onClick={() => {
+                    if (typeof onOpenScoutAi === 'function') {
+                      onOpenScoutAi();
+                    }
+                    onClose();
+                  }}
+                  className="attachment-popover-btn attachment-popover-scout-btn"
+                  title="Direct Access to Ai-Scout Companion"
                 >
-                  <MoreHorizontal size={20} />
-                  <span>Coming Soon</span>
+                  <div className="attachment-scout-icon-wrap">
+                    <img src="/ai-scout-logo.png" alt="Ai-Scout" className="attachment-scout-img" />
+                    <span className="attachment-scout-dot" />
+                  </div>
+                  <span>Ai-Scout</span>
                 </button>
               </div>
             ) : (
