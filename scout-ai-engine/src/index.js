@@ -3,10 +3,11 @@
  * SCOUT COGNITIVE ORCHESTRATOR (ScoutEngine)
  * ==============================================================================
  * Master controller that unites:
+ * - Hybrid Semantic & Exact Pattern Matcher
  * - ScoutNeuralNet (multi-layer deep classifier)
  * - ScoutTokenizer (TF-IDF vectorizer)
  * - ScoutMemory (episodic conversation context)
- * - Multi-Agent cognitive processors (Security, Math, Navigation, General)
+ * - Multi-Agent cognitive processors (Security, Math, Action, Navigation, General)
  * ==============================================================================
  */
 
@@ -15,18 +16,18 @@ const fs = require('fs');
 const ScoutNeuralNet = require('./brain/ScoutNeuralNet');
 const ScoutTokenizer = require('./brain/ScoutTokenizer');
 const ScoutMemory = require('./memory/ScoutMemory');
+const ActionAgent = require('./agents/ActionAgent');
 const {
   SecurityAgent,
   MathAgent,
   TimeAgent,
-  ActionAgent,
   NavigationAgent,
   GeneralIntelligenceAgent
 } = require('./agents/CognitiveAgents');
 
 class ScoutEngine {
   constructor(options = {}) {
-    this.tokenizer = new ScoutTokenizer(64);
+    this.tokenizer = new ScoutTokenizer(192);
     this.memory = new ScoutMemory({ maxShortTerm: 25 });
 
     // Multi-agent cluster
@@ -39,6 +40,7 @@ class ScoutEngine {
 
     this.intents = [];
     this.intentAnswers = {};
+    this.intentUtterances = new Map();
     this.net = null;
     this.isTrained = false;
   }
@@ -59,17 +61,19 @@ class ScoutEngine {
     const samples = [];
     this.intents = [];
     this.intentAnswers = {};
+    this.intentUtterances.clear();
 
-    corpus.intents.forEach((item, idx) => {
+    corpus.intents.forEach((item) => {
       this.intents.push(item.intent);
       this.intentAnswers[item.intent] = item.answers;
+      this.intentUtterances.set(item.intent, item.utterances.map(u => u.toLowerCase().trim()));
       item.utterances.forEach(u => documents.push(u));
     });
 
-    // 1. Fit Tokenizer
+    // 1. Fit Tokenizer on vocabulary
     this.tokenizer.fit(documents);
 
-    // 2. Prepare Dataset
+    // 2. Prepare Training Samples
     corpus.intents.forEach((item, intentIdx) => {
       item.utterances.forEach(utterance => {
         const input = this.tokenizer.vectorize(utterance);
@@ -79,23 +83,71 @@ class ScoutEngine {
       });
     });
 
-    // 3. Initialize Deep Neural Network: [64 -> 32 -> num_intents]
-    this.net = new ScoutNeuralNet([64, 32, this.intents.length], {
-      learningRate: 0.04,
-      momentum: 0.8
+    // 3. Initialize Deep Neural Network: [192 -> 64 -> num_intents]
+    this.net = new ScoutNeuralNet([192, 64, this.intents.length], {
+      learningRate: 0.08,
+      momentum: 0.85
     });
 
-    // 4. Train Neural Network (60 epochs)
-    this.net.train(samples, 60);
+    // 4. Train Neural Network (100 epochs)
+    this.net.train(samples, 100);
     this.isTrained = true;
     console.log(`🧠 [ScoutEngine] Deep Neural Network trained on ${samples.length} cognitive samples across ${this.intents.length} intents.`);
+  }
+
+  /**
+   * High-precision semantic & pattern matcher
+   */
+  matchDirectIntent(userMessage) {
+    if (!userMessage) return null;
+    const cleanMsg = userMessage.toLowerCase().trim().replace(/[?!.,]/g, '');
+    const msgWords = cleanMsg.split(/\s+/).filter(Boolean);
+    const msgSet = new Set(msgWords);
+
+    // 1. Exact sentence match
+    for (const [intent, utterances] of this.intentUtterances.entries()) {
+      for (const u of utterances) {
+        const cleanU = u.replace(/[?!.,]/g, '');
+        if (cleanU === cleanMsg) {
+          return { intent, confidence: 1.0, method: 'exact' };
+        }
+      }
+    }
+
+    // 2. High-overlap phrase matching
+    let bestIntent = null;
+    let bestScore = 0;
+
+    for (const [intent, utterances] of this.intentUtterances.entries()) {
+      for (const u of utterances) {
+        const uWords = u.replace(/[?!.,]/g, '').split(/\s+/).filter(Boolean);
+        const uSet = new Set(uWords);
+
+        let overlap = 0;
+        for (const w of msgWords) {
+          if (uSet.has(w)) overlap++;
+        }
+
+        const jaccard = overlap / (new Set([...msgWords, ...uWords]).size || 1);
+        if (jaccard > bestScore) {
+          bestScore = jaccard;
+          bestIntent = intent;
+        }
+      }
+    }
+
+    if (bestScore >= 0.55) {
+      return { intent: bestIntent, confidence: bestScore, method: 'semantic_overlap' };
+    }
+
+    return null;
   }
 
   /**
    * Main Thought Process Pipeline
    * @param {string} userMessage Raw prompt from user
    * @param {string} userId Unique identifier for memory tracking
-   * @returns {Promise<{text: string, intent: string, confidence: number, isThreat: boolean, agent: string}>}
+   * @returns {Promise<{text: string, intent: string, confidence: number, isThreat: boolean, agent: string, action?: any}>}
    */
   async think(userMessage, userId = 'scout_user') {
     if (!this.isTrained) {
@@ -159,22 +211,30 @@ class ScoutEngine {
       };
     }
 
-    // Phase 3: Neural Classification (Forward Pass)
-    const inputVec = this.tokenizer.vectorize(userMessage);
-    const { output } = this.net.forward(inputVec);
+    // Phase 3: High Precision Direct / Semantic Match
+    const directMatch = this.matchDirectIntent(userMessage);
+    let predictedIntent = directMatch ? directMatch.intent : null;
+    let confidence = directMatch ? directMatch.confidence : 0;
 
-    let maxProb = -1;
-    let predictedIdx = 0;
-    for (let i = 0; i < output.length; i++) {
-      if (output[i] > maxProb) {
-        maxProb = output[i];
-        predictedIdx = i;
+    // Phase 4: Deep Neural Network Forward Pass fallback
+    if (!predictedIntent) {
+      const inputVec = this.tokenizer.vectorize(userMessage);
+      const { output } = this.net.forward(inputVec);
+
+      let maxProb = -1;
+      let predictedIdx = 0;
+      for (let i = 0; i < output.length; i++) {
+        if (output[i] > maxProb) {
+          maxProb = output[i];
+          predictedIdx = i;
+        }
       }
+
+      predictedIntent = this.intents[predictedIdx] || 'bot.status';
+      confidence = Math.round(maxProb * 100) / 100;
     }
 
-    const predictedIntent = this.intents[predictedIdx] || 'general.unknown';
-
-    // Phase 4: Domain Specific Agent Handling
+    // Phase 5: Domain Specific Agent Dispatch
     let answer = null;
     let handlingAgent = 'GeneralIntelligenceAgent';
 
@@ -191,14 +251,14 @@ class ScoutEngine {
       );
     }
 
-    // Phase 5: Memory Recording
+    // Phase 6: Memory Recording
     this.memory.remember(userId, 'user', userMessage);
     this.memory.remember(userId, 'bot', answer);
 
     return {
       text: answer,
       intent: predictedIntent,
-      confidence: Math.round(maxProb * 100) / 100,
+      confidence,
       isThreat: false,
       agent: handlingAgent
     };

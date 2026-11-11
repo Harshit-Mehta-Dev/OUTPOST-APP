@@ -2,12 +2,13 @@
  * ==============================================================================
  * SCOUT COGNITIVE MULTI-AGENT REASONING PIPELINE
  * ==============================================================================
- * Dispatches queries to specialized sub-agents based on the neural classification:
+ * Specialized sub-agents:
  * 1. SecurityAgent: Real-time threat detection, prompt injection shielding
  * 2. MathAgent: Exact symbolic arithmetic and calculus solver
- * 3. NavigationAgent: OUTPOST channels, voice rooms, Basecamp features guide
- * 4. GeneralIntelligenceAgent: Conversational empathy, knowledge, and advice
- * 5. MemoryAgent: User preference recall & profile learning
+ * 3. TimeAgent: Real-time clock and timezone calculator
+ * 4. ActionAgent: Multi-step conversational task execution (campsites, notes)
+ * 5. NavigationAgent: OUTPOST features, board, chill zone guide
+ * 6. GeneralIntelligenceAgent: Conversational knowledge, creator info, smalltalk
  * ==============================================================================
  */
 
@@ -49,7 +50,6 @@ class MathAgent {
         .replace(/\?/g, '')
         .trim();
 
-      // Safe arithmetic evaluator
       const jsExpr = expression.replace(/\^/g, '**');
       if (/^[0-9+\-*/().\s*]+$/.test(jsExpr)) {
         const result = Function(`"use strict"; return (${jsExpr})`)();
@@ -73,7 +73,6 @@ class TimeAgent {
 
     const now = new Date();
 
-    // Indian Standard Time (IST - Asia/Kolkata, UTC+5:30)
     const istOptions = {
       timeZone: 'Asia/Kolkata',
       hour: '2-digit',
@@ -87,7 +86,6 @@ class TimeAgent {
     };
     const istString = new Intl.DateTimeFormat('en-IN', istOptions).format(now);
 
-    // UTC
     const utcOptions = {
       timeZone: 'UTC',
       hour: '2-digit',
@@ -96,8 +94,6 @@ class TimeAgent {
       hour12: true
     };
     const utcString = new Intl.DateTimeFormat('en-US', utcOptions).format(now);
-
-    // Local runtime time
     const localTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
     return `⏰ **Real-Time Clock & Timezones:**\n\n` +
@@ -129,7 +125,7 @@ class NavigationAgent {
 
 class GeneralIntelligenceAgent {
   respond(intent, context, responses) {
-    if (responses && responses[intent]) {
+    if (responses && responses[intent] && responses[intent].length > 0) {
       const candidates = responses[intent];
       const index = Math.floor(Math.random() * candidates.length);
       return candidates[index];
@@ -138,13 +134,10 @@ class GeneralIntelligenceAgent {
   }
 }
 
-const ActionAgent = require('./ActionAgent');
-
 module.exports = {
   SecurityAgent,
   MathAgent,
   TimeAgent,
-  ActionAgent,
   NavigationAgent,
   GeneralIntelligenceAgent
 };
